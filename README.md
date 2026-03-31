@@ -1,5 +1,7 @@
 # n-n-code-skills
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 Storage for reusable agent skills.
 
 This repository keeps skill definitions in a simple folder-based layout so they can be reviewed, revised, and reused without extra tooling. The current contents live under `.agents/skills/`.
