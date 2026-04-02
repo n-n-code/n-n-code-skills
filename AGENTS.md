@@ -10,6 +10,25 @@ This repository stores reusable agent skills. Most work should be limited to roo
 - Each skill must include `SKILL.md`
 - Supporting files are allowed when they directly serve the skill
 
+## Skill Composition Model
+
+Skills compose in two tiers:
+
+1. **Principle skills** — portable, unconditional engineering guidance for a
+   language or discipline. Example: `coding-guidance-cpp`.
+2. **Overlays** — composable rules for a specific domain or project concern.
+   Examples: `backend-guidance`, `ui-guidance`, `project-core-dev`,
+   `project-vendor-boundary`.
+
+An agent working on a task loads one principle skill plus any applicable overlays.
+Overlays add domain-specific rules and validation criteria on top of the
+principle skill's universal checks. Overlays should not repeat what the principle
+skill already covers.
+
+Workflow skills (**thinking**, **recursive-thinking**, **dream-thinking**,
+**security**) are orthogonal — they change *how* you work, not *what domain
+rules* apply. They compose with either tier.
+
 ## Working Rules
 
 - Preserve the existing folder-based layout unless the task explicitly requires a structural change
