@@ -1,24 +1,34 @@
 ---
 name: project-core-dev
-description: Generic core-dev overlay for repo-owned C++ code, tests, and top-level CMake changes.
+description: Overlay for day-to-day feature work and bug fixes in repo-owned code. Provides a validation checklist for build, test, format, and analysis. Use alongside the repo's principle skill.
 ---
 
 # Project Core Dev
 
-Read `AGENTS.md` first. Use this skill for normal feature work and bug fixes in
-repo-owned C++ code.
+Read `AGENTS.md` first. This is a composable overlay, not a standalone workflow.
+Use alongside the repo's principle skill (e.g. **coding-guidance-cpp**) for
+normal feature work and bug fixes in repo-owned code.
 
-## Focus
+## When to use
 
-- preserve buildability, tests, docs, and analyzer cleanliness
-- keep changes narrow and behavior-oriented
-- prefer app-side fixes before widening platform or vendor boundaries
+The task is a feature, bug fix, or refactor in repo-owned code that needs a
+standard build-test-format-analyze validation pass.
 
-## Validation
+## Not for
 
-- prefer `cmake --preset dev` for development builds
-- run `ctest --output-on-failure` for covered changes
-- run `cmake --build "$BUILD_DIR" --target format-check` before committing
-- run `frame_cli --help` as a lightweight smoke test
-- add docs/analyzer/Valgrind validation when the change surface justifies it
-- run `cppcheck` target when available for additional static analysis
+Vendored dependency changes (use **project-vendor-boundary**), release/packaging
+work (use **project-release-maintainer**), config/test-focused work (use
+**project-config-and-tests**), or environment diagnosis (use
+**project-platform-diagnose**).
+
+## Validation Checklist
+
+Run the repo's equivalents of these steps before committing:
+
+- build with the development preset or debug configuration
+- run the test suite with output on failure for covered changes
+- run the formatter or format-check target
+- run a lightweight smoke test (e.g. `--help` or `--version` on the main binary)
+- add analyzer, sanitizer, or memory-checking validation when the change surface
+  justifies it
+- run static analysis targets when available
