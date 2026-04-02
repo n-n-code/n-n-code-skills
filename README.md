@@ -21,17 +21,33 @@ This repository keeps skill definitions in a simple folder-based layout so they 
 
 The repository currently contains these skills:
 
-- `agent-skill-generator`
-- `agents-md-generator`
-- `coder`
-- `documenter`
-- `project-config-and-tests`
-- `project-core-dev`
-- `project-platform-diagnose`
-- `project-release-maintainer`
-- `project-vendor-boundary`
-- `security`
-- `thinking`
+### Skill Authoring And Documentation
+
+- `agent-skill-generator` — create or revise reusable agent skills from a problem statement, workflow, or existing skill folder
+- `agents-md-generator` — create or revise repository `AGENTS.md` files from repo inspection and existing docs
+- `documenter` — documentation guidance for README files, API docs, code comments, release docs, and AI-friendly project docs
+
+### Principle Skills
+
+- `coding-guidance-cpp` — portable C++ implementation and review guidance for feature work, bug fixes, refactors, and code review
+
+### Overlay Skills
+
+- `backend-guidance` — overlay for backend and server-side networked code such as HTTP handlers, gRPC services, and message consumers
+- `project-config-and-tests` — overlay for config contracts, defaults, path helpers, and deterministic test coverage
+- `project-core-dev` — overlay for day-to-day feature work and bug fixes in repo-owned code
+- `project-platform-diagnose` — overlay for environment-sensitive diagnosis such as startup issues, install problems, and runtime smoke checks
+- `project-release-maintainer` — overlay for release-facing docs, install layout, workflows, licenses, and hygiene scripts
+- `project-vendor-boundary` — overlay for app-owned versus vendored dependency boundaries
+- `ui-guidance` — overlay for graphical UI and web frontend code
+
+### Workflow Skills
+
+- `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
+- `dream-thinking` — reflective sleep-and-dream heuristic for learning from recent work
+- `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
+- `security` — security guidance for threat modeling, secure defaults, and security-focused code review
+- `thinking` — planning and design guidance for quick-to-medium structured problem solving
 
 ## Adding a Skill
 
