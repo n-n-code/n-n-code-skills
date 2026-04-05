@@ -30,7 +30,6 @@ This skill adds security-specific guidance.
 - reporting hypothetical findings when exploitability is unclear
 
 For auth-heavy systems, load this skill with `security-identity-access`.
-For Solidity or EVM contracts, load this skill with `security-smart-contracts`.
 
 ## Workflow
 

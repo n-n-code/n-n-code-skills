@@ -26,7 +26,7 @@ repo workflow or enforcement rules for a class of work. Example:
 
 Some overlays are **companion overlays**. They layer a narrower workflow onto a
 default skill without replacing it. Examples: `documenter-coauthoring`,
-`security-identity-access`, `security-smart-contracts`.
+`security-identity-access`.
 
 Default composition model:
 

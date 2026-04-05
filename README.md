@@ -100,14 +100,12 @@ Defaults:
 - `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
-- `security-smart-contracts` — companion overlay for Solidity and EVM smart-contract work when paired with `security`
 - `thinking` — planning and design guidance for quick-to-medium structured problem solving
 
 Defaults:
 
 - Start with `security` when the task is explicitly security-focused or the change is high-risk.
 - Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
-- Add `security-smart-contracts` for Solidity or EVM smart-contract review and implementation.
 
 ### System Skills
 
