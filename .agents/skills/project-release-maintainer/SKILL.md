@@ -5,7 +5,7 @@ description: Overlay for release-facing docs, install layout, workflows, license
 
 # Project Release Maintainer
 
-Read `AGENTS.md` first. This is a composable overlay, not a standalone workflow.
+This is a composable overlay, not a standalone workflow.
 Use alongside the repo's implementation skill for publication-facing and
 packaging-sensitive changes.
 

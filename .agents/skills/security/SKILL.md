@@ -5,7 +5,7 @@ description: Security skill for threat modeling, secure defaults, and security-f
 
 # Security
 
-Read `AGENTS.md` first. This skill adds security-specific guidance.
+This skill adds security-specific guidance.
 
 ## Default Stance
 
