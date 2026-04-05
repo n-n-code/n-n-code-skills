@@ -4,7 +4,7 @@
 
 Storage for reusable agent skills.
 
-This repository keeps skill definitions in a simple folder-based layout so they can be reviewed, revised, and reused without extra tooling. The current contents live under `.agents/skills/`.
+This repository keeps reusable agent skills in a simple folder-based layout under `.agents/skills/`. Use one principle skill when the work is language- or discipline-specific, add the overlays that match the domain, and add a workflow skill only when the task clearly needs that mode.
 
 ## Repository Layout
 
@@ -13,6 +13,9 @@ This repository keeps skill definitions in a simple folder-based layout so they 
   skills/
     <skill-name>/
       SKILL.md
+      references/   # optional
+      scripts/      # optional
+      assets/       # optional
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as templates, references, scripts, or assets when the skill needs them.
@@ -31,9 +34,25 @@ This repo uses a small role vocabulary to keep overlapping skills understandable
 
 When several skills touch the same job, the docs should name the baseline default and the canonical stronger option explicitly.
 
-## Current Skills
+## Choosing A Skill Set
 
-The repository currently contains these skills:
+Most tasks should compose skills in this order:
+
+1. Start with one principle skill when the work is language- or discipline-specific.
+2. Add the overlays that match the domain or repo concern.
+3. Add an orthogonal workflow skill only when the user explicitly wants that mode or the task clearly needs it.
+
+Examples:
+
+- routine Python feature work: `coding-guidance-python` + `project-core-dev`
+- backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
+- frontend redesign or polish work: principle skill + `ui-design-guidance`
+- security review of auth flows: `security` + `security-identity-access`
+- large doc rewrite with collaboration: `documenter` + `documenter-coauthoring`
+
+## Skill Families
+
+The repository currently contains 25 skills grouped into these families.
 
 ### Skill Authoring And Documentation
 
@@ -42,13 +61,25 @@ The repository currently contains these skills:
 - `documenter` — baseline documentation overlay for substantial documentation authoring or restructuring, including README files, specs, ADRs, tutorials, how-to guides, reference docs, API docs, code comments, changelogs, and agent-facing docs
 - `documenter-coauthoring` — companion overlay for multi-round collaborative drafting of large specs, proposals, decision docs, and similar documents
 
+Defaults:
+
+- Start with `documenter` for ordinary documentation work.
+- Add `documenter-coauthoring` when the task needs explicit iteration, outline approval, or section-by-section collaboration.
+
 ### Principle Skills
 
 - `coding-guidance-cpp` — portable C++ implementation and review guidance for feature work, bug fixes, refactors, and code review
+- `coding-guidance-python` — portable Python implementation and review guidance for feature work, bug fixes, refactors, and code review
+- `coding-guidance-bash` — portable Bash implementation and review guidance for automation scripts, repo tooling, refactors, and code review
 
-### Overlay Skills
+Python skill note:
+
+- `coding-guidance-python` includes bundled references under `.agents/skills/coding-guidance-python/references/` for packaging/layout and service-boundary concerns so the main skill stays focused on core Python engineering guidance.
+
+### Implementation And Project Overlays
 
 - `backend-guidance` — overlay for backend and server-side networked code such as HTTP handlers, gRPC services, and message consumers
+- `development-contract-process` — process overlay for repos that require tracked change contracts, verifier evidence, and smallest-proof validation
 - `development-contract-repo-overlay-template` — template for the thin repo-local overlay a target repository should have after adopting the development-contract system
 - `project-config-and-tests` — overlay for config contracts, defaults, path helpers, and deterministic test coverage
 - `project-core-dev` — overlay for day-to-day feature work and bug fixes in repo-owned code
@@ -58,25 +89,32 @@ The repository currently contains these skills:
 - `ui-guidance` — thin baseline overlay for ordinary graphical UI and frontend work
 - `ui-design-guidance` — canonical strong UI overlay for redesigns, frontend polish, and UX-heavy UI work; extends the baseline with design-direction and UX-priority guidance
 
-UI overlay guidance:
+Defaults:
 
 - Start with `ui-guidance` for ordinary UI changes that mostly need repo-native consistency and basic UI hygiene.
 - Prefer `ui-design-guidance` when the task needs stronger design direction, more frontend polish, or explicit UX review across accessibility, interaction, layout, forms, navigation, or data display.
 
-Documentation overlay guidance:
+### Workflow Skills
 
-- Start with `documenter` for ordinary documentation authoring, restructuring, and validation work.
-- Add `documenter-coauthoring` when the task needs explicit context gathering, outline approval, section-by-section iteration, and reader-testing.
-
-### Process And Workflow Skills
-
-- `development-contract-process` — portable process overlay for repos that require tracked change contracts, verifier evidence, and smallest-proof validation
-- `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
 - `dream-thinking` — reflective sleep-and-dream heuristic for learning from recent work
-- `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
 - `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
+- `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
+- `security-smart-contracts` — companion overlay for Solidity and EVM smart-contract work when paired with `security`
 - `thinking` — planning and design guidance for quick-to-medium structured problem solving
+
+Defaults:
+
+- Start with `security` when the task is explicitly security-focused or the change is high-risk.
+- Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
+- Add `security-smart-contracts` for Solidity or EVM smart-contract review and implementation.
+
+### System Skills
+
+- `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
+- `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
+
+This repository keeps its authoritative skill inventory in `.agents/skills/`. Update the family sections above when adding or changing a published skill.
 
 ## Adding a Skill
 
@@ -101,6 +139,7 @@ This repository does not currently have a build or test pipeline. Validation is 
 
 - every skill lives under `.agents/skills/`
 - every skill has a `SKILL.md`
+- examples and references point to files that exist
 - documentation claims match the repository contents
 
 ## License

@@ -8,7 +8,7 @@ This repository stores reusable agent skills. Most work should be limited to roo
 
 - Skills live in `.agents/skills/<skill-name>/`
 - Each skill must include `SKILL.md`
-- Supporting files are allowed when they directly serve the skill
+- Supporting files such as `references/`, `scripts/`, or templates are allowed when they directly serve the skill
 
 ## Skill Composition Model
 
@@ -24,10 +24,22 @@ Some overlays are **process overlays** rather than domain overlays. They govern
 repo workflow or enforcement rules for a class of work. Example:
 `development-contract-process`.
 
-An agent working on a task loads one principle skill plus any applicable overlays.
-Overlays add domain-specific rules and validation criteria on top of the
-principle skill's universal checks. Overlays should not repeat what the principle
-skill already covers.
+Some overlays are **companion overlays**. They layer a narrower workflow onto a
+default skill without replacing it. Examples: `documenter-coauthoring`,
+`security-identity-access`, `security-smart-contracts`.
+
+Default composition model:
+
+1. Load one principle skill when the task is language- or discipline-specific.
+2. Add the overlays that match the domain or repo concern.
+3. Add an orthogonal workflow skill only when the task clearly needs that mode.
+
+Examples:
+
+- routine Python feature work: `coding-guidance-python` + `project-core-dev`
+- backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
+- frontend redesign or polish work: principle skill + `ui-design-guidance`
+- security review of auth flows: `security` + `security-identity-access`
 
 Workflow skills (**thinking**, **recursive-thinking**, **dream-thinking**,
 **security**) are orthogonal — they change *how* you work, not *what domain or
@@ -49,7 +61,8 @@ When a skill family has both baseline and canonical overlays, keep that
 relationship explicit in the docs instead of letting two near-duplicates drift.
 When a skill family has a companion overlay, keep the baseline as the default
 and describe clearly when the companion should be added. Example:
-`documenter` + `documenter-coauthoring`.
+`documenter` + `documenter-coauthoring`, or `security` +
+`security-identity-access`.
 
 ## Working Rules
 
