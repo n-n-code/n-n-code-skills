@@ -20,19 +20,42 @@ Skills compose in two tiers:
    Examples: `backend-guidance`, `ui-guidance`, `project-core-dev`,
    `project-vendor-boundary`.
 
+Some overlays are **process overlays** rather than domain overlays. They govern
+repo workflow or enforcement rules for a class of work. Example:
+`development-contract-process`.
+
 An agent working on a task loads one principle skill plus any applicable overlays.
 Overlays add domain-specific rules and validation criteria on top of the
 principle skill's universal checks. Overlays should not repeat what the principle
 skill already covers.
 
 Workflow skills (**thinking**, **recursive-thinking**, **dream-thinking**,
-**security**) are orthogonal — they change *how* you work, not *what domain
-rules* apply. They compose with either tier.
+**security**) are orthogonal — they change *how* you work, not *what domain or
+process rules* apply. They compose with either tier.
+
+Role vocabulary used in this repo:
+
+- **baseline overlay**: thin default overlay for routine work in a domain
+- **canonical overlay**: stronger overlay for harder cases in the same domain
+- **companion overlay**: optional workflow-focused overlay that composes with a
+  baseline overlay for the same job without replacing it
+- **template overlay**: pattern for repo-local adaptation rather than the main
+  overlay to load here
+- **process overlay**: enforcement or workflow guidance that composes with
+  implementation skills
+- **system skill**: build/create/install skill that produces a repo-owned system
+
+When a skill family has both baseline and canonical overlays, keep that
+relationship explicit in the docs instead of letting two near-duplicates drift.
+When a skill family has a companion overlay, keep the baseline as the default
+and describe clearly when the companion should be added. Example:
+`documenter` + `documenter-coauthoring`.
 
 ## Working Rules
 
 - Preserve the existing folder-based layout unless the task explicitly requires a structural change
 - Keep instructions concise, specific, and grounded in files that actually exist
+- Use the repo's role vocabulary consistently when naming or describing skills
 - Update only the skill folder and root docs relevant to the task
 - Prefer small, targeted edits over broad repo rewrites
 

@@ -105,6 +105,9 @@ general package discovery or substitute a different package.
    - high-value decision rules
    - references, scripts, or assets that materially matter
    - obvious repetition, drift, or weak sections
+   - remote baggage that should probably not ship: giant catalogs, data dumps,
+     installer-specific metadata, broad stack assumptions, or helper scripts
+     whose value does not survive the fusion
 5. Check fusion compatibility before proceeding.
    - Compare the trigger scopes across sources. If one skill says "use for X"
      and another says "never use for X," flag the conflict.
@@ -170,6 +173,9 @@ general package discovery or substitute a different package.
        it narrowly
    - If acquisition created temporary comparison material, keep it out of the
      shipped skill package unless it materially improves repeatable execution
+   - If remote acquisition installed or copied local artifacts only for
+     inspection, remove those artifacts before finalizing unless the user
+     explicitly asked to keep the fetched skill itself
 9. Run the review pass in
    [`references/fusion-review-checklist.md`](references/fusion-review-checklist.md).
    The checklist includes simulation validation and precision-density tightening
@@ -187,6 +193,12 @@ general package discovery or substitute a different package.
   best-practice text, and examples that do not teach anything new.
 - Review remote skills before trusting them. Preserve only guidance that holds
   up after reading the actual skill contents.
+- For fetched remote skills, default to keeping heuristics and workflow rules
+  while dropping bulky catalogs, datasets, helper scripts, or stack-specific
+  assumptions unless they materially improve repeatable execution in the fused
+  result.
+- Treat cleanup as part of fusion completion: if remote inspection created local
+  install artifacts, remove them unless the user asked to keep them.
 - If the result still reads like several skills pasted together, refactor again
   until it has one voice and one workflow.
 - If two sources disagree, prefer:
