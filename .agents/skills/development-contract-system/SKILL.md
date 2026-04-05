@@ -11,7 +11,10 @@ notes.
 
 This skill is self-contained on purpose so it can be moved into another repo or
 skill collection without depending on the smaller contract skills from this
-frame.
+frame at runtime.
+When the target repo already uses local skills, also generate a thin repo-local
+process overlay that applies `development-contract-process` against the repo's
+concrete policy path and helper commands.
 
 ## What this skill builds
 
@@ -25,6 +28,8 @@ A complete repository-local contract system with these parts:
 - a lifecycle transition helper script
 - direct shell tests for the checker and lifecycle helper
 - repo docs that explain how maintainers should use the system
+- optionally, a repo-local process overlay skill that points at the concrete
+  policy file, checker command, helper command, and validation profiles
 
 Recommended default layout:
 
@@ -82,8 +87,9 @@ Implement in this order to avoid drift:
 5. Add lifecycle example records or seed records.
 6. Add the lifecycle transition helper.
 7. Add shell tests for the checker and helper.
-8. Update README, AGENTS-style docs, and release/hygiene docs.
-9. Run the checker and hygiene lanes and fix drift.
+8. If the repo uses local skills, add a thin repo-local process overlay that applies the portable process skill to the concrete repo policy.
+9. Update README, AGENTS-style docs, and release/hygiene docs.
+10. Run the checker and hygiene lanes and fix drift.
 
 ## Phase 1: Ground in the repo
 
@@ -119,6 +125,8 @@ The policy file should declare:
 - allowed lifecycle values
 - allowed uncertainty/cost values
 - allowed evidence statuses
+- allowed yes/no values when evidence entries track impact
+- allowed implementation/verification status values when ownership notes are enforced
 - evidence lane names
 - checker command
 - named validation profiles
@@ -221,6 +229,8 @@ The `superseded` example must point to a real replacement record.
 
 These examples make the workflow browseable immediately and help humans
 understand the intended shape without reading the template first.
+If the repo already has real records ready to migrate, real records are better
+than synthetic examples.
 
 ## Phase 6: Add the lifecycle transition helper
 
@@ -276,7 +286,21 @@ Lifecycle helper tests should cover:
 
 Prefer shell tests when the checker/helper are shell scripts.
 
-## Phase 8: Update docs
+## Phase 8: Add a repo-local process overlay when the repo uses skills
+
+If the target repository keeps project-local skills, generate a thin overlay
+that:
+
+- names the concrete policy file path
+- tells the agent to apply `development-contract-process`
+- names the checker command and lifecycle helper command
+- points at the repo policy's validation profiles
+- avoids restating schema details already enforced by policy and checker
+
+Do not generate this overlay when the repo does not use local skills. The repo
+must remain usable for humans and scripts without any skill dependency.
+
+## Phase 9: Update docs
 
 Update the repo docs so a human maintainer can use the system without the skill:
 
@@ -315,6 +339,8 @@ Also document the lifecycle helper command explicitly.
 - Keep lifecycle visibility obvious from the directory tree.
 - Seed each lifecycle folder with an example record unless the repo already has
   real records.
+- When the repo uses local skills, keep the repo-local process overlay thin and aligned
+  with the policy, checker, template, and docs.
 - If the repo has a release checklist, point it at the checker and lifecycle
   docs.
 
@@ -327,6 +353,8 @@ The system is complete when:
 - the checker enforces lifecycle and evidence rules
 - the helper script performs lifecycle transitions deterministically
 - direct tests exist for checker and helper
+- if the repo uses local skills, the repo-local process overlay points at the concrete
+  policy/checker/helper without duplicating schema literals
 - repo docs explain the lifecycle model and helper commands
 - the repo's hygiene or validation path includes the checker
 

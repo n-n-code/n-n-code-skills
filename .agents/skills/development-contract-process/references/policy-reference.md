@@ -11,6 +11,9 @@ Use a small repo-local policy file as the source of truth for contract enforceme
 - required section headings
 - allowed lifecycle values
 - allowed uncertainty/cost values
+- allowed yes/no values when evidence lines encode impact
+- allowed implementation/verification status values when ownership lanes are enforced
+- allowed evidence statuses
 - evidence lane names
 - checker command
 
@@ -19,10 +22,11 @@ Prefer a repo-neutral path such as `config/change-contract-policy.sh`, when the 
 ## Recommended additions
 
 - named validation profiles such as `docs`, `code`, and `release`
+- comments that explain the repo's substantive surface and why a path is included
 - repo-specific examples for install or smoke-test commands
-- comments that explain why a path or lane is part of the contract
 - a release-runner example kept as a skill reference, while the runnable repo copy lives under `scripts/`
 - a repo-owned lifecycle helper when records live in state-specific subdirectories
+- a policy variable for the policy file path itself when the repo wants wrappers to export it explicitly
 
 ## Portability rules
 
@@ -32,3 +36,4 @@ Prefer a repo-neutral path such as `config/change-contract-policy.sh`, when the 
 - keep template and docs aligned with policy names
 - keep lifecycle folder rules and any transition helper aligned with the checker
 - prefer extending policy over cloning the core skill
+- keep examples honest about ecosystem scope; if an example is CMake- or language-specific, say so directly
