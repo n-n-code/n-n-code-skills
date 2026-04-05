@@ -24,6 +24,7 @@ This repo uses a small role vocabulary to keep overlapping skills understandable
 - **Principle skill** — portable, unconditional engineering guidance for a language or discipline.
 - **Baseline overlay** — the thin default overlay for routine work in a domain.
 - **Canonical overlay** — the stronger overlay for the same domain when the task is more demanding; it should subsume the baseline's core expectations rather than drift into a separate job.
+- **Companion overlay** — a narrowly scoped overlay that adds an optional workflow on top of a baseline overlay without replacing it.
 - **Template overlay** — a pattern for repo-local adaptation rather than the default skill to load directly in this repo.
 - **Process overlay** — workflow or enforcement guidance that composes with implementation skills.
 - **System skill** — a build/create/install skill that leaves behind a repo-owned system rather than only guiding day-to-day execution.
@@ -38,7 +39,8 @@ The repository currently contains these skills:
 
 - `agent-skill-generator` — create or revise reusable agent skills from a problem statement, workflow, or existing skill folder
 - `agents-md-generator` — create or revise repository `AGENTS.md` files from repo inspection and existing docs
-- `documenter` — documentation guidance for README files, API docs, code comments, release docs, and AI-friendly project docs
+- `documenter` — baseline documentation overlay for substantial documentation authoring or restructuring, including README files, specs, ADRs, tutorials, how-to guides, reference docs, API docs, code comments, changelogs, and agent-facing docs
+- `documenter-coauthoring` — companion overlay for multi-round collaborative drafting of large specs, proposals, decision docs, and similar documents
 
 ### Principle Skills
 
@@ -60,6 +62,11 @@ UI overlay guidance:
 
 - Start with `ui-guidance` for ordinary UI changes that mostly need repo-native consistency and basic UI hygiene.
 - Prefer `ui-design-guidance` when the task needs stronger design direction, more frontend polish, or explicit UX review across accessibility, interaction, layout, forms, navigation, or data display.
+
+Documentation overlay guidance:
+
+- Start with `documenter` for ordinary documentation authoring, restructuring, and validation work.
+- Add `documenter-coauthoring` when the task needs explicit context gathering, outline approval, section-by-section iteration, and reader-testing.
 
 ### Process And Workflow Skills
 

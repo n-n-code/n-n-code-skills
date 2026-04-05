@@ -37,6 +37,8 @@ Role vocabulary used in this repo:
 
 - **baseline overlay**: thin default overlay for routine work in a domain
 - **canonical overlay**: stronger overlay for harder cases in the same domain
+- **companion overlay**: optional workflow-focused overlay that composes with a
+  baseline overlay for the same job without replacing it
 - **template overlay**: pattern for repo-local adaptation rather than the main
   overlay to load here
 - **process overlay**: enforcement or workflow guidance that composes with
@@ -45,6 +47,9 @@ Role vocabulary used in this repo:
 
 When a skill family has both baseline and canonical overlays, keep that
 relationship explicit in the docs instead of letting two near-duplicates drift.
+When a skill family has a companion overlay, keep the baseline as the default
+and describe clearly when the companion should be added. Example:
+`documenter` + `documenter-coauthoring`.
 
 ## Working Rules
 
