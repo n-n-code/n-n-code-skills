@@ -5,7 +5,7 @@ description: Overlay for app-owned versus vendored dependency boundaries. Portab
 
 # Project Vendor Boundary
 
-Read `AGENTS.md` first. This is a composable overlay, not a standalone workflow.
+This is a composable overlay, not a standalone workflow.
 Use alongside the repo's implementation skill when work touches vendored
 dependencies or their integration boundary.
 

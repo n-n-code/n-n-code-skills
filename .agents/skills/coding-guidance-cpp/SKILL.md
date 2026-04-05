@@ -5,7 +5,7 @@ description: C++ implementation and review skill. Use when writing, modifying, o
 
 # C++ Coding Guidance
 
-Read `AGENTS.md` first. This skill adds C++ implementation and review guidance.
+This skill adds C++ implementation and review guidance.
 
 ## Adjacent Skills
 

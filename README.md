@@ -32,6 +32,7 @@ The repository currently contains these skills:
 ### Overlay Skills
 
 - `backend-guidance` — overlay for backend and server-side networked code such as HTTP handlers, gRPC services, and message consumers
+- `frame-development-contract` — repo-local overlay for applying the development-contract workflow with this repo's concrete policy, plan directory, and validation profiles
 - `project-config-and-tests` — overlay for config contracts, defaults, path helpers, and deterministic test coverage
 - `project-core-dev` — overlay for day-to-day feature work and bug fixes in repo-owned code
 - `project-platform-diagnose` — overlay for environment-sensitive diagnosis such as startup issues, install problems, and runtime smoke checks
@@ -41,8 +42,10 @@ The repository currently contains these skills:
 
 ### Workflow Skills
 
+- `development-contract-core` — portable workflow for repos that require tracked change contracts, verifier evidence, and smallest-proof validation
 - `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
 - `dream-thinking` — reflective sleep-and-dream heuristic for learning from recent work
+- `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
 - `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `thinking` — planning and design guidance for quick-to-medium structured problem solving

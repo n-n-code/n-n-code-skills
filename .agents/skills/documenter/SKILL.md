@@ -5,7 +5,7 @@ description: Documentation skill for README, API docs, code comments, release do
 
 # Documenter
 
-Read `AGENTS.md` first. This skill adds documentation-specific guidance.
+This skill adds documentation-specific guidance.
 
 ## Priorities
 
@@ -39,4 +39,4 @@ Read `AGENTS.md` first. This skill adds documentation-specific guidance.
 
 - keep checklists actionable
 - prefer concise tables and commands over long prose where possible
-- keep agent-facing docs aligned with `AGENTS.md` and local skills
+- keep agent-facing docs aligned with repo guidance and local skills

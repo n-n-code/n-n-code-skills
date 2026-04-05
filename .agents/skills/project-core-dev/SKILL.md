@@ -5,7 +5,7 @@ description: Overlay for day-to-day feature work and bug fixes in repo-owned cod
 
 # Project Core Dev
 
-Read `AGENTS.md` first. This is a composable overlay, not a standalone workflow.
+This is a composable overlay, not a standalone workflow.
 Use alongside the repo's principle skill (e.g. **coding-guidance-cpp**) for
 normal feature work and bug fixes in repo-owned code.
 

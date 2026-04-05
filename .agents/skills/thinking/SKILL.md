@@ -5,8 +5,6 @@ description: Planning and design skill. Merges convergent planning, focused inqu
 
 # Thinking
 
-If the repo has an `AGENTS.md`, read it first for repo conventions.
-
 Adjacent skills: **brainstorming** (divergent generation) → **thinking** (convergent planning) → **recursive-thinking** (adversarial stress-testing) → **dream-thinking** (retrospective learning).
 
 Use **thinking** when the main need is to converge on a practical plan.

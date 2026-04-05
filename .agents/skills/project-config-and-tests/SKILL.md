@@ -5,7 +5,7 @@ description: Overlay for config contracts, defaults, path helpers, and determini
 
 # Project Config And Tests
 
-Read `AGENTS.md` first. This is a composable overlay, not a standalone workflow.
+This is a composable overlay, not a standalone workflow.
 Use alongside the repo's principle skill (e.g. **coding-guidance-cpp**) when the
 main task is config behavior or test coverage.
 

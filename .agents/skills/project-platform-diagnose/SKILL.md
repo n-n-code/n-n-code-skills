@@ -5,7 +5,7 @@ description: Overlay for environment-sensitive diagnosis — service startup, in
 
 # Project Platform Diagnose
 
-Read `AGENTS.md` first. This is a diagnostic overlay, not a standalone workflow.
+This is a diagnostic overlay, not a standalone workflow.
 Use alongside the repo's implementation skill when debugging environment-sensitive
 issues.
 
