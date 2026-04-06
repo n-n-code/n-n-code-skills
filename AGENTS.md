@@ -4,7 +4,7 @@
 
 This repository stores reusable agent skills. Most work should be limited to root documentation and folders under `.agents/skills/`.
 
-The root currently contains `README.md`, `AGENTS.md`, `LICENSE`, and `skills-lock.json` in addition to `.agents/skills/`.
+The root currently contains `README.md`, `AGENTS.md` and `LICENSE` in addition to `.agents/skills/`.
 
 ## Structure
 

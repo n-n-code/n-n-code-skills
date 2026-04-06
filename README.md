@@ -10,7 +10,6 @@ The current repository is intentionally small at the root:
 
 - `README.md` and `AGENTS.md` document the repo and its working rules
 - `.agents/skills/` contains the published skills
-- `skills-lock.json` tracks installed skill metadata
 - `LICENSE` covers the repository contents
 
 ## Repository Layout
