@@ -4,6 +4,8 @@
 
 This repository stores reusable agent skills. Most work should be limited to root documentation and folders under `.agents/skills/`.
 
+The root currently contains `README.md`, `AGENTS.md` and `LICENSE` in addition to `.agents/skills/`.
+
 ## Structure
 
 - Skills live in `.agents/skills/<skill-name>/`
@@ -70,6 +72,7 @@ and describe clearly when the companion should be added. Example:
 - Keep instructions concise, specific, and grounded in files that actually exist
 - Use the repo's role vocabulary consistently when naming or describing skills
 - Update only the skill folder and root docs relevant to the task
+- Treat `README.md` and `AGENTS.md` as durable repo docs; do not add process or automation claims that the repository does not implement
 - Prefer small, targeted edits over broad repo rewrites
 
 ## Validation
@@ -81,6 +84,7 @@ Before finishing, verify:
 - new or edited skills still live under `.agents/skills/`
 - each skill folder still has `SKILL.md`
 - root docs do not claim nonexistent commands or automation
+- root docs still match the current root files and published skill inventory
 - examples and references point to real files
 
 ## Safety
