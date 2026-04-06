@@ -14,6 +14,8 @@ This skill provides portable Python engineering principles. Compose with:
 - **Workflow:** **thinking** (planning), **recursive-thinking** (stress-testing),
   **security** (threat modeling)
 - **Domain overlays:** **backend-guidance** (server-side code),
+  **backend-systems-guidance** (stronger backend architecture, reliability, and
+  trust-boundary work),
   **ui-guidance** (graphical UI/web frontend),
   **project-core-dev** (repo-specific build/test commands)
 

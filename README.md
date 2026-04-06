@@ -6,6 +6,13 @@ Storage for reusable agent skills.
 
 This repository keeps reusable agent skills in a simple folder-based layout under `.agents/skills/`. Use one principle skill when the work is language- or discipline-specific, add the overlays that match the domain, and add a workflow skill only when the task clearly needs that mode.
 
+The current repository is intentionally small at the root:
+
+- `README.md` and `AGENTS.md` document the repo and its working rules
+- `.agents/skills/` contains the published skills
+- `skills-lock.json` tracks installed skill metadata
+- `LICENSE` covers the repository contents
+
 ## Repository Layout
 
 ```text
@@ -18,7 +25,7 @@ This repository keeps reusable agent skills in a simple folder-based layout unde
       assets/       # optional
 ```
 
-`SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as templates, references, scripts, or assets when the skill needs them.
+`SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
 
 ## Skill Roles
 
@@ -52,7 +59,7 @@ Examples:
 
 ## Skill Families
 
-The repository currently contains 25 skills grouped into these families.
+The repository currently contains 26 skills grouped into these families.
 
 ### Skill Authoring And Documentation
 
@@ -71,14 +78,20 @@ Defaults:
 - `coding-guidance-cpp` — portable C++ implementation and review guidance for feature work, bug fixes, refactors, and code review
 - `coding-guidance-python` — portable Python implementation and review guidance for feature work, bug fixes, refactors, and code review
 - `coding-guidance-bash` — portable Bash implementation and review guidance for automation scripts, repo tooling, refactors, and code review
+- `coding-guidance-qt` — portable Qt C++ QWidget desktop implementation and review guidance for widgets, models, signals and slots, layout-heavy UI, Qt5/Qt6 CMake work, and code review
 
 Python skill note:
 
 - `coding-guidance-python` includes bundled references under `.agents/skills/coding-guidance-python/references/` for packaging/layout and service-boundary concerns so the main skill stays focused on core Python engineering guidance.
 
+Qt skill default:
+
+- Use `coding-guidance-qt` as the default principle skill for Qt C++ QWidget desktop work, especially when QWidget architecture, QObject lifetime, signals and slots, layouts, or GUI-thread behavior are part of the job.
+
 ### Implementation And Project Overlays
 
-- `backend-guidance` — overlay for backend and server-side networked code such as HTTP handlers, gRPC services, and message consumers
+- `backend-guidance` — thin baseline overlay for backend and server-side networked code such as HTTP handlers, gRPC services, and message consumers
+- `backend-systems-guidance` — canonical strong backend overlay for non-trivial service boundaries, repositories, queues, reliability, trust-boundary hardening, and backend review that needs stronger testing discipline
 - `development-contract-process` — process overlay for repos that require tracked change contracts, verifier evidence, and smallest-proof validation
 - `development-contract-repo-overlay-template` — template for the thin repo-local overlay a target repository should have after adopting the development-contract system
 - `project-config-and-tests` — overlay for config contracts, defaults, path helpers, and deterministic test coverage
@@ -91,6 +104,8 @@ Python skill note:
 
 Defaults:
 
+- Start with `backend-guidance` for ordinary backend changes that mostly need boundary hygiene and thin handlers.
+- Prefer `backend-systems-guidance` when the task includes multi-layer backend work, repositories or transactions, auth or trust-boundary logic, queue or webhook processing, or backend review that needs explicit testing and reliability checks.
 - Start with `ui-guidance` for ordinary UI changes that mostly need repo-native consistency and basic UI hygiene.
 - Prefer `ui-design-guidance` when the task needs stronger design direction, more frontend polish, or explicit UX review across accessibility, interaction, layout, forms, navigation, or data display.
 
@@ -112,7 +127,7 @@ Defaults:
 - `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
 - `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
 
-This repository keeps its authoritative skill inventory in `.agents/skills/`. Update the family sections above when adding or changing a published skill.
+This repository currently contains 26 published skills under `.agents/skills/`, and every published skill folder has a `SKILL.md`. Some skills also include `references/` directories for bundled supporting material. Keep the family sections above aligned with that live inventory whenever a skill is added, removed, or retitled.
 
 ## Adding a Skill
 
@@ -133,7 +148,7 @@ This repository keeps its authoritative skill inventory in `.agents/skills/`. Up
 
 ## Validation
 
-This repository does not currently have a build or test pipeline. Validation is structural:
+This repository does not currently have a build, test, or lint pipeline. Validation is structural:
 
 - every skill lives under `.agents/skills/`
 - every skill has a `SKILL.md`
