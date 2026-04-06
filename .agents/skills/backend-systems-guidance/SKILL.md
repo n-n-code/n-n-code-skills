@@ -21,8 +21,6 @@ reliability checks.
 
 Use the bundled references only when needed:
 
-- [references/fusion-notes.md](references/fusion-notes.md) for why this skill is
-  narrower than the source set it came from
 - [references/trigger-evals.md](references/trigger-evals.md) for lightweight
   prompt checks when revising the trigger or scope
 

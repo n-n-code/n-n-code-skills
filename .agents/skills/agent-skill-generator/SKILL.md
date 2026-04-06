@@ -243,8 +243,6 @@ The finished skill should:
 
 Use `references/skill-design-checklist.md` before finalizing.
 
-For this skill's own second-pass fusion notes, see [references/fusion-notes.md](references/fusion-notes.md).
-
 ## Examples
 
 ### Example: new engineering skill

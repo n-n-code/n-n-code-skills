@@ -51,10 +51,6 @@ Documentation workflow for repo docs, technical writing, and inline API comments
 Load [references/doc-templates.md](references/doc-templates.md) when the task
 needs a compact starting structure for README sections, ADRs, endpoint docs,
 public API comments, or changelog entries.
-
-Load [references/fusion-notes.md](references/fusion-notes.md) when revising this
-skill family so future edits preserve its baseline-overlay boundary.
-
 ## Document Type Rules
 
 Use Diataxis when the request is general documentation rather than a repo
