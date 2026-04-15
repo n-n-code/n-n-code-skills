@@ -55,10 +55,11 @@ Examples:
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
 - security review of auth flows: `security` + `security-identity-access`
 - large doc rewrite with collaboration: `documenter` + `documenter-coauthoring`
+- test strategy or validation design: relevant skill set + `tester-mindset`
 
 ## Skill Families
 
-The repository currently contains 26 skills grouped into these families.
+The repository currently contains 27 skills grouped into these families.
 
 ### Skill Authoring And Documentation
 
@@ -114,6 +115,7 @@ Defaults:
 - `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
+- `tester-mindset` — testing mindset workflow for designing meaningful tests, validation strategy, acceptance criteria, edge cases, experiments, and probes
 - `thinking` — planning and design guidance for quick-to-medium structured problem solving
 
 Defaults:
@@ -126,7 +128,7 @@ Defaults:
 - `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
 - `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
 
-This repository currently contains 26 published skills under `.agents/skills/`, and every published skill folder has a `SKILL.md`. Some skills also include `references/` directories for bundled supporting material. Keep the family sections above aligned with that live inventory whenever a skill is added, removed, or retitled.
+This repository currently contains 27 published skills under `.agents/skills/`, and every published skill folder has a `SKILL.md`. Some skills also include `references/` directories for bundled supporting material. Keep the family sections above aligned with that live inventory whenever a skill is added, removed, or retitled.
 
 ## Adding a Skill
 
