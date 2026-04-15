@@ -1,12 +1,11 @@
 ---
 name: tester-mindset
-description: >
-  Testing mindset skill for context-driven test strategy, exploratory testing,
-  validation design, acceptance criteria, oracles, weak-test detection, edge
-  cases, heuristics, checklists, and evidence review for code, products, plans,
-  or claims. Use when the user asks what to test, how to test, whether evidence
-  is enough, or to bring a tester mindset. Do not use for merely running an
-  existing test command.
+description: Testing mindset skill for context-driven test strategy, exploratory
+  testing, validation design, acceptance criteria, oracles, weak-test detection,
+  edge cases, heuristics, checklists, and evidence review for code, products,
+  plans, or claims. Use when the user asks what to test, how to test, whether
+  evidence is enough, or to bring a tester mindset. Do not use for merely running
+  an existing test command.
 ---
 
 # Tester Mindset
