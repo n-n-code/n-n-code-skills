@@ -44,8 +44,8 @@ Examples:
 - security review of auth flows: `security` + `security-identity-access`
 
 Workflow skills (**thinking**, **recursive-thinking**, **dream-thinking**,
-**security**) are orthogonal — they change *how* you work, not *what domain or
-process rules* apply. They compose with either tier.
+**tester-mindset**, **security**) are orthogonal — they change *how* you work,
+not *what domain or process rules* apply. They compose with either tier.
 
 Role vocabulary used in this repo:
 
