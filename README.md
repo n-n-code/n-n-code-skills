@@ -6,7 +6,7 @@ Storage for reusable agent skills.
 
 This repository keeps reusable agent skills in a simple folder-based layout under `.agents/skills/`. Use one principle skill when the work is language- or discipline-specific, add the overlays that match the domain, and add a workflow skill only when the task clearly needs that mode.
 
-The current repository is intentionally small at the root:
+The published repository is intentionally small at the root:
 
 - `README.md` and `AGENTS.md` document the repo and its working rules
 - `.agents/skills/` contains the published skills
@@ -53,13 +53,19 @@ Examples:
 - routine Python feature work: `coding-guidance-python` + `project-core-dev`
 - backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
+- Go tests with stretchr/testify: `go-testing-with-testify`; add
+  `tester-mindset` for claim or edge-case framing, plus `backend-guidance` or
+  `backend-systems-guidance` when the seam is a service boundary
+- Playwright setup and browser tests: `setup-playwright`, then
+  `playwright-testing` + `tester-mindset` when generating or reviewing cases
+  in an existing harness
 - security review of auth flows: `security` + `security-identity-access`
 - large doc rewrite with collaboration: `documenter` + `documenter-coauthoring`
 - test strategy or validation design: relevant skill set + `tester-mindset`
 
 ## Skill Families
 
-The repository currently contains 27 skills grouped into these families.
+The repository's published skills are grouped into these families.
 
 ### Skill Authoring And Documentation
 
@@ -112,6 +118,8 @@ Defaults:
 ### Workflow Skills
 
 - `dream-thinking` — reflective sleep-and-dream heuristic for learning from recent work
+- `go-testing-with-testify` — workflow for writing, reviewing, and hardening Go tests built on the standard `testing` package plus `stretchr/testify`, including `assert`, `require`, `mock`, and `suite`
+- `playwright-testing` — workflow for generating, debugging, reviewing, and hardening Playwright E2E specs in an existing harness, including `playwright-cli` exploration and flake triage
 - `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
@@ -120,15 +128,22 @@ Defaults:
 
 Defaults:
 
+- Use `go-testing-with-testify` when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis; add backend overlays only when the seam is actually a service boundary.
 - Start with `security` when the task is explicitly security-focused or the change is high-risk.
 - Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
+- Use `playwright-testing` when a Playwright setup exists and the job is to design, generate, harden, or review Playwright browser tests.
 
 ### System Skills
 
 - `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
 - `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
+- `setup-playwright` — set up or repair a repo-owned Playwright harness across Node, Python, .NET, or Java test stacks, including config, browser installation, auth plumbing, and a first smoke test
 
-This repository currently contains 27 published skills under `.agents/skills/`, and every published skill folder has a `SKILL.md`. Some skills also include `references/` directories for bundled supporting material. Keep the family sections above aligned with that live inventory whenever a skill is added, removed, or retitled.
+Defaults:
+
+- Use `setup-playwright` when Playwright is absent, broken, or needs repo-level harness changes before test generation begins.
+
+Published skills live under `.agents/skills/`, and every published skill folder has a `SKILL.md`. Some skills also include `references/` directories for bundled supporting material. Keep the family sections above aligned with that live inventory whenever a skill is added, removed, or retitled.
 
 ## Adding a Skill
 
