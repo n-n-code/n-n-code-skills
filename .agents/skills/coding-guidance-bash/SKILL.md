@@ -20,6 +20,8 @@ This skill provides portable Bash engineering principles. Compose with:
 
 - non-shell work
 - POSIX `sh` portability work where Bash-only features are not allowed
+  (adapt the guidance to the repo's POSIX-shell contract instead of importing
+  Bash-only defaults)
 - large data processing jobs that should realistically move to Python, awk, or
   another language with stronger structure
 

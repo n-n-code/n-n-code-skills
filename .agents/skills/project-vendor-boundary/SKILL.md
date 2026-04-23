@@ -24,5 +24,9 @@ skill directly), or release/packaging concerns (use **project-release-maintainer
 
 - prefer app-side integration changes before editing vendored code
 - treat vendored code as subtree/vendor content, not normal project code
-- keep notices, provenance, and install rules aligned with vendor changes
+- keep notices, provenance, upstream version/source, local patch rationale, and
+  install rules aligned with vendor changes
+- prefer adapter or wrapper changes in app-owned code before patching vendored
+  sources; patch vendor code only when the seam cannot reasonably absorb the
+  change
 - avoid unrelated churn inside vendor trees

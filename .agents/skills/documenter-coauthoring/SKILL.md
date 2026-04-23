@@ -46,3 +46,10 @@ when the task needs sustained collaboration instead of a direct draft/update.
 - important assumptions are stated explicitly
 - repeated or low-value text has been removed
 - a fresh reader can follow the document without hidden context
+
+## Examples
+
+- `Coauthor this architecture proposal with me section by section` -> use
+  `documenter` plus this companion, agree on an outline, then iterate.
+- `Update this README command because the flag changed` -> use `documenter`
+  alone; coauthoring would add process without value.

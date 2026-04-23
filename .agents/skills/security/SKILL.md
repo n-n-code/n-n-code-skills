@@ -115,3 +115,17 @@ When reviewing code for security:
 - make assumptions explicit
 - avoid generic checklist noise when the repo evidence does not support it
 - if the user asked for a report file, write concise Markdown with line references and a short executive summary
+
+## Review Report Shape
+
+For security reviews, keep each finding in this shape:
+
+- **Severity and confidence**
+- **Impacted asset or boundary**
+- **Attacker capability required**
+- **Evidence path** with concrete file and line references
+- **Impact**
+- **Fix direction** and any behavior tradeoff
+
+If no high-confidence vulnerabilities are found, state that directly and name
+the highest-value residual checks.

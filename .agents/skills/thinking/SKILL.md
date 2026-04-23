@@ -25,7 +25,7 @@ Everything else in this skill supports that loop.
 ## Switch Skills When
 
 - switch to **recursive-thinking** when a candidate recommendation, design, or plan already exists and the main job is to pressure-test it
-- switch to a dedicated brainstorming skill when the user wants sustained divergence, creative volume, or facilitated ideation without convergence pressure
+- switch to a divergent-generation mode when the user wants sustained idea volume or facilitated ideation without convergence pressure
 - switch to implementation or plan-writing once the main trade-off is settled and the remaining work is execution detail
 
 ## Default Stance
@@ -131,6 +131,9 @@ Thinking is sufficient when all three are true:
 ## Output Structure
 
 Scale to task size.
+
+These are optional output templates; use them when they make the answer
+clearer, not as mandatory scaffolding.
 
 **Small tasks** (clear issue, bounded change):
 

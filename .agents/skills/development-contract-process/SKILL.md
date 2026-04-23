@@ -10,6 +10,14 @@ Treat any separate repo guidance as secondary unless it contradicts policy; if i
 
 This is a process overlay, not a thinking aid. Pair it with the repo's implementation skill for the touched code and any repo-local contract overlay that names the actual policy path and helper commands.
 
+## Policy discovery
+
+If the repo-local overlay does not name a policy file, search for likely
+contract artifacts before guessing: `change-contract-policy`, `feature_records`,
+`check-change-contracts`, lifecycle helper scripts, and AGENTS/README language
+about substantive changes or verifier evidence. Once found, treat the policy
+file as source of truth.
+
 ## Use this skill when
 
 - work may trigger a tracked change contract

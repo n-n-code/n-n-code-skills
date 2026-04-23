@@ -1,6 +1,6 @@
 ---
 name: backend-systems-guidance
-description: Canonical overlay for server-side networked code that needs stronger architecture, testing, reliability, and security discipline. Use alongside the repo's implementation skill when implementing or reviewing backend services, APIs, middleware, queues, repositories, or backend refactors.
+description: Canonical overlay for non-trivial server-side networked code that needs multi-layer architecture, data-access, reliability, trust-boundary, or deeper testing discipline. Use alongside the repo's implementation skill for backend services, APIs, middleware, queues, repositories, transactions, auth-sensitive flows, or backend refactors; use `backend-guidance` for thin routine handler work.
 ---
 
 # Backend Systems Guidance

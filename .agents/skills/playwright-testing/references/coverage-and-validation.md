@@ -95,5 +95,6 @@ Boundary check:
 
 - If the harness exists and the user is asking about test behavior, flakiness,
   locators, or browser investigation, prefer `playwright-testing`.
-- If the harness is missing, broken, or the main work is config/install/auth
-  plumbing, prefer `setup-playwright`.
+- If the harness is missing, broken, or the main work is runner config,
+  browser install, CI shape, or reusable-auth plumbing, prefer
+  `setup-playwright`.

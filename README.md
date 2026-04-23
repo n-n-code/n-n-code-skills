@@ -10,6 +10,7 @@ The published repository is intentionally small at the root:
 
 - `README.md` and `AGENTS.md` document the repo and its working rules
 - `.agents/skills/` contains the published skills
+- `scripts/check-skills.sh` runs structural validation for the skill inventory
 - `LICENSE` covers the repository contents
 
 ## Repository Layout
@@ -22,6 +23,8 @@ The published repository is intentionally small at the root:
       references/   # optional
       scripts/      # optional
       assets/       # optional
+scripts/
+  check-skills.sh    # structural repository validation
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
@@ -51,6 +54,7 @@ Most tasks should compose skills in this order:
 Examples:
 
 - routine Python feature work: `coding-guidance-python` + `project-core-dev`
+- routine Go feature work: `coding-guidance-go` + `project-core-dev`
 - backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
 - Go tests with stretchr/testify: `go-testing-with-testify`; add
@@ -82,6 +86,7 @@ Defaults:
 ### Principle Skills
 
 - `coding-guidance-cpp` — portable C++ implementation and review guidance for feature work, bug fixes, refactors, and code review
+- `coding-guidance-go` — portable Go implementation and review guidance for feature work, bug fixes, refactors, and code review
 - `coding-guidance-python` — portable Python implementation and review guidance for feature work, bug fixes, refactors, and code review
 - `coding-guidance-bash` — portable Bash implementation and review guidance for automation scripts, repo tooling, refactors, and code review
 - `coding-guidance-qt` — portable Qt C++ QWidget desktop implementation and review guidance for widgets, models, signals and slots, layout-heavy UI, Qt5/Qt6 CMake work, and code review
@@ -93,6 +98,10 @@ Python skill note:
 Qt skill default:
 
 - Use `coding-guidance-qt` as the default principle skill for Qt C++ QWidget desktop work, especially when QWidget architecture, QObject lifetime, signals and slots, layouts, or GUI-thread behavior are part of the job.
+
+Go skill note:
+
+- Use `coding-guidance-go` for Go implementation and review. Add `go-testing-with-testify` only when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis.
 
 ### Implementation And Project Overlays
 
@@ -128,7 +137,7 @@ Defaults:
 
 Defaults:
 
-- Use `go-testing-with-testify` when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis; add backend overlays only when the seam is actually a service boundary.
+- Use `go-testing-with-testify` when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis; start with `coding-guidance-go` for non-test Go implementation and add backend overlays only when the seam is actually a service boundary.
 - Start with `security` when the task is explicitly security-focused or the change is high-risk.
 - Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
 - Use `playwright-testing` when a Playwright setup exists and the job is to design, generate, harden, or review Playwright browser tests.
@@ -164,11 +173,19 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 
 ## Validation
 
-This repository does not currently have a build, test, or lint pipeline. Validation is structural:
+This repository does not currently have an application build, test, or lint
+pipeline. It does have a structural skill-inventory checker:
+
+```bash
+bash scripts/check-skills.sh
+```
+
+Validation is structural:
 
 - every skill lives under `.agents/skills/`
 - every skill has a `SKILL.md`
 - examples and references point to files that exist
+- likely skill-name references in Markdown point to published local skills
 - documentation claims match the repository contents
 
 ## License

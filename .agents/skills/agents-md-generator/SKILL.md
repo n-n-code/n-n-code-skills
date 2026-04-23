@@ -117,6 +117,9 @@ Before finalizing:
 - remove background explanations the agent does not need
 - avoid restating information that is better discovered from the repo
 - keep the root file small enough that it reads like an execution guide, not a handbook
+- compare the final root-file inventory against `git ls-files` and the current
+  root directory so durable docs do not claim missing files or omit published
+  tracked files
 
 If a topic is useful but bulky, move the detail to existing repo docs and point to them from `AGENTS.md` instead of inflating the file.
 

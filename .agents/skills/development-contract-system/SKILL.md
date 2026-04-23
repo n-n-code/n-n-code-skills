@@ -48,6 +48,10 @@ scripts/test-change-contracts.sh
 scripts/test-feature-record-lifecycle.sh
 ```
 
+Detailed policy fields, feature-record template sections, checker behavior,
+helper behavior, test cases, and docs examples live in
+[references/contract-system-implementation-details.md](references/contract-system-implementation-details.md).
+
 ## Use this skill when
 
 - a repo needs tracked change contracts for substantive work
@@ -106,185 +110,27 @@ Before adding anything:
 Do not guess substantive paths if the repo already has clear boundaries in docs,
 workflows, or layout.
 
-## Phase 2: Create the policy file
+## Phases 2-7: Build the contract mechanics
 
-Create one repo-owned policy file in a neutral location such as:
+Use
+[references/contract-system-implementation-details.md](references/contract-system-implementation-details.md)
+for the detailed policy surface, feature-record tree, template sections,
+checker checks, lifecycle helper behavior, seed-record guidance, and direct
+test cases.
 
-- `config/change-contract-policy.sh`
-- `repo_meta/change-contract-policy.sh`
+Keep these invariants in the main workflow:
 
-Do not place it under `.agents/` if repo scripts, CI, or humans depend on it.
-
-The policy file should declare:
-
-- plan directory
-- template basename
-- substantive path patterns
-- substantive top-level files
-- required section headings
-- allowed lifecycle values
-- allowed uncertainty/cost values
-- allowed evidence statuses
-- allowed yes/no values when evidence entries track impact
-- allowed implementation/verification status values when ownership notes are enforced
-- evidence lane names
-- checker command
-- named validation profiles
-
-Good default values:
-
-- plan directory: `feature_records`
-- template basename: `TEMPLATE.md`
-- lifecycle values: `planned`, `active`, `superseded`, `done`
-- evidence lanes: `Tests`, `Docs`, `Analyzers`, `Install validation`,
-  `Release hygiene`
-
-## Phase 3: Create `feature_records/`
-
-Create this structure:
-
-```text
-feature_records/
-  README.md
-  TEMPLATE.md
-  planned/
-  active/
-  done/
-  superseded/
-  .gitignore
-```
-
-The root `README.md` should explain:
-
-- what the directory is for
-- what each lifecycle folder means
-- that folder and lifecycle state must match
-- that `superseded/` records must set `Superseded by`
-- how to use the lifecycle transition helper
-
-The template should require sections similar to:
-
-- `Motivation`
-- `Proposed Behavior`
-- `Lifecycle`
-- `Contract`
-- `Uncertainty And Cost`
-- `Responsibilities`
-- `Evidence Matrix`
-- `Implementation Notes`
-- `Verification Notes`
-- `Waivers`
-- `Files to Add/Modify`
-- `Testing Strategy`
-
-The template should say that records belong in the lifecycle folder matching
-their `State`.
-
-The `.gitignore` should:
-
-- ignore everything by default
-- keep `.gitignore`, `README.md`, and `TEMPLATE.md`
-- keep lifecycle directories
-- keep Markdown files inside lifecycle directories
-
-## Phase 4: Implement the checker
-
-Create a repo-owned checker script, typically
-`scripts/check-change-contracts.sh`.
-
-The checker should:
-
-- load the policy file
-- detect changed files from:
-  - an explicit env var override
-  - a git diff range when available
-  - local modified/untracked files otherwise
-- decide whether a substantive repo-owned change occurred
-- fail if substantive changes exist without a non-template feature record update
-- scan feature records recursively under `feature_records/*/*.md`
-- ignore `feature_records/README.md` and `feature_records/TEMPLATE.md`
-- validate required sections
-- validate lifecycle fields
-- validate evidence lanes and allowed statuses
-- validate implementation owner versus responsibilities implementer
-- validate verification owner versus responsibilities verifier
-- validate self-validation and waiver rules
-- validate that the parent lifecycle directory matches the `Lifecycle` state
-- require `Superseded by` when the state is `superseded`
-
-Prefer a lightweight shell checker with `awk` if the repo already uses shell for
-workflow enforcement. If the repo is strongly standardized on another scripting
-language, it is acceptable to implement the checker in that language instead.
-
-## Phase 5: Add lifecycle examples
-
-Seed the system with at least one valid example record in each lifecycle folder:
-
-- one `planned`
-- one `active`
-- one `done`
-- one `superseded`
-
-The `superseded` example must point to a real replacement record.
-
-These examples make the workflow browseable immediately and help humans
-understand the intended shape without reading the template first.
-If the repo already has real records ready to migrate, real records are better
-than synthetic examples.
-
-## Phase 6: Add the lifecycle transition helper
-
-Create a repo-owned helper such as:
-
-- `scripts/set-feature-record-lifecycle.sh`
-
-It should:
-
-- accept `<record-path> <target-state>`
-- optionally accept `--repo-root`
-- require `--superseded-by <path>` for `superseded`
-- validate that the record exists
-- validate that it lives under the feature-records tree
-- reject the root `README.md` and `TEMPLATE.md`
-- update the `Lifecycle` `State`
-- update `Superseded by`
-- move the file into the correct lifecycle directory
-
-Good default transition usage:
-
-```bash
-bash scripts/set-feature-record-lifecycle.sh feature_records/planned/<record>.md active
-bash scripts/set-feature-record-lifecycle.sh feature_records/active/<record>.md done
-bash scripts/set-feature-record-lifecycle.sh \
-  --superseded-by feature_records/done/<replacement>.md \
-  feature_records/active/<record>.md superseded
-```
-
-## Phase 7: Add tests
-
-Add direct tests for both the checker and the lifecycle helper.
-
-Checker tests should cover:
-
-- valid record passes
-- missing required section fails
-- invalid uncertainty/status values fail
-- missing verifier fails
-- waived without rationale fails
-- superseded without pointer fails
-- mismatched lifecycle folder and `State` fails
-- substantive change without record update fails
-- policy override with a different plan directory still works
-
-Lifecycle helper tests should cover:
-
-- moving `planned -> active`
-- moving `active -> done`
-- moving `active -> superseded` with replacement
-- rejecting `superseded` without replacement
-- checker still passes after helper-driven transitions
-
-Prefer shell tests when the checker/helper are shell scripts.
+- put the policy in a neutral repo-owned path such as `config/`, not under
+  `.agents/`, when scripts, CI, or humans depend on it
+- make the policy the single source of truth for substantive paths, lifecycle
+  values, required sections, evidence lanes, checker command, and validation
+  profiles
+- keep feature records in lifecycle subdirectories whose names match each
+  record's `Lifecycle` `State`
+- make the checker validate both changed-path coverage and record structure
+- make the lifecycle helper update fields and move files deterministically
+- add direct tests for checker and helper behavior before calling the system
+  complete
 
 ## Phase 8: Add a repo-local process overlay when the repo uses skills
 
@@ -309,24 +155,9 @@ Update the repo docs so a human maintainer can use the system without the skill:
 - release checklist or hygiene docs
 - feature-records README
 
-The main README should include a readable lifecycle diagram, for example:
-
-```text
-                 start work                 complete + verify
-  +-----------+  ---------->  +----------+  ----------------->  +--------+
-  | planned/  |               | active/  |                     | done/  |
-  +-----------+               +----------+                     +--------+
-                                     |
-                                     | replace with newer record
-                                     v
-                               +---------------+
-                               | superseded/   |
-                               +---------------+
-
-  rule: records in `superseded/` must set `Superseded by` to the replacement record
-```
-
-Also document the lifecycle helper command explicitly.
+Use the lifecycle diagram example in the implementation-details reference when
+the README needs a concrete visual. Always document the lifecycle helper
+command explicitly.
 
 ## Decision rules
 
