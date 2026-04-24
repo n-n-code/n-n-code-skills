@@ -19,6 +19,8 @@ Documentation workflow for repo docs, technical writing, and inline API comments
 ## Not For
 
 - binary document manipulation such as `.docx`, `.pdf`, `.pptx`, or `.xlsx`
+- tiny typo, grammar, or copy edits that do not require document-type
+  decisions, repo-truth checks, or restructuring
 - regulatory document-control systems, compliance programs, or quality records
 - repo-specific doc-site pipelines unless the repo already contains them
 - intensive coauthoring sessions for large specs or proposals

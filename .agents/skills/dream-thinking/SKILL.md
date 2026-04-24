@@ -9,7 +9,9 @@ Turn fresh context into a short sleep → dream → wake cycle that produces cle
 
 Read recent context first. Ground every dream in real material from the active session and any prior dream logs the user explicitly provides.
 
-Adjacent skills: **brainstorming** (divergent generation) → **thinking** (convergent planning) → **recursive-thinking** (adversarial stress-testing) → **dream-thinking** (retrospective learning).
+Adjacent workflow modes: divergent generation → **thinking**
+(convergent planning) → **recursive-thinking** (adversarial stress-testing) →
+**dream-thinking** (retrospective learning).
 
 Use this only when there is fresh, meaningful material to reflect on and plain analysis is not already enough.
 If the task is first-pass planning or diagnosis, use **thinking** or **recursive-thinking** instead.

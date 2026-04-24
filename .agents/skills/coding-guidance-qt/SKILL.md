@@ -48,7 +48,10 @@ no single failure mode dominates yet.
 - non-Qt work
 - pure backend or library code written in C++ that does not use Qt types,
   eventing, object lifetime, or Qt build tooling
-- Qt Quick or QML-first work
+- Qt Quick or QML-first work; use only the QObject, threading, and build
+  guidance here when it genuinely applies, and rely on a QML/Qt Quick-specific
+  skill or repo guidance for declarative UI architecture, bindings, and scene
+  graph concerns
 - design-only work where no Qt API, object model, build, or code judgment is
   needed
 

@@ -35,14 +35,20 @@ Allowed source-specification levels:
   exact remote `owner/repo` plus skill name(s)
 - **package-specified remote source:** exact remote `owner/repo`, but the user has
   not yet pinned the skill name(s) inside that package
+- **bounded local-family source:** a named local skill family such as
+  `backend-*`, `ui-*`, or "the development-contract skills" where the user is
+  explicitly asking to fuse local skills from this repo and the family can be
+  resolved by inspecting local folders only
 
 Do not accept open-ended discovery beyond those bounds. If the user has not
-identified either a specific remote skill or a specific package to inspect,
-stop and ask for that missing scope.
+identified either a specific local skill/family, a specific remote skill, or a
+specific package to inspect, stop and ask for that missing scope.
 
 For each source, identify whether it is:
 
 - a local repo skill
+- a bounded local repo skill family that must be resolved to explicit local
+  skill names before fusion
 - an explicit `skills.sh` skill from a named owner/repo package
 - raw skill content provided inline
 
@@ -65,8 +71,10 @@ general package discovery or substitute a different package.
 1. Inspect the local repo first for relevant conventions, nearby skills, and any
    existing skill-generation guidance.
 2. Classify each source as local repo skill, remote `skills.sh` skill, or
-   inline content. Read local sources immediately. For remote sources, proceed
-   to step 3.
+   inline content. If the user named a bounded local family, inspect only
+   matching local folders, resolve the exact skill names, and report that
+   resolution before continuing. Read local sources immediately. For remote
+   sources, proceed to step 3.
 3. Acquire remote sources through this fallback chain. Stop at the first tier
    that succeeds for each source.
 

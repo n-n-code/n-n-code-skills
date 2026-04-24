@@ -4,13 +4,15 @@
 
 This repository stores reusable agent skills. Most work should be limited to root documentation and folders under `.agents/skills/`.
 
-The root currently contains `README.md`, `AGENTS.md` and `LICENSE` in addition to `.agents/skills/`.
+The root currently contains `README.md`, `AGENTS.md`, `LICENSE`, and
+`scripts/check-skills.sh` in addition to `.agents/skills/`.
 
 ## Structure
 
 - Skills live in `.agents/skills/<skill-name>/`
 - Each skill must include `SKILL.md`
 - Supporting files such as `references/`, `scripts/`, or templates are allowed when they directly serve the skill
+- Repository validation lives in `scripts/check-skills.sh`
 
 ## Skill Composition Model
 
@@ -39,6 +41,7 @@ Default composition model:
 Examples:
 
 - routine Python feature work: `coding-guidance-python` + `project-core-dev`
+- routine Go feature work: `coding-guidance-go` + `project-core-dev`
 - backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
 - security review of auth flows: `security` + `security-identity-access`
@@ -77,15 +80,23 @@ and describe clearly when the companion should be added. Example:
 
 ## Validation
 
-There is no repo-specific build, test, or lint workflow yet.
+There is no application build, test, or lint workflow. For repository
+structural validation, run:
+
+```bash
+bash scripts/check-skills.sh
+```
 
 Before finishing, verify:
 
 - new or edited skills still live under `.agents/skills/`
 - each skill folder still has `SKILL.md`
+- `bash scripts/check-skills.sh` passes when the change affects skill files,
+  references, root docs, or validation behavior
 - root docs do not claim nonexistent commands or automation
 - root docs still match the current root files and published skill inventory
 - examples and references point to real files
+- likely skill-name references in Markdown point to published local skills
 
 ## Safety
 

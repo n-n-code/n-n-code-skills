@@ -29,4 +29,11 @@ General feature work (use **project-core-dev**), vendored dependency changes
 - keep WHAT/HOW/WHY commentary current in repo-owned tests
 - add benchmarks for performance-sensitive helpers using the repo's benchmark
   framework when available
-- use the repo's coverage tooling to verify test coverage for new code
+- use the repo's coverage tooling to verify test coverage for new code when it
+  exists; otherwise state the manual or structural evidence used
+
+## Examples
+
+- config default changed but docs/examples still show the old value
+- path helper normalization needs deterministic tests across relative,
+  absolute, missing, and platform-specific paths

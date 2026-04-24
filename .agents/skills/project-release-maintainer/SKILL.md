@@ -7,7 +7,8 @@ description: Overlay for release-facing docs, install layout, workflows, license
 
 This is a composable overlay, not a standalone workflow.
 Use alongside the repo's implementation skill for publication-facing and
-packaging-sensitive changes.
+packaging-sensitive changes. Compose with `documenter` when the main artifact
+is durable release, install, or contributor documentation.
 
 ## When to use
 
@@ -27,3 +28,5 @@ implementation skill directly), vendored dependency work (use
 - validate temporary install trees when install behavior changes
 - run hygiene checks on publication-facing changes
 - keep docs small, accurate, and consistent with the shipped build
+- do not invent CI, packaging, signing, publishing, or release workflows that
+  the repo does not already contain or that the user did not explicitly request

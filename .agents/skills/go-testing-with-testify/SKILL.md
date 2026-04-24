@@ -51,12 +51,12 @@ digraph route {
     "Main artifact is strategy,\nedge-case discovery, or test planning\nwithout concrete test code?" [shape=diamond];
     "go-testing-with-testify" [shape=box];
     "tester-mindset" [shape=box];
-    "another repo skill set" [shape=box];
+    "coding-guidance-go or another repo skill set" [shape=box];
 
     "Main artifact is testify-based Go test code or test review?" -> "go-testing-with-testify" [label="yes"];
     "Main artifact is testify-based Go test code or test review?" -> "Main artifact is strategy,\nedge-case discovery, or test planning\nwithout concrete test code?" [label="no"];
     "Main artifact is strategy,\nedge-case discovery, or test planning\nwithout concrete test code?" -> "tester-mindset" [label="yes"];
-    "Main artifact is strategy,\nedge-case discovery, or test planning\nwithout concrete test code?" -> "another repo skill set" [label="no"];
+    "Main artifact is strategy,\nedge-case discovery, or test planning\nwithout concrete test code?" -> "coding-guidance-go or another repo skill set" [label="no"];
 }
 ```
 
@@ -64,6 +64,8 @@ digraph route {
 
 - **upstream strategy:** `tester-mindset` for claims, oracles, consequence
   framing, and stopping rules
+- **Go implementation:** `coding-guidance-go` for production Go code, package
+  design, errors, context, concurrency, and review
 - **service boundaries:** `backend-guidance` (baseline) or
   `backend-systems-guidance` (non-trivial boundaries, repositories, queues)
   for what to test at which seam
@@ -77,6 +79,8 @@ digraph route {
 Many Go testing tasks are just this skill plus `tester-mindset` when the claim
 or edge-case framing still needs work. Add a backend overlay only when the seam
 is actually a handler, repository, queue, or cross-service boundary.
+For non-test Go implementation or review, start with `coding-guidance-go` and
+add this skill only when testify-based tests are the main artifact.
 
 ## Reference Map
 
@@ -319,20 +323,10 @@ theater.
 
 ## Rationalization Table
 
-Capture pressure excuses; refuse them by name.
-
-| Excuse | Reality |
-| --- | --- |
-| "It's just a unit test, `assert.NotNil` is fine." | Schema-only assertions pass on empty structs. Assert the value. |
-| "Parallel is faster, let's add `t.Parallel()` everywhere." | Parallel amplifies shared-state bugs. Add it only after auditing globals, temp dirs, env vars, and time. |
-| "I'll use `time.Sleep(100ms)` just to get it green." | Sleeps are a flake factory. Use `assert.Eventually` or inject a clock. |
-| "Mocking is easier than setting up the real DB." | Mocks miss SQL dialect bugs, migrations, and transactions. Use `testcontainers` or a local Postgres/MySQL when the seam is a repository. |
-| "Pass on retry is good enough." | Retries normalize flake. Reproduce with `-count=100`; fix the race. |
-| "The test is brittle, let's remove the assertion." | Brittle assertions on stable behavior signal the test is wrong, not the claim. Tighten the oracle; don't weaken it. |
-| "`reflect.DeepEqual` is enough, we don't need testify." | Fine for tiny internal helpers; for public behavior, testify gives better diffs and the `ErrorIs/ErrorAs` family. |
-| "Let's assert on the log line that says 'user created'." | Logs rot and get reformatted. Assert on the stored record or returned value. |
-| "`t.Skip` the flaky one, we'll come back." | Naked skip hides signal. Require a linked issue and an expiry. |
-| "Coverage is 92%, we're good." | Coverage says what ran, not what was understood. Name the claims still unproven. |
+Pressure excuses belong in
+[references/pressure-tests.md](references/pressure-tests.md). Use that
+reference when revising this skill, reviewing a contentious test change, or
+checking whether a proposed shortcut weakens evidence.
 
 ## Output Shape
 

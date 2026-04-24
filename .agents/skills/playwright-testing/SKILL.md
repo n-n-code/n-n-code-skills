@@ -1,6 +1,6 @@
 ---
 name: playwright-testing
-description: Use when generating, debugging, reviewing, or hardening Playwright E2E specs in an existing harness — including flake triage, locator refinement with UI Mode or `codegen`, `playwright-cli` exploration, visual or responsive coverage, page-object, fixture, auth-reuse usage, or mock-boundary decisions. Use when a `playwright.config.*` already works. Not for first-time install, config repair, or setting up `auth.setup.ts` plumbing — route those to `setup-playwright`.
+description: Use when generating, debugging, reviewing, or hardening Playwright E2E specs in an existing working harness across Node, Python, .NET, or Java — including flake triage, locator refinement with UI Mode or `codegen`, `playwright-cli` exploration, visual or responsive coverage, page-object, fixture, auth-reuse usage, or mock-boundary decisions. Not for first-time install, config repair, browser installation, or reusable-auth plumbing — route those to `setup-playwright`.
 ---
 
 # Playwright Testing
@@ -19,6 +19,8 @@ thinking that decides which checks to build.
 ## When To Use
 
 - writing, reviewing, or hardening Playwright E2E specs in a working harness
+  for Node Playwright Test, Playwright Pytest, Playwright .NET, or Java
+  Playwright test projects
 - debugging flaky specs, brittle locators, or tests that only pass on retry
 - exploring a running app with `playwright-cli`, UI Mode, or `codegen`
 - adding responsive, visual, or accessibility coverage against existing config
@@ -26,9 +28,10 @@ thinking that decides which checks to build.
 
 ## Not For
 
-- first-time Playwright install, browser install, or `playwright.config.*`
-  authoring — route to `setup-playwright`
-- creating the `auth.setup.ts` + setup-project wiring — route to
+- first-time Playwright install, browser install, or runner config authoring
+  in any ecosystem — route to `setup-playwright`
+- creating runner-level reusable-auth setup such as `auth.setup.ts`,
+  setup-project wiring, or ecosystem equivalents — route to
   `setup-playwright` (using that wiring *in tests* belongs here)
 - test-strategy or edge-case discovery for a feature with no named claim —
   compose with `tester-mindset` first
@@ -37,13 +40,13 @@ thinking that decides which checks to build.
 
 ```dot
 digraph route {
-    "Playwright config exists?" [shape=diamond];
+    "Working Playwright harness exists?" [shape=diamond];
     "Main artifact is config,\nbrowser install, or auth plumbing?" [shape=diamond];
     "setup-playwright" [shape=box];
     "playwright-testing" [shape=box];
 
-    "Playwright config exists?" -> "setup-playwright" [label="no"];
-    "Playwright config exists?" -> "Main artifact is config,\nbrowser install, or auth plumbing?" [label="yes"];
+    "Working Playwright harness exists?" -> "setup-playwright" [label="no"];
+    "Working Playwright harness exists?" -> "Main artifact is config,\nbrowser install, or auth plumbing?" [label="yes"];
     "Main artifact is config,\nbrowser install, or auth plumbing?" -> "setup-playwright" [label="yes"];
     "Main artifact is config,\nbrowser install, or auth plumbing?" -> "playwright-testing" [label="no"];
 }
@@ -82,11 +85,12 @@ digraph route {
    side-project's — context drives how much evidence is enough. Keep E2E
    thin: protect critical journeys, push detail to unit, integration, or
    contract tests when they can prove it more cheaply.
-2. **Inspect the apparatus.** Read `playwright.config.*`, fixtures, page
-   objects, data helpers, auth setup, package scripts, CI hints, reporters,
-   and neighboring specs. Note `baseURL`, browser projects, retries,
-   `storageState`, `webServer`, output dirs, `testIdAttribute`, dependencies,
-   and trace/video policy.
+2. **Inspect the apparatus.** Read the runner config for the active ecosystem
+   (`playwright.config.*`, pytest config, .NET/Java test project settings),
+   fixtures, page objects, data helpers, auth setup, scripts, CI hints,
+   reporters, and neighboring specs. Note base URL, browser projects or
+   equivalent scopes, retries, reusable auth state, startup contract, output
+   dirs, test-id contract, dependencies, and trace/video policy.
 3. **Explore before coding.** When behavior is unknown, use `playwright-cli`
    against the running app. Snapshot before interacting so refs stay stable;
    re-snapshot after navigation. Scope large pages with `--depth` or a
@@ -286,19 +290,10 @@ Reject or rewrite tests with:
 
 ## Rationalization Table
 
-Common excuses and the reality they obscure:
-
-| Excuse | Reality |
-| --- | --- |
-| "Just add a 500ms `waitForTimeout` to unblock CI." | Fixed sleeps hide races; the next test author inherits the flake. Wait on a user-visible state change or an explicit signal. |
-| "The locator matches two elements — I'll use `.first()`." | `.first()` freezes an ambiguity into the test. Refine with `filter`, role, text, or an explicit test id. |
-| "It passes on the retry so it's fine." | Passing only on retry is a flaky result. Treat the first-attempt failure as the signal. |
-| "Logging in through the UI in every test is simpler." | Simpler to write, noisier to debug, and an expensive flake surface. Use setup project + `storageState` unless login UI is the claim. |
-| "Just mock the widget under test so we don't need the backend." | That's mocking the SUT. Mock external boundaries only; if the backend is the problem, fix the boundary or use the `request` fixture. |
-| "Raise the global timeout to 60s so nothing times out." | Global timeouts normalize slow failure modes. Raise on the affected test or step, and only for a named reason. |
-| "The trace is large, I'll skip opening it." | The trace is faster than guessing. Open it before weakening assertions. |
-| "I'll `test.skip()` this until the product team fixes it." | Skip without a linked issue rots. Use `test.fixme()` with a referenced bug, or `test.fail()` to keep executing the expected-failure path. |
-| "CI is different — the test is fine locally." | "Different" is a hypothesis. Walk the CI-vs-local triage list before calling it a CI-only issue. |
+Common excuses and expected responses live in
+[references/pressure-tests.md](references/pressure-tests.md). Load that
+reference when a Playwright shortcut is being rationalized or when revising the
+skill's trigger and quality rules.
 
 ## Visual QA
 

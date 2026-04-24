@@ -25,7 +25,7 @@ Start by identifying one of these modes:
 
 - `new skill`: create a skill from a rough problem or repeated workflow
 - `revise skill`: improve an existing skill folder in place
-- `audit skill`: inspect a skill for trigger quality, portability, and token waste before proposing edits
+- `audit skill`: inspect one or more skills for trigger quality, portability, and token waste before proposing edits
 - `validate skill`: pressure-test an existing skill with realistic prompts before changing it
 - `optimize trigger`: tighten the frontmatter description so the skill activates more reliably without over-triggering
 
@@ -35,7 +35,7 @@ Quick selector:
 |---|---|
 | build a skill from an idea or repeated workflow | `new skill` |
 | improve an existing skill in place | `revise skill` |
-| inspect a skill for drift, bloat, or weak triggers before editing | `audit skill` |
+| inspect skills for drift, bloat, or weak triggers before editing | `audit skill` |
 | pressure-test a skill with realistic prompts | `validate skill` |
 | narrow or strengthen the frontmatter description specifically | `optimize trigger` |
 
@@ -96,7 +96,10 @@ If the repo is thin or unrelated, state that and proceed with a generic skill de
 
 ## Phase 3: Clarification gate
 
-Do not generate the skill until the spec is decision-complete.
+Do not create a new skill or make broad workflow rewrites until the spec is
+decision-complete. For small wording fixes, report-only audits, or clearly
+bounded revisions, continue with labeled assumptions instead of blocking on
+questions.
 
 Ask only questions that materially affect the generated skill. Prefer concise, direct questions. Push until these are clear:
 
@@ -119,9 +122,23 @@ Know what counts as complete before you edit.
 
 - `new skill`: the package is created, the trigger surface is clear, the workflow is actionable, and validation risk is addressed
 - `revise skill`: the intended problems are fixed, the repo conventions are preserved, and the delta is summarized
-- `audit skill`: the findings are explicit, prioritized, and actionable, even if no edits are made
+- `audit skill`: the findings are explicit, prioritized, and actionable, even if no edits are made; for multi-skill audits, group cross-cutting issues before per-skill details
 - `validate skill`: representative positive and negative prompts were reviewed, outcomes were summarized, and residual risk is stated
 - `optimize trigger`: the description is tighter, easier to match, checked against adjacent negatives, and no longer carries workflow detail
+
+### Audit output pattern
+
+For multi-skill audits, prefer this order:
+
+1. Structural findings that affect the whole inventory.
+2. Trigger and composition issues that can cause wrong skill activation.
+3. Token-cost or progressive-disclosure improvements.
+4. Per-skill proposals with concrete file targets.
+5. Validation gaps and any residual uncertainty.
+
+For this repository's current high-risk trigger families, use
+[references/inventory-trigger-evals.md](references/inventory-trigger-evals.md)
+as a lightweight prompt-routing check before or after trigger edits.
 
 ## Phase 4: Create or revise the skill
 

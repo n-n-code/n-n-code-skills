@@ -1,6 +1,6 @@
 ---
 name: ui-design-guidance
-description: Canonical overlay for graphical UI and web frontend code that need strong design quality and UX discipline without breaking repo conventions. Use alongside the repo's implementation skill when implementing or reviewing UI changes, redesigns, frontend polish work, or UX-heavy UI updates.
+description: Canonical overlay for graphical UI and web frontend work that is redesign-heavy, frontend-polish-heavy, or UX-review-heavy. Use alongside the repo's implementation skill when visual direction, accessibility, interaction quality, responsive behavior, forms, navigation, or data presentation need stronger design discipline; use `ui-guidance` for routine UI changes.
 ---
 
 # UI Design Guidance

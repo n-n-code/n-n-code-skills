@@ -14,6 +14,8 @@ organization boundaries.
 - session creation, storage, refresh, invalidation, and revocation behavior
 - password reset, email verification, recovery, and callback URL trust
 - MFA enablement, verification, backup-code storage, and trusted-device flows
+- OAuth/OIDC, SAML/SSO, account linking, passkeys/WebAuthn, device trust, and
+  identity-provider callback handling
 - invitation, membership, role, active-organization, and tenant-scoping logic
 - origin checks, CSRF defenses, trusted origins, and cross-domain auth flows
 

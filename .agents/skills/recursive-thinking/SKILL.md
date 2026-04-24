@@ -7,7 +7,9 @@ description: Recursive self-questioning heuristic for stress-testing a plan, dia
 
 Deliberate self-questioning to stress-test a recommendation, plan, diagnosis, or critique before acting. Not for simple lookups or low-ambiguity tasks.
 
-Adjacent skills: **brainstorming** (divergent generation) → **thinking** (convergent planning) → **recursive-thinking** (adversarial stress-testing) → **dream-thinking** (retrospective learning).
+Adjacent workflow modes: divergent generation → **thinking**
+(convergent planning) → **recursive-thinking** (adversarial stress-testing) →
+**dream-thinking** (retrospective learning).
 
 A good pass should: sharpen the problem framing, expose a hidden assumption, identify a material risk, improve the decision path, or change the recommendation. If the recursion is not changing the work, compress or stop.
 

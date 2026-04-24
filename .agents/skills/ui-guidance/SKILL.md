@@ -13,6 +13,16 @@ Use this as the thin default overlay for ordinary UI work.
 If the task is redesign-heavy, frontend-polish heavy, or needs a stronger UX
 review checklist, prefer `ui-design-guidance`.
 
+Routing examples:
+
+- add a small control that matches nearby components -> use this skill
+- fix spacing, labels, or responsive behavior within the existing visual
+  language -> use this skill
+- redesign a page, introduce a new visual direction, or perform a UX-heavy
+  release review -> use `ui-design-guidance`
+- product-security or permission-sensitive UI flows -> add `security` when the
+  main risk is trust, identity, or authorization rather than presentation
+
 ## When to use
 
 The repo includes graphical UI or web frontend code — web views, desktop UI,

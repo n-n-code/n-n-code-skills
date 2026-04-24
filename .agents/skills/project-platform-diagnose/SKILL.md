@@ -1,6 +1,6 @@
 ---
 name: project-platform-diagnose
-description: Overlay for environment-sensitive diagnosis — service startup, install issues, platform integration, and runtime smoke checks. Portable across C++ projects.
+description: Overlay for environment-sensitive diagnosis — service startup, install issues, platform integration, headless/container behavior, and runtime smoke checks. Portable across repos where build, install, or runtime behavior depends on the local platform.
 ---
 
 # Project Platform Diagnose

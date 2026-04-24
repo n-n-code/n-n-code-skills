@@ -23,7 +23,7 @@ work (use **project-release-maintainer**), config/test-focused work (use
 
 ## Validation Checklist
 
-Run the repo's equivalents of these steps before committing:
+Run the repo's equivalents of these steps before finishing:
 
 - build with the development preset or debug configuration
 - run the test suite with output on failure for covered changes
@@ -32,3 +32,5 @@ Run the repo's equivalents of these steps before committing:
 - add analyzer, sanitizer, or memory-checking validation when the change surface
   justifies it
 - run static analysis targets when available
+- if a relevant validation step is unavailable or too expensive for the current
+  change, state the exact gap and the narrowest next command that would close it

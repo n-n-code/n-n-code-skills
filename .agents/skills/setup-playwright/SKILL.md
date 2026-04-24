@@ -277,18 +277,10 @@ Before the first Playwright-backed test invocation:
 
 ## Rationalization Table
 
-Common excuses and the reality they obscure:
-
-| Excuse | Reality |
-| --- | --- |
-| "Skip harness-managed startup — the user can start the app themselves." | Reliability degrades with every manual step. Use the runner's startup mechanism when the repo expects the harness to own local app lifecycle; keep external startup only when the repo deliberately does so. |
-| "Enable `fullyParallel` everywhere, it's faster." | It amplifies shared-state bugs and hides ordering assumptions. Enable only when the suite is genuinely isolation-safe. |
-| "Install all browsers so we're covered." | Each browser costs install time, CI minutes, and maintenance. Start with bundled Chromium; add others when the claim needs browser evidence. |
-| "Add `@playwright/cli` to `package.json` so investigations are reproducible." | `playwright-cli` is agent tooling, not a production dependency. Pollutes the lockfile. Only include if the user explicitly wants repo-owned automation. |
-| "Raise the global test timeout to 120s, CI is slow." | Global timeouts normalize slow failure modes. Raise the narrowest timeout scope that matches the bottleneck; in Node that may be `webServer.timeout` or `expect.timeout`, elsewhere use the runner's local timeout controls. |
-| "Check `storageState` into git so new developers have it." | Storage state contains credentials and expires. Write to an ignored path; document how to regenerate. |
-| "Scaffold Playwright Test Agents while we're setting up." | `init-agents` creates repo-owned planner/generator/healer files. Don't add unless explicitly requested. |
-| "It's a TypeScript repo so Playwright type-checks it." | Playwright transpiles but does not type-check. Keep a separate `tsc --noEmit` if the repo expects type safety. |
+Common setup shortcuts and expected pushback live in
+[references/pressure-tests.md](references/pressure-tests.md). Load that
+reference when reviewing a proposed harness shortcut or revising the skill's
+trigger and setup rules.
 
 ## Setup Checklist
 

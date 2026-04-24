@@ -14,6 +14,16 @@ If the task includes service-boundary refactors, repository or transaction work,
 queue or webhook reliability, stronger testing expectations, or explicit
 trust-boundary hardening, prefer `backend-systems-guidance`.
 
+Routing examples:
+
+- thin route handler that delegates to existing service logic -> use this skill
+- small message consumer bug fix with no retry or persistence redesign -> use
+  this skill
+- new endpoint with authz, repository, transaction, retry, or observability
+  changes -> use `backend-systems-guidance`
+- security audit of an endpoint or tenant boundary -> use `security` first,
+  then add the backend overlay only for implementation structure
+
 ## When to use
 
 The repo has server-side networked code: HTTP route handlers, gRPC service
