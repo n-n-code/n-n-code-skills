@@ -58,7 +58,7 @@ Expected `tester-mindset` first:
 
 ## Go
 
-Expected `coding-guidance-go`:
+Expected `coding-guidance-go`, not `coding-guidance-go-tui`:
 
 - `Review this Go worker for context cancellation and goroutine leaks.`
 - `Refactor this Go service package without changing exported error contracts.`
@@ -66,6 +66,19 @@ Expected `coding-guidance-go`:
 - `Add a gRPC method and preserve context deadlines plus domain error mapping.`
 - `Optimize this Go hot path using pprof evidence and benchmarks.`
 - `Implement a bounded Go worker pool with backpressure and clean shutdown.`
+
+Expected `coding-guidance-go-tui`:
+
+- `Build a Bubble Tea TUI with a list, details pane, and help bar.`
+- `Review this Bubble Tea model for command ordering and focus bugs.`
+- `Fix this Lip Gloss layout so it survives narrow terminals and Unicode text.`
+- `Embed a Huh form into this Bubble Tea flow without blocking Update.`
+
+Expected `coding-guidance-go`, not `coding-guidance-go-tui`:
+
+- `Make this Go CLI print JSON when running in CI.`
+- `Add a Cobra subcommand that parses flags and writes plain text output.`
+- `Build a one-shot Huh questionnaire that exits after collecting answers.`
 
 Expected `go-testing-with-testify`:
 
