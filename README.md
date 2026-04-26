@@ -55,6 +55,8 @@ Examples:
 
 - routine Python feature work: `coding-guidance-python` + `project-core-dev`
 - routine Go feature work: `coding-guidance-go` + `project-core-dev`
+- Charmbracelet Go TUI work: `coding-guidance-go-tui` + `project-core-dev`;
+  add `project-platform-diagnose` for terminal, shell, or runtime smoke issues
 - backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
 - Go tests with stretchr/testify: `go-testing-with-testify`; add
@@ -87,6 +89,7 @@ Defaults:
 
 - `coding-guidance-cpp` — portable C++ implementation and review guidance for feature work, bug fixes, refactors, and code review
 - `coding-guidance-go` — portable Go implementation and review guidance for feature work, bug fixes, refactors, and code review
+- `coding-guidance-go-tui` — portable Go terminal UI implementation and review guidance for interactive TUIs built with Charmbracelet Bubble Tea, Bubbles, Lip Gloss, embedded Huh forms, and related Charm stack patterns
 - `coding-guidance-python` — portable Python implementation and review guidance for feature work, bug fixes, refactors, and code review
 - `coding-guidance-bash` — portable Bash implementation and review guidance for automation scripts, repo tooling, refactors, and code review
 - `coding-guidance-qt` — portable Qt C++ QWidget desktop implementation and review guidance for widgets, models, signals and slots, layout-heavy UI, Qt5/Qt6 CMake work, and code review
@@ -102,6 +105,14 @@ Qt skill default:
 Go skill note:
 
 - Use `coding-guidance-go` for Go implementation and review. Add `go-testing-with-testify` only when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis.
+
+Go TUI skill note:
+
+- Use `coding-guidance-go-tui` as the default principle skill for Go terminal
+  UI work built with Charmbracelet Bubble Tea, Bubbles, Lip Gloss, embedded Huh
+  forms inside Bubble Tea flows, or related Charm stack patterns. Use
+  `coding-guidance-go` instead when the task is a non-interactive Go CLI,
+  library, worker, or service change with no TUI state machine.
 
 ### Implementation And Project Overlays
 
