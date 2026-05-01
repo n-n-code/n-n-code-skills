@@ -20,6 +20,58 @@ skills_dir = root / ".agents" / "skills"
 errors = []
 skill_names = set()
 
+def check_frontmatter_lines(skill_file, frontmatter_lines, start_line=2):
+    frontmatter_errors = []
+    keys = []
+
+    for line_no, line in enumerate(frontmatter_lines, start_line):
+        if not line.strip():
+            continue
+
+        match = re.match(r"^([A-Za-z_-]+):\s*(.*)$", line)
+        if not match:
+            frontmatter_errors.append(
+                f"{skill_file}:{line_no}: frontmatter lines must use simple key: value syntax"
+            )
+            continue
+
+        key, value = match.groups()
+        keys.append(key)
+
+        if key not in {"name", "description"}:
+            continue
+
+        value = value.strip()
+        quoted = (
+            len(value) >= 2
+            and value[0] == value[-1]
+            and value[0] in {"'", '"'}
+        )
+        if ": " in value and not quoted:
+            frontmatter_errors.append(
+                f"{skill_file}:{line_no}: frontmatter {key} value containing ': ' must be quoted"
+            )
+        if value[:1] in {"'", '"'} and not quoted:
+            frontmatter_errors.append(
+                f"{skill_file}:{line_no}: frontmatter {key} value has an unterminated quote"
+            )
+
+    if keys != ["name", "description"]:
+        frontmatter_errors.append(
+            f"{skill_file}: frontmatter keys must be exactly name, description; got {keys}"
+        )
+
+    return keys, frontmatter_errors
+
+self_test_keys, self_test_errors = check_frontmatter_lines(
+    "frontmatter-self-test/SKILL.md",
+    ["name: frontmatter-self-test", "description: bad: value"],
+)
+if self_test_keys != ["name", "description"] or not any(
+    "value containing ': ' must be quoted" in error for error in self_test_errors
+):
+    errors.append("frontmatter self-test failed to catch unquoted ': ' in description")
+
 if not skills_dir.is_dir():
     errors.append("missing .agents/skills directory")
 else:
@@ -45,15 +97,8 @@ else:
             errors.append(f"{skill_file}: missing closing YAML frontmatter")
             continue
 
-        keys = [
-            line.split(":", 1)[0]
-            for line in lines[1:end]
-            if re.match(r"^[A-Za-z_-]+:", line)
-        ]
-        if keys != ["name", "description"]:
-            errors.append(
-                f"{skill_file}: frontmatter keys must be exactly name, description; got {keys}"
-            )
+        keys, frontmatter_errors = check_frontmatter_lines(skill_file, lines[1:end])
+        errors.extend(frontmatter_errors)
 
         name_line = next(
             (line for line in lines[1:end] if line.startswith("name:")),
@@ -123,9 +168,13 @@ skill_context_pattern = re.compile(
 )
 known_non_skill_refs = {
     "clang-tidy",
+    "frontier-gpt",
+    "human",
+    "local-small",
     "negative-adjacent",
     "playwright-cli",
     "run-code",
+    "standard-agent",
     "state-save",
     "test-configuration",
     "test-fixtures",
@@ -163,6 +212,151 @@ trigger_eval = (
 )
 if not trigger_eval.is_file():
     errors.append(f"missing {trigger_eval}")
+
+def read_required(path):
+    if not path.is_file():
+        errors.append(f"missing {path}")
+        return ""
+    return path.read_text(encoding="utf-8")
+
+def require_contains(path, text, needle, label):
+    if needle not in text:
+        errors.append(f"{path}: missing story-family invariant: {label}")
+
+def require_compact_contains(path, text, needle, label):
+    compact_text = re.sub(r"\s+", " ", text)
+    compact_needle = re.sub(r"\s+", " ", needle)
+    if compact_needle not in compact_text:
+        errors.append(f"{path}: missing story-family invariant: {label}")
+
+def require_absent(path, text, needle, label):
+    if needle in text:
+        errors.append(f"{path}: forbidden story-family regression: {label}")
+
+story_skill_paths = {
+    "clarifier": skills_dir / "user-story-clarifier" / "SKILL.md",
+    "scout": skills_dir / "story-repo-scout" / "SKILL.md",
+    "planner": skills_dir / "story-implementation-planner" / "SKILL.md",
+    "orchestrator": skills_dir / "story-implementation-orchestrator" / "SKILL.md",
+}
+story_texts = {
+    name: read_required(path)
+    for name, path in story_skill_paths.items()
+}
+
+for path in link_sources:
+    text = path.read_text(encoding="utf-8")
+    require_absent(path, text, "superpowers:", "legacy superpowers references")
+
+clarifier_text = story_texts["clarifier"]
+require_contains(
+    story_skill_paths["clarifier"],
+    clarifier_text,
+    "Status: Split Candidate",
+    "split packets keep top-level Split Candidate status",
+)
+require_contains(
+    story_skill_paths["clarifier"],
+    clarifier_text,
+    "- Status: Ready | Needs Clarification | Blocked",
+    "split slices carry their own readiness status",
+)
+
+orchestrator_text = story_texts["orchestrator"]
+require_contains(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "Materialize the selected slice as the active story card before scouting",
+    "selected split slices are materialized before scouting",
+)
+require_contains(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "Pass one materialized story card for the active slice",
+    "scouting input is the active materialized slice, not the whole split set",
+)
+require_contains(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "`First Action` block present when",
+    "orchestrator validates First Action conditionally",
+)
+require_compact_contains(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "optional for agent profiles, and absent for\n  `human`",
+    "human plans omit First Action in orchestrator readiness",
+)
+require_contains(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "Default for repo-owned code changes: `project-core-dev`",
+    "project-core-dev routing is conditional on code changes",
+)
+require_contains(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "Workflow overlay: `tester-mindset` when",
+    "tester-mindset routing is conditional",
+)
+require_absent(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "- Always: `project-core-dev`",
+    "unconditional project-core-dev routing",
+)
+require_absent(
+    story_skill_paths["orchestrator"],
+    orchestrator_text,
+    "- Always: `tester-mindset`",
+    "unconditional tester-mindset routing",
+)
+
+scout_text = story_texts["scout"]
+require_contains(
+    story_skill_paths["scout"],
+    scout_text,
+    "`None identified` when this output will feed",
+    "Do Not Touch can explicitly report no boundary found",
+)
+require_compact_contains(
+    story_skill_paths["scout"],
+    scout_text,
+    "Likely Unrelated / Do\nNot Touch` as `None identified`",
+    "orchestrated packets preserve the None identified convention",
+)
+
+planner_text = story_texts["planner"]
+require_contains(
+    story_skill_paths["planner"],
+    planner_text,
+    "Required for `local-small`, optional for agent profiles",
+    "planner treats First Action as executor-specific",
+)
+require_contains(
+    story_skill_paths["planner"],
+    planner_text,
+    "omitted for `human`",
+    "human plans omit First Action",
+)
+require_contains(
+    story_skill_paths["planner"],
+    planner_text,
+    "repo-owned code changes",
+    "planner routes project-core-dev only for repo-owned code changes",
+)
+require_contains(
+    story_skill_paths["planner"],
+    planner_text,
+    "Add `tester-mindset` when",
+    "planner routes tester-mindset conditionally",
+)
+require_absent(
+    story_skill_paths["planner"],
+    planner_text,
+    "must hand off to `project-core-dev`",
+    "unconditional project-core-dev planner handoff",
+)
 
 if errors:
     for error in errors:

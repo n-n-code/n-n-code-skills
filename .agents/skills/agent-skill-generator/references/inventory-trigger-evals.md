@@ -159,6 +159,90 @@ Expected `agents-md-generator`:
 - `Create an AGENTS.md for this repo from the README and existing scripts.`
 - `Convert this CLAUDE.md guidance into repo-accurate AGENTS.md instructions.`
 
+## User Stories
+
+Expected `user-story-clarifier`:
+
+- `Turn this rough feature idea into a user story with acceptance criteria.`
+- `Rewrite this ticket so a coding agent can implement it without guessing.`
+- `Turn this implementation task brief into an unambiguous story-level requirement.`
+- `Split this oversized checkout epic into implementation-ready stories.`
+- `Turn this broad feature into small vertical user-value slices.`
+- `Add a readiness status to this story so the next agent knows whether to scout or ask questions.`
+- `Make this definition of done less ambiguous.`
+- `Audit these acceptance criteria for ambiguity.`
+
+Expected not `user-story-clarifier` as primary:
+
+- `Write a full PRD for this product.` -> use `documenter` or `documenter-coauthoring`.
+- `Implement this story in code.` -> use implementation skills.
+- `Design a test strategy for this billing flow.` -> use `tester-mindset`.
+- `Define these glossary terms.` -> use documentation or copy-editing judgment.
+
+## Story Repo Scouting
+
+Expected `story-repo-scout`:
+
+- `Use this story card to scour the repo and append relevant file paths.`
+- `Find likely implementation and test files for this ticket before coding.`
+- `Find relevant files and documented validation commands for this story card.`
+- `Check repo docs for terminology conflicts before appending context.`
+- `List relevant files with evidence and do-not-touch boundaries for this story.`
+- `Add repo context to this acceptance-criteria card.`
+- `Given this story, scout the current repo for related features and files.`
+
+Expected not `story-repo-scout` as primary:
+
+- `Turn this rough idea into a user story.` -> use `user-story-clarifier`.
+- `Implement this story in code.` -> use implementation skills.
+- `Review this module architecture broadly.` -> use `thinking` or relevant review skills.
+- `Security-review these files.` -> use `security`.
+
+## Story Implementation Planning
+
+Expected `story-implementation-planner`:
+
+- `Create an actionable implementation plan from this story card and repo context.`
+- `I have a story and file list; make the implementation plan.`
+- `Make a human implementation plan from this completed story and repo context, no first-action block needed.`
+- `Plan this ticket for a local qwen coding agent using the relevant files found.`
+- `Make a GPT-optimized implementation plan from this story and repo scout output.`
+- `Create a plan with dependencies, rollback, and concrete validation from this story and repo context.`
+- `Make a first-action handoff for a local qwen model from this story and repo context.`
+- `Make a no-placeholder implementation plan for this story.`
+- `Turn this acceptance-criteria card plus relevant files into a coding-agent handoff.`
+
+Expected not `story-implementation-planner` as primary:
+
+- `Turn this rough idea into a user story.` -> use `user-story-clarifier`.
+- `Scour the repo and append relevant file paths.` -> use `story-repo-scout`.
+- `I have a rough ticket; clarify it, find files, and plan it.` -> use `story-implementation-orchestrator`.
+- `Run the full story-to-plan pipeline before implementation.` -> use `story-implementation-orchestrator`.
+- `Implement this plan in code.` -> use implementation skills.
+
+## Story Implementation Orchestration
+
+Expected `story-implementation-orchestrator`:
+
+- `Run the full story-to-plan pipeline on this rough feature idea.`
+- `Use the story, repo scout, and planning workflow before implementation.`
+- `I have a rough ticket; clarify it, find files, and plan it.`
+- `Create a coding-agent-ready handoff from this ticket.`
+- `Create a stable story-to-plan packet with required fields for a coding agent.`
+- `I have a split story set; scout and plan the first shippable slice.`
+- `This packet already has split stories; materialize the first slice, scout it, and make a handoff.`
+- `Split this epic, then scout and plan only the first shippable slice.`
+- `Clarify, scout, plan, and reject placeholders before implementation.`
+- `Clarify this story, find relevant files, then make an implementation plan.`
+
+Expected not `story-implementation-orchestrator` as primary:
+
+- `I have a story and file list; make the implementation plan.` -> use `story-implementation-planner`.
+- `Create an implementation plan from this completed story card and repo context.` -> use `story-implementation-planner`.
+- `Find likely implementation and test files for this ticket before coding.` -> use `story-repo-scout`.
+- `Threat model this story before implementation.` -> use `security`.
+- `Implement this plan in code.` -> use implementation skills.
+
 ## Project Overlays
 
 Expected `project-core-dev`:

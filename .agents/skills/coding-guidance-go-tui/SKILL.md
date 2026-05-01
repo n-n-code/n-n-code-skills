@@ -40,9 +40,6 @@ Load references only when the task needs that depth:
   for layout arithmetic, responsive panels, mouse hit testing, screen/focus
   state machines, production polish, performance, noninteractive fallbacks, and
   Bubble Tea code-review false positives
-- [references/fusion-notes.md](references/fusion-notes.md) for maintenance-only
-  provenance from the source-skill fusion; do not load during ordinary TUI
-  implementation or review
 
 ## When Not to Lean on This Skill
 
