@@ -67,6 +67,11 @@ Examples:
   in an existing harness
 - security review of auth flows: `security` + `security-identity-access`
 - large doc rewrite with collaboration: `documenter` + `documenter-coauthoring`
+- user story, acceptance criteria, or story splitting: `user-story-clarifier`
+- implementation prep from a story card: `user-story-clarifier` ->
+  `story-repo-scout` -> `story-implementation-planner`; use
+  `story-implementation-orchestrator` when the user wants the whole preparation
+  workflow
 - test strategy or validation design: relevant skill set + `tester-mindset`
 
 ## Skill Families
@@ -143,8 +148,18 @@ Defaults:
 - `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
+- `story-implementation-orchestrator` — companion process overlay for running the full story-to-plan pipeline across story clarification, repo scouting, and model-aware implementation planning into a single handoff packet before coding
+- `story-implementation-planner` — workflow for turning a clarified story card plus repo context into an actionable implementation plan optimized for the target model, agent, or human, including first action, validation, and rollback
+- `story-repo-scout` — workflow for using a story card, ticket, or acceptance criteria to find relevant repo files, evidence, documented commands, and do-not-touch boundaries before coding
 - `tester-mindset` — testing mindset workflow for designing meaningful tests, validation strategy, acceptance criteria, edge cases, experiments, and probes
 - `thinking` — planning and design guidance for quick-to-medium structured problem solving
+- `user-story-clarifier` — workflow for drafting, rewriting, splitting, and auditing story-level requirements, user stories, feature definitions, definitions of done, and acceptance criteria into unambiguous story cards for humans and coding agents
+
+Story-to-plan family: use `user-story-clarifier` for clarification or
+story splitting, then `story-repo-scout`, then
+`story-implementation-planner`; add
+`story-implementation-orchestrator` when the user wants the full preparation
+pipeline managed as one workflow.
 
 Defaults:
 
@@ -152,6 +167,10 @@ Defaults:
 - Start with `security` when the task is explicitly security-focused or the change is high-risk.
 - Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
 - Use `playwright-testing` when a Playwright setup exists and the job is to design, generate, harden, or review Playwright browser tests.
+- Use `story-implementation-orchestrator` when the user wants the complete story-to-plan preparation workflow before code changes.
+- Use `story-implementation-planner` after a story and repo context exist and the next need is an actionable implementation plan for a target executor, with first action, dependencies, rollback, and validation.
+- Use `story-repo-scout` after a story or ticket is clear enough and before implementation when relevant repo files, evidence, validation commands, and do-not-touch boundaries need to be found and appended.
+- Use `user-story-clarifier` when rough tickets, broad epics, story-level requirements, feature definitions, definitions of done, or acceptance criteria need to become implementation-ready story cards.
 
 ### System Skills
 
