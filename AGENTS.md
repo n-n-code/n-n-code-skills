@@ -44,11 +44,13 @@ Examples:
 - routine Go feature work: `coding-guidance-go` + `project-core-dev`
 - backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
+- prompt design, prompt rewrite, or prompt eval work: `prompt-engineering`
 - security review of auth flows: `security` + `security-identity-access`
 
 Workflow skills (**thinking**, **recursive-thinking**, **dream-thinking**,
-**tester-mindset**, **security**) are orthogonal — they change *how* you work,
-not *what domain or process rules* apply. They compose with either tier.
+**tester-mindset**, **prompt-engineering**, **security**) are orthogonal —
+they change *how* you work, not *what domain or process rules* apply. They
+compose with either tier.
 
 Role vocabulary used in this repo:
 
