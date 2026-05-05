@@ -283,6 +283,29 @@ Expected `fuse-skills`:
 - `Fuse these two local UI skills into one deduplicated skill.`
 - `Merge the Go skills from this named remote package into our local Go guidance.`
 
+## Context Engineering
+
+Expected `context-engineering`:
+
+- `Create a context packet before another agent starts this long repo migration.`
+- `This session is drifting; audit what context is stale, missing, or noisy.`
+- `Compact this conversation into a handoff so a new agent can continue safely.`
+- `The agent keeps hallucinating APIs and ignoring repo conventions; fix the context setup.`
+- `Decide what files, docs, logs, and tool output should be loaded for this task.`
+- `We are switching from billing to auth work; refresh the working context.`
+- `The context window is full of old tool results; decide what to trim, summarize, or keep verbatim.`
+- `Design a session-memory handoff strategy for a long-running support agent without writing SDK code.`
+- `The user's latest request conflicts with repo safety rules; decide what context and authority should govern.`
+- `A handoff summary disagrees with current source files; audit which context should be trusted.`
+
+Expected not `context-engineering` as primary:
+
+- `Rewrite this system prompt so the agent calls tools more reliably.` -> use `prompt-engineering`.
+- `Use this story card to find relevant implementation and test files.` -> use `story-repo-scout`.
+- `Create an AGENTS.md for this repo from README and CI config.` -> use `agents-md-generator`.
+- `Compare approaches and converge on a practical plan.` -> use `thinking`.
+- `Add OpenAI Agents SDK session memory to this Python service.` -> use implementation and OpenAI docs guidance first.
+
 ## Development Contract
 
 Expected `development-contract-system`:
