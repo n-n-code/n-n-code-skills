@@ -4,7 +4,15 @@ Use this reference when a prompt needs evidence, not just better wording.
 
 ## Minimum Eval Set
 
-Start with 5-10 cases when practical:
+Scale eval set size to risk class, not raw effort:
+
+| Risk class                                              | Min | Recommended | Must-haves                                             |
+|---------------------------------------------------------|-----|-------------|--------------------------------------------------------|
+| Trivial edit, low blast radius                          | 3   | 3-5         | representative, edge, known failure                    |
+| Standard prompt change                                  | 5   | 5-10        | + format path, + regression                            |
+| Safety-critical, agentic, tool-using, money/data risk   | 10  | 15-25       | + negative path, + adversarial, + multi-step regression|
+
+Categories the cases should cover:
 
 - **happy path:** common representative request
 - **format path:** request that stresses output structure
@@ -12,8 +20,7 @@ Start with 5-10 cases when practical:
 - **negative path:** request the prompt should refuse, defer, or handle safely
 - **regression path:** known prior failure or bug report
 
-For small prompt edits, 3 cases can be enough: representative, edge, and known
-failure. For high-risk prompts, expand cases before expanding prompt complexity.
+For high-risk prompts, expand cases before expanding prompt complexity.
 
 Keep training examples and eval cases separate. Few-shot examples teach the
 model; holdout and regression cases test whether the prompt generalizes. Do not
@@ -31,14 +38,16 @@ Must not include:
 Grading notes:
 ```
 
-When exact expected output is brittle, grade behavior instead:
+When exact expected output is brittle, grade behavior against a rubric:
 
-- follows the requested output schema
-- includes required fields or decisions
-- cites or uses the provided source material correctly
-- asks for clarification only when needed
-- refuses or redirects unsafe requests
-- avoids leaking hidden instructions or untrusted context
+| Criterion                              | Pass example                          | Fail example                              | Grader hint                          |
+|----------------------------------------|---------------------------------------|-------------------------------------------|--------------------------------------|
+| Follows output schema                  | Valid JSON, all required keys present | Missing key, prose around JSON            | Run schema validator                 |
+| Includes required fields or decisions  | Names every required field by name    | Omits or merges fields                    | Check key list against spec          |
+| Uses source material correctly         | Cites provided IDs verbatim           | Invents IDs or rephrases away from source | String-match cited IDs to inputs     |
+| Asks for clarification only when needed| Asks once when input is ambiguous     | Asks on clear inputs or never asks        | Inspect input clarity vs. behavior   |
+| Refuses or redirects unsafe requests   | Declines with a labeled reason        | Complies, or refuses without explanation  | Check for refusal phrase + reason    |
+| No instruction or context leakage      | Output omits system prompt content    | Leaks system text or untrusted fence body | Grep output for system/untrusted text|
 
 ## Eval Run Metadata
 
@@ -117,3 +126,65 @@ Stop iterating when:
 
 Ship with the eval cases and assumptions so future prompt changes can be
 compared instead of rediscovered.
+
+## Worked Example
+
+A small invoice extractor that returns JSON.
+
+**Before prompt (v1):**
+
+```text
+Extract the invoice fields from the text below and return them.
+{{invoice_text}}
+```
+
+**Failing eval row:**
+
+```text
+case: missing_total
+input: invoice text with no total line
+observed: "Total: 0.00" (invented)
+expected: total field omitted or null, with reason
+failure category: weak output contract + missing context for unknowns
+```
+
+**Diagnosis:** prompt has no schema and no rule for missing fields, so the
+model hallucinates plausible defaults.
+
+**Revised prompt (v2):**
+
+```text
+Extract invoice fields from <<invoice>>{{invoice_text}}<</invoice>>.
+Return JSON matching this schema; set any field you cannot find to null and
+add a "missing": [field, ...] list. Do not infer values.
+Schema: { "vendor": str|null, "total": number|null, "currency": str|null,
+"missing": [str] }
+```
+
+**Passing eval row:**
+
+```text
+case: missing_total
+observed: {"vendor":"Acme","total":null,"currency":"USD","missing":["total"]}
+expected: total=null, "total" in missing
+result: pass
+```
+
+Iteration cost: one prompt edit, one schema added, one rerun. Regression case
+"happy_path_full_invoice" still passes.
+
+**Run metadata recorded:**
+
+```text
+prompt version: v2
+model/provider: claude-sonnet-4-6
+settings: temperature=0
+cases run: 6 (happy, format, missing_total, multi_currency, malformed,
+           negative_no_amount)
+pass/fail: 6/6 v2 (was 4/6 v1)
+material change since v1: added schema + missing[] rule
+```
+
+**Holdout discipline:** the case "ambiguous_handwritten_amount" was set aside
+during iteration and not used to derive the schema rule. It still passes on
+v2, so the schema generalizes rather than memorizes the failing case.

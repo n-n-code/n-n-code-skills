@@ -5,6 +5,13 @@ pattern, provider-specific reminder, or source-grounded checklist. Keep the
 main prompt portable unless the target runtime makes a provider detail
 material.
 
+**Provider notes are perishable.** Each provider section below carries an
+explicit `Links checked:` date for the linked official docs used by that
+section. Before citing provider-specific behavior:
+
+- re-verify against the current official source linked under Source Synthesis
+- treat any entry older than ~6 months as stale unless re-checked this session
+
 ## Source Synthesis
 
 The source set converges on a few durable ideas:
@@ -80,6 +87,17 @@ Guidance:
 
 ## Pattern Selector
 
+| Signal in the task                                  | Pick this pattern              | Avoid because                                   |
+|-----------------------------------------------------|--------------------------------|-------------------------------------------------|
+| One-shot, low ambiguity, no parser downstream       | Direct instruction             | Structure adds noise without payoff             |
+| Several distinct concerns (task, context, format)   | Structured prompt              | Direct prose blurs section boundaries           |
+| Tone, style, or judgment hard to describe abstractly| Few-shot examples              | Rules under-specify; examples calibrate         |
+| Output parsed by code or piped to a tool            | Schema / structured output     | Freeform breaks parsers and contracts           |
+| Model decides whether/when/how to call a tool       | Tool-use prompt                | Inline prose gives no action boundary           |
+| Required ordered procedure with intermediate work   | Chain-of-work instructions     | Hidden chain-of-thought is opaque and unstable  |
+| Grading, review, scoring, ranking                   | Rubric prompt                  | Free judgment is inconsistent across runs       |
+| Constraint that the model demonstrably drops        | Repetition (sparingly)         | Use first when clearer structure would suffice  |
+
 - **Direct instruction:** use for simple, one-shot behavior with low ambiguity.
 - **Structured prompt:** use when the model must keep task, context, constraints,
   and output format distinct.
@@ -103,6 +121,8 @@ docs.
 
 ### OpenAI
 
+Links checked: 2026-05-05 against the linked official OpenAI docs.
+
 - Check current official OpenAI docs when the prompt depends on a specific API,
   model, structured-output mode, tool behavior, prompt caching, or model upgrade.
 - For cache-aware prompts, keep stable instructions and large reusable context
@@ -115,6 +135,8 @@ docs.
 
 ### Anthropic Claude
 
+Links checked: 2026-05-05 against the linked official Anthropic docs.
+
 - Claude prompts often benefit from explicit structure and clearly delimited
   context. XML-style tags can be useful when they make boundaries unambiguous.
 - Put examples and evaluation cases close to the behavior they are meant to
@@ -123,6 +145,9 @@ docs.
   not first-pass prompt wording.
 
 ### Google / Gemini
+
+Links checked: 2026-05-05 against the linked official Google Cloud prompt
+engineering overview.
 
 - Use provider-specific Gemini guidance when the target runtime is Gemini or
   Vertex AI. The generic principles still apply, but API capabilities,

@@ -63,19 +63,31 @@ the prompt's operating context.
 
 ## Compose With
 
-- Use a provider documentation workflow when the prompt depends on current model,
-  API, structured-output, tool-calling, reasoning, caching, or pricing behavior.
+- When the session provides an OpenAI docs skill or official-doc tool, use it
+  for OpenAI-specific current model, API, structured-output, tool-calling,
+  reasoning, caching, or pricing behavior; otherwise verify official OpenAI
+  docs directly. For other providers, verify current official provider docs
+  when those details affect the prompt.
 - Add a testing workflow when the main job is test strategy, evidence quality,
   grading design, or acceptance criteria rather than prompt wording.
 - Add a security workflow when prompt injection, hidden instruction leakage,
   unsafe tool use, data exposure, or trust boundaries dominate the risk.
+- **Ownership rule with `context-engineering`:** picking *which* facts, files,
+  or examples to load is `context-engineering`; deciding *how to word* the
+  prompt, schema, or example is this skill. When work spans both, draft the
+  context packet first, then own the prompt artifact here.
 
 ## Prompt Design Rules
 
 - Put the user's real task first; do not optimize a prompt before the objective
   and failure mode are clear.
 - Prefer explicit success criteria over broad "be better" instructions.
-- Separate stable policy from per-request data and untrusted content.
+- Separate stable policy from per-request data and untrusted content. When the
+  prompt embeds retrieved or user-supplied material, fence it with explicit
+  delimiters (e.g. `<<untrusted:source>> ... <</untrusted>>`, matching the
+  `context-engineering` convention) and tag fact provenance with
+  `[src:code|user|tool|docs|memory|inferred]` so downstream graders can detect
+  leakage and instruction-override attempts.
 - Specify output shape with examples or schemas when downstream code depends on
   structure.
 - Use examples that demonstrate decisions, not examples that merely repeat the
@@ -88,6 +100,23 @@ the prompt's operating context.
   claims. Do not rely on memory for rapidly changing model behavior.
 - Treat provider guidance as conditional. Load provider notes only when the
   target model, API, or runtime surface makes them relevant.
+
+## Anti-Patterns
+
+Prompts that look polished but fail in practice:
+
+- **Over-explanation:** repeating the same instruction in three different
+  registers; the model averages them and weakens all three.
+- **Role stacking:** layering "you are an expert X, careful Y, helpful Z"
+  before the task; clutter without behavioral effect.
+- **Examples that contradict instructions:** when a few-shot demo violates a
+  rule, the example wins.
+- **Repetition without structure:** restating constraints in prose instead of
+  putting them in a labeled section or schema.
+- **Vague quality bars:** "be helpful", "be thorough", "use best practices"
+  without observable criteria.
+- **Schema mixed with freeform:** asking for JSON *and* commentary; the model
+  picks one and the parser breaks.
 
 ## Failure Diagnosis
 
@@ -104,9 +133,15 @@ When a prompt fails, classify the failure before rewriting:
 
 ## Output Shapes
 
+Omit `Original Prompt Or Version` and `Run Metadata` for tiny rewrites when
+they are unavailable or not material.
+
 For a prompt rewrite:
 
 ```markdown
+## Original Prompt Or Version
+...
+
 ## Final Prompt
 ...
 
@@ -114,6 +149,9 @@ For a prompt rewrite:
 ...
 
 ## Eval Cases
+...
+
+## Run Metadata
 ...
 
 ## Assumptions And Risks
@@ -126,11 +164,17 @@ For prompt debugging:
 ## Diagnosis
 Failure category and evidence.
 
+## Original Prompt Or Version
+...
+
 ## Revision
 Changed prompt section or full prompt.
 
 ## Validation
 Cases that should pass, fail, or remain uncertain.
+
+## Run Metadata
+...
 ```
 
 ## Reference Map

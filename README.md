@@ -69,6 +69,8 @@ Examples:
 - large doc rewrite with collaboration: `documenter` + `documenter-coauthoring`
 - prompt design, rewrite, debugging, or prompt eval planning: `prompt-engineering`;
   add `tester-mindset` when the validation strategy is the main concern
+- agent context setup, long task handoff, compaction, or context-quality
+  debugging: `context-engineering`
 - user story, acceptance criteria, or story splitting: `user-story-clarifier`
 - implementation prep from a story card: `user-story-clarifier` ->
   `story-repo-scout` -> `story-implementation-planner`; use
@@ -144,6 +146,7 @@ Defaults:
 
 ### Workflow Skills
 
+- `context-engineering` — workflow for curating, auditing, compacting, and refreshing AI-agent context before or during agent work
 - `dream-thinking` — reflective sleep-and-dream heuristic for learning from recent work
 - `go-testing-with-testify` — workflow for writing, reviewing, and hardening Go tests built on the standard `testing` package plus `stretchr/testify`, including `assert`, `require`, `mock`, and `suite`
 - `playwright-testing` — workflow for generating, debugging, reviewing, and hardening Playwright E2E specs in an existing harness, including `playwright-cli` exploration and flake triage
@@ -171,6 +174,7 @@ Defaults:
 - Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
 - Use `playwright-testing` when a Playwright setup exists and the job is to design, generate, harden, or review Playwright browser tests.
 - Use `prompt-engineering` when the main artifact is an LLM prompt, system or developer prompt, prompt eval set, structured-output instruction, or prompt-behavior diagnosis.
+- Use `context-engineering` when the main artifact is a context packet, context audit, long-session compaction, or handoff summary for AI-agent work.
 - Use `story-implementation-orchestrator` when the user wants the complete story-to-plan preparation workflow before code changes.
 - Use `story-implementation-planner` after a story and repo context exist and the next need is an actionable implementation plan for a target executor, with first action, dependencies, rollback, and validation.
 - Use `story-repo-scout` after a story or ticket is clear enough and before implementation when relevant repo files, evidence, validation commands, and do-not-touch boundaries need to be found and appended.

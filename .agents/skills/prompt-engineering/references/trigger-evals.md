@@ -8,12 +8,19 @@ Use these lightweight prompt-routing checks when revising the
 These should trigger `prompt-engineering`.
 
 - "Improve this system prompt and add eval cases."
+  *Why:* prompt artifact + evals are the deliverable.
 - "Our Claude prompt is inconsistent on edge cases; help rewrite and test it."
+  *Why:* reliability of an existing prompt is the main concern.
 - "Design a prompt for an agent that extracts invoice fields as JSON."
+  *Why:* structured-output prompt design is the artifact.
 - "Debug why this tool-use prompt keeps calling the search tool too early."
+  *Why:* tool-boundary behavior in a prompt is the failure to diagnose.
 - "Make this prompt cheaper and more cache-friendly without changing behavior."
+  *Why:* cost/cache optimization with prompt-shape changes.
 - "Create few-shot examples for this classifier prompt."
+  *Why:* example *wording* is owned here (selection is `context-engineering`).
 - "Review this prompt for injection risks and unclear output requirements."
+  *Why:* prompt-level safety and output-contract review.
 
 ## Negative Adjacent Prompts
 
@@ -28,7 +35,9 @@ These should not trigger `prompt-engineering` by themselves.
 
 ## Routing Notes
 
-- Model selection alone belongs to provider docs or model-selection guidance.
+- Model selection alone belongs to current official provider docs; for
+  OpenAI-specific model guidance, use an OpenAI docs skill or official-doc tool
+  when the session provides one, otherwise verify official OpenAI docs directly.
 - Generic prose editing belongs to documentation, writing, or voice skills.
 - LLM integration code should load the relevant implementation skill first;
   add `prompt-engineering` only when prompt behavior is the main problem.
