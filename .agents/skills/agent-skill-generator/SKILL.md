@@ -1,302 +1,141 @@
 ---
 name: agent-skill-generator
-description: Create or revise reusable agent skills from a problem statement, workflow, or existing skill folder. Use when the user asks to build a skill, design an agent skill for a repo, improve a skill's triggering or structure, validate a skill with representative prompts, audit a skill for token efficiency, or turn a repeated workflow into a portable skill package.
+description: Design, create, revise, audit, validate, or optimize reusable agent skills and SKILL.md packages across platforms. Use for trigger precision, structure, progressive disclosure, token efficiency, prompt evals, or converting repeated workflows into portable skills. Do not use for AGENTS.md, skill fusion, or host packaging alone.
 ---
 
 # Agent skill generator
 
-Create skills that are generic first, portable by default, repo-bound only when the task requires it, easy to trigger correctly, and cheap to load.
+Build portable skills by default, bind them to a repository or host only when the task requires it, and spend context only on behavior the target agent cannot reliably infer.
 
-## Core workflow
+## Route by mode
 
-1. Identify the work mode and target outcome.
-2. Investigate the repo or conversation history for reusable facts before asking avoidable questions.
-3. Clarify only the decisions that materially change the generated skill.
-4. Design the package around progressive disclosure.
-5. Create or revise the skill package.
-6. Validate with representative prompts when the skill is high-risk, reusable, or objectively testable.
-7. Run a trigger-quality and token-optimization pass before finalizing.
+Choose one primary mode and honor its side-effect boundary.
 
-Do not skip steps 2-7 unless the user explicitly narrows scope.
+| Mode | Use when | Required output | File changes |
+|---|---|---|---|
+| `design` | Turn a problem or repeated workflow into an implementation-ready skill design | Contract, portability target, package map, side-effect boundaries, and validation plan | None |
+| `new` | Build a skill from a defined problem or workflow | Complete skill package and validation summary | Create the agreed package; update only required registration metadata and docs |
+| `revise` | Improve an existing skill | Focused edits, validation summary, and delta | Edit only authorized scope |
+| `audit` | Find trigger, structure, portability, or token problems | Prioritized findings with concrete targets | None unless separately requested |
+| `validate` | Pressure-test an existing skill | Evidence record and residual risk | None unless separately requested |
+| `optimize-trigger` | Improve activation precision or recall | Revised trigger metadata plus adjacent-case analysis | Trigger-bearing metadata only unless broader edits are requested |
 
-## Phase 1: Capture the target problem
+If the request mixes modes, keep read-only work read-only and state which changes are authorized before editing.
+Do not rename stable skill identifiers in `optimize-trigger` mode unless the user explicitly requests a migration.
 
-Start by identifying one of these modes:
+## Shared workflow
 
-- `new skill`: create a skill from a rough problem or repeated workflow
-- `revise skill`: improve an existing skill folder in place
-- `audit skill`: inspect one or more skills for trigger quality, portability, and token waste before proposing edits
-- `validate skill`: pressure-test an existing skill with realistic prompts before changing it
-- `optimize trigger`: tighten the frontmatter description so the skill activates more reliably without over-triggering
+1. Define the mode, target outcome, success criteria, and output location.
+2. Inspect the repository, existing skill package, conversation examples, and active host for facts that remove avoidable questions.
+3. Resolve only decisions that materially affect triggers, runtime behavior, dependencies, side effects, portability, or packaging.
+4. Design or assess the smallest package that makes the workflow repeatable.
+5. Act within the selected mode's side-effect boundary.
+6. Validate with the smallest evidence combination that answers the actual risk.
+7. Remove token waste, review the diff or findings, and report evidence plus residual uncertainty.
 
-Quick selector:
+Tailor depth to risk. Do not force every mode through creation steps or build a heavy evaluation harness for a wording-only change.
 
-| If the user asks to... | Use mode |
-|---|---|
-| build a skill from an idea or repeated workflow | `new skill` |
-| improve an existing skill in place | `revise skill` |
-| inspect skills for drift, bloat, or weak triggers before editing | `audit skill` |
-| pressure-test a skill with realistic prompts | `validate skill` |
-| narrow or strengthen the frontmatter description specifically | `optimize trigger` |
+## Establish the contract
 
-Require the user to provide at least one of:
+Require at least one of:
 
-- the problem the skill should solve
-- the workflow the skill should standardize
-- the existing skill folder to revise
+- a problem the skill should solve;
+- a workflow it should standardize; or
+- an existing skill folder to revise, audit, validate, or optimize.
 
-If the user gives a vague idea, extract a provisional summary in one or two sentences before moving on.
+Discover repository conventions before asking the user. For a design, new skill, or broad revision, make these decision-complete:
 
-Also capture:
+- primary users, target agents or hosts, and success criteria;
+- obvious trigger phrases, paraphrases, adjacent negatives, and likely competing skills;
+- required inputs, outputs, workflow order, and degrees of freedom;
+- repository files, scripts, tools, services, permissions, and external side effects;
+- portable, repo-bound, host-enhanced, or distributable target profile;
+- minimum package contract, named target hosts when known, required host adapters, and evidence available for each portability claim;
+- expected validation depth.
 
-- what success looks like
-- whether the skill is portable or intentionally repo-bound
-- whether the main risk is missing triggers, over-triggering, vague workflow, or bloat
+Ask only about choices whose answers would change the result. Use labeled defaults for the rest. Put runtime assumptions that future agents need in the skill; keep authoring decisions and temporary assumptions in the handoff summary instead of bloating the package.
 
-## Non-goals
+## Investigate before designing
 
-Do not use this skill for:
+Search likely directories first and open only relevant files. Look for:
 
-- moving one-line repo guardrails out of `AGENTS.md`
-- writing broad repo policy that every session should always load
-- documenting a one-off solution that is not reusable
-- inventing heavy evaluation harnesses for simple wording edits
-- copying remote skill structure or metadata into this repo when the local repo has a different contract
+- neighboring skills and their trigger boundaries;
+- always-loaded policy such as `AGENTS.md` or its platform equivalent;
+- templates, schemas, scripts, tests, validators, and documented commands;
+- corrections, failure cases, inputs, and outputs already demonstrated in the conversation;
+- active host capabilities, native creators, metadata, or packaging tools exposed to the current run.
 
-## Phase 2: Investigate the repo first
+Treat host-native skill creators as environment-specific neighbors. Consider their trigger overlap only when the creator is exposed to the current run or explicitly invoked; do not infer a collision from a dormant installation or another host's catalog. Never narrow a portable skill solely around one host's built-in tooling.
 
-Before asking questions, inspect the repo or working directory for facts that reduce ambiguity.
+If the repository is thin or unrelated, say so and continue with a portable design.
 
-Look for:
+## Choose the target profile
 
-- existing skills, prompts, plans, and workflow docs
-- scripts, CLIs, templates, schemas, examples, or tests relevant to the target workflow
-- repo conventions that the new skill should mirror
-- tool or plugin dependencies that the skill must mention
+Default to `portable` unless evidence requires another profile.
 
-Prefer targeted search over broad reading. Search likely directories first, then open only the most relevant files.
+- `portable`: keep behavior and core instructions host-neutral; declare the minimum package contract and isolate any adapters required by named target hosts.
+- `repo-bound`: name the repository contract, real paths, and validators that make the skill local.
+- `host-enhanced`: keep the portable core, then add host metadata or invocation policy only when the active target supports and benefits from it.
+- `distributable`: design the skill here, then use an active host's packaging or publishing workflow instead of inventing one inside the skill.
 
-Use the repo investigation to answer discoverable questions such as:
+Portable describes the semantic core, not a guarantee that one package installs unchanged everywhere. Do not claim cross-platform package compatibility without named targets and evidence for each. Do not copy remote metadata or folder conventions over a local contract. If multiple target platforms disagree, preserve a portable core and isolate host-specific additions.
 
-- naming conventions
-- likely file paths
-- existing workflow steps
-- validation commands
-- whether AGENTS-level guidance already exists and should stay out of the skill
-- whether references, scripts, or assets are warranted
+## Design the package
 
-Also inspect the conversation itself for concrete examples. If the user says "turn this into a skill" or is iterating on a workflow already demonstrated in chat, extract:
+Specify or create the minimum useful package, according to the selected mode:
 
-- the steps they actually followed
-- corrections they made
-- failure cases they cared about
-- inputs, outputs, and artifacts already visible
+- `SKILL.md`: trigger-bearing metadata, core workflow, critical decisions, and resource routing;
+- `references/`: details that are needed selectively and would otherwise bloat the main file;
+- `scripts/`: deterministic, fragile, or repeatedly reimplemented execution;
+- `assets/`: templates or resources consumed by outputs;
+- host-specific metadata: only for an identified target profile and outside portable core instructions when possible.
 
-If the repo is thin or unrelated, state that and proceed with a generic skill design.
+Match instruction precision to workflow risk:
 
-## Phase 3: Clarification gate
+- use flexible prose when several approaches are valid;
+- use explicit patterns or parameterized scripts when a preferred method exists;
+- use narrow deterministic steps when order, safety, or reproducibility is fragile.
 
-Do not create a new skill or make broad workflow rewrites until the spec is
-decision-complete. For small wording fixes, report-only audits, or clearly
-bounded revisions, continue with labeled assumptions instead of blocking on
-questions.
+Keep always-loaded repository guardrails in `AGENTS.md` or the platform equivalent. Use skills for on-demand procedures, deeper domain knowledge, and reusable execution resources.
 
-Ask only questions that materially affect the generated skill. Prefer concise, direct questions. Push until these are clear:
+### Write `SKILL.md`
 
-- primary outcome and success criteria
-- who will use the skill and in what environment
-- clear trigger phrases and adjacent phrases that should not trigger it
-- whether the description should optimize for broader recall or tighter precision
-- whether the skill creates, revises, audits, or all three
-- required workflow steps and their order
-- required inputs and expected outputs
-- dependencies on repo files, scripts, tools, MCP servers, or external services
-- whether the skill should ship only `SKILL.md` or also `references/`, `scripts/`, or `assets/`
-- validation expectations, examples, and negative cases
+- Follow the target platform and repository frontmatter contract; for this repository's portable default, use `name` and `description` only, then keep host-required adapters separate.
+- Use a short kebab-case name and match the folder name when the local contract requires it.
+- Front-load the job and important trigger terms in the platform's active trigger fields, including `description` when supported; include negative boundaries when adjacent skills could match.
+- Describe activation in metadata and execution in the body.
+- Keep the body procedural and imperative.
+- Link every reference directly and say when to read it.
+- Avoid duplicating guidance between `SKILL.md` and references.
+- Keep examples only when they resolve a real ambiguity.
 
-If a choice remains open and the user does not care, pick a sensible default and record it as an explicit assumption in the final skill package.
+### Declare trust and side effects
 
-## Phase 3.5: Done criteria
+When the skill uses scripts, tools, authentication, networks, or external writes:
 
-Know what counts as complete before you edit.
+- name required dependencies and permissions;
+- distinguish read-only actions from mutations;
+- state consequential side effects and safe verification;
+- avoid embedding credentials or environment-specific secrets;
+- include failure, cleanup, or rollback guidance when the workflow can leave partial state.
 
-- `new skill`: the package is created, the trigger surface is clear, the workflow is actionable, and validation risk is addressed
-- `revise skill`: the intended problems are fixed, the repo conventions are preserved, and the delta is summarized
-- `audit skill`: the findings are explicit, prioritized, and actionable, even if no edits are made; for multi-skill audits, group cross-cutting issues before per-skill details
-- `validate skill`: representative positive and negative prompts were reviewed, outcomes were summarized, and residual risk is stated
-- `optimize trigger`: the description is tighter, easier to match, checked against adjacent negatives, and no longer carries workflow detail
+Test representative bundled scripts by running them. If execution is unavailable or unsafe, report that limitation rather than implying success.
 
-### Audit output pattern
+## Validate proportionally
 
-For multi-skill audits, prefer this order:
+Use [references/skill-validation.md](references/skill-validation.md) when triggers, workflow meaning, resources, dependencies, or assumptions change. Distinguish activation from post-selection instruction behavior, static prediction from observed runs, and generic harnesses from target-host contexts.
 
-1. Structural findings that affect the whole inventory.
-2. Trigger and composition issues that can cause wrong skill activation.
-3. Token-cost or progressive-disclosure improvements.
-4. Per-skill proposals with concrete file targets.
-5. Validation gaps and any residual uncertainty.
+For multi-skill audits in this repository, use [references/inventory-trigger-evals.md](references/inventory-trigger-evals.md) to check high-risk routing boundaries.
 
-For this repository's current high-risk trigger families, use
-[references/inventory-trigger-evals.md](references/inventory-trigger-evals.md)
-as a lightweight prompt-routing check before or after trigger edits.
+Use [references/quality-checklist.md](references/quality-checklist.md) before finalizing a new or substantially revised skill. For a report-only audit, use it to organize findings without editing.
 
-## Phase 4: Create or revise the skill
+## Complete by mode
 
-Create a skill folder with the minimum set of files that makes the workflow repeatable.
+- `design`: the contract, trigger boundaries, package map, side effects, and validation plan are implementation-ready without changing files.
+- `new`: package and required registration or documentation updates exist, trigger surface and workflow are actionable, resources are validated proportionally, and residual risk is stated.
+- `revise`: intended problems are fixed, local conventions are preserved, changed behavior is validated, and the delta is summarized.
+- `audit`: findings are explicit, prioritized, actionable, and separated from unverified hypotheses.
+- `validate`: exact cases and independent evidence dimensions are recorded, outcomes are classified, and residual risk is clear.
+- `optimize-trigger`: the active trigger fields are concise, front-loaded, checked against paraphrases and adjacent negatives, and free of workflow instructions.
 
-Default package:
-
-- `SKILL.md`
-- `references/` only when details would otherwise bloat `SKILL.md`
-- `scripts/` only when deterministic execution or validation is meaningfully better than prose
-- `assets/` only when the skill depends on templates, icons, or other bundled artifacts
-
-By default, keep the skill generic and portable. Do not add product-specific metadata files unless the user explicitly requests them.
-
-Use progressive disclosure deliberately:
-
-- keep the trigger-bearing metadata and core workflow in `SKILL.md`
-- move large catalogs, API details, schemas, and variant-specific guidance into `references/`
-- put fragile or repetitive execution in `scripts/`
-- keep output resources in `assets/`
-
-Do not duplicate the same guidance across `SKILL.md` and references.
-
-### Writing rules for `SKILL.md`
-
-- Use only `name` and `description` in YAML frontmatter
-- Make `name` kebab-case
-- Make `description` optimize activation, not teach the workflow
-- Make `description` state the job and when to use it in the language a user or agent would actually say
-- Optimize the description for searchability: include words the user or agent would actually say, likely file names, and adjacent synonyms when they matter
-- Keep workflow details out of the description; if the description summarizes the process, another agent may follow the shortcut and skip the body
-- Keep the body procedural and imperative
-- Put core workflow in the main file and move bulky detail into `references/`
-- Link every reference file directly from `SKILL.md`
-- Keep examples short and representative
-
-Keep AGENTS-level policy out of the skill unless it is truly task-specific. Put always-loaded repo guardrails in `AGENTS.md`; use skills for on-demand workflows, domain knowledge, templates, or deeper procedures.
-
-When in doubt between `AGENTS.md` and a skill:
-
-- put always-on policy, repo-wide guardrails, and universal defaults in `AGENTS.md`
-- put task-specific workflows, heavy references, examples, and reusable execution logic in the skill
-
-Example split:
-
-- `AGENTS.md`: `Use repo-local path helpers instead of hardcoded temp paths.`
-- skill: the multi-step release workflow, linked validation commands, and packaging edge cases
-
-Negative split examples:
-
-- keep `Always run targeted repo searches before asking naming questions.` in `AGENTS.md` if that is a universal repo rule
-- do not create a dedicated skill just to say `Prefer kebab-case folder names`
-
-### Recommended body shape
-
-Use this structure unless the target skill needs a sharper format:
-
-1. Title and one-line stance
-2. Core workflow
-3. Important constraints or decision rules
-4. Resource map for bundled references/scripts/assets
-5. A small number of concrete examples
-
-## Phase 5: Validation pass
-
-Validate before finalizing whenever the skill is reusable, high-risk, or easy to test objectively.
-
-Minimum standard:
-
-- run 2-3 representative positive prompts
-- run at least one negative or adjacent prompt
-- note whether the failures came from trigger wording, workflow ambiguity, or missing resources
-
-Decision rule:
-
-- skip validation only for edits that do not change trigger surface, scope, or workflow meaning
-- use lightweight prompt simulation for description edits, scope changes, or body rewrites
-- use before/after comparison when revising an existing skill with known trigger or behavior problems
-- use heavier comparative evaluation only when the user explicitly wants proof or the skill's value is otherwise hard to judge
-
-For the detailed prompt-writing and review workflow, use [references/skill-validation.md](references/skill-validation.md).
-
-## Phase 6: Token optimization pass
-
-Before finalizing, aggressively remove waste.
-
-Check for:
-
-- long explanations of concepts the model already knows
-- repeated guidance stated in multiple sections
-- examples that restate the rules instead of adding signal
-- variant-specific detail that belongs in `references/`
-- broad "best practices" text that is not specific to the workflow
-- instructions that are discoverable from the repo at runtime and do not belong in the skill
-
-Optimize in this order:
-
-1. Delete redundant text.
-2. Compress wording.
-3. Move detailed material into `references/`.
-4. Replace prose with a short checklist when fidelity is unchanged.
-5. Trim examples and trigger phrases until they are specific but not repetitive.
-
-If you slim the package, preserve behavior. The goal is lower token cost without losing trigger quality or execution reliability.
-
-Use `references/token-optimization.md` as the final audit checklist.
-
-## Quality bar
-
-The finished skill should:
-
-- trigger for obvious and paraphrased requests
-- avoid triggering on adjacent but unrelated work
-- tell another agent exactly how to proceed without extra guesswork
-- stay concise enough that the main `SKILL.md` is cheap to load
-- remain useful outside the current repo unless the user asked for a repo-bound skill
-- separate always-loaded policy from on-demand skill content
-- include enough validation thinking that trigger bugs or workflow gaps are visible before shipping
-
-Use `references/skill-design-checklist.md` before finalizing.
-
-## Examples
-
-### Example: new engineering skill
-
-User request:
-`Create a skill for handling database migration planning in this repo.`
-
-Expected behavior:
-
-1. Inspect the repo for migration tooling, existing schema docs, deploy steps, and nearby skills.
-2. Ask targeted questions about supported databases, rollout constraints, and expected outputs.
-3. Create a migration-planning skill with clear triggers, workflow steps, and validation guidance.
-4. Move database-specific edge cases into `references/` if they make the main file too long.
-5. Run the token audit before finalizing.
-
-### Example: revise an overlong skill
-
-User request:
-`This skill triggers too often and is too verbose. Tighten it.`
-
-Expected behavior:
-
-1. Read the existing skill and identify trigger drift, repeated instructions, and bulky detail.
-2. Inspect neighboring repo materials to preserve local conventions.
-3. Ask only the missing questions needed to resolve scope or intended audience.
-4. Rewrite the frontmatter and body so the skill is narrower and cheaper.
-5. Summarize what was tightened and what moved to `references/`.
-
-### Example: validate a skill before shipping
-
-User request:
-`Pressure-test this skill before we publish it.`
-
-Expected behavior:
-
-1. Read the skill and identify its claimed trigger surface.
-2. Write 2-3 realistic positive prompts and at least one negative prompt.
-3. Simulate or benchmark the skill against those prompts.
-4. Tighten the description or body where the validation exposed gaps.
-5. Summarize the remaining risks if full evaluation was not practical.
+For multi-skill audits, report cross-cutting structure first, then routing and composition, context cost, per-skill changes, and validation gaps.

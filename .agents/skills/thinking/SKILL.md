@@ -1,209 +1,80 @@
 ---
 name: thinking
-description: Structured thinking skill. Merges ideation, systems analysis, critical reasoning, and convergent planning. Use when a user needs to explore and narrow a vague idea, challenge assumptions, compare approaches, or converge on a practical next move in the same pass. Do not use when sustained divergence alone is the goal or when a candidate plan already exists and needs adversarial stress-testing.
+description: Decision-framing workflow for turning an ambiguous problem or open choice into a recommendation, experiment, or concrete next move. Use when the user wants to explore a vague idea, compare plausible approaches, understand system trade-offs, or decide what to do. Do not use for sustained brainstorming, when the decision is already settled and the remaining work is only implementation, or adversarial review of an existing candidate (use recursive-thinking).
 ---
 
 # Thinking
 
-Adjacent skills: **thinking** (explore, analyse, converge) -> **recursive-thinking** (adversarial stress-test) -> **dream-thinking** (retrospective learning).
+Move from ambiguity to a decision that is specific enough to act on and test.
 
-Use **thinking** when the job is to move from ambiguity to a clear recommendation, experiment, or implementation-ready plan.
-Use it when exploration and convergence both matter in the same session.
-Do not escalate to **recursive-thinking** unless the decision is high-risk, contentious, or likely to hide important assumptions after a solid first pass here.
+Use this as an orthogonal workflow skill alongside any relevant domain or repository skills. It does not replace security review, test strategy, prompt work, story preparation, documentation, or implementation guidance.
 
-## Core Cadence
+Family boundary: **thinking** forms a candidate; **recursive-thinking** stress-tests an existing candidate; **dream-thinking** is an explicitly requested creative retrospective after experience. None requires the others to run first.
+
+## Core cadence
 
 Run the skill through one simple loop:
 
 - understand what is stuck
 - explore only enough to improve the decision
-- name what matters
+- identify what matters
 - choose what changes next
 
-Everything else in this skill supports that loop.
+## Route by bottleneck
 
-## Switch Skills When
+- **Problem framing:** the goal, affected stakeholder, constraint, or success signal is unclear.
+- **Option discovery:** the problem is clear but the plausible approaches are not.
+- **Assumption testing:** no candidate has won yet, and the choice depends on uncertain beliefs or missing evidence.
+- **Systems analysis:** incentives, feedback loops, dependencies, or second-order effects could make a local improvement harmful overall.
+- **Decision convergence:** enough context exists to compare serious options and recommend a next move.
 
-- switch to **recursive-thinking** when a candidate recommendation, design, or plan already exists and the main job is to pressure-test it
-- switch to a divergent-generation mode when the user wants sustained idea volume or facilitated ideation without convergence pressure
-- switch to implementation or plan-writing once the main trade-off is settled and the remaining work is execution detail
-
-## Default Stance
-
-- inspect the current repo, docs, and constraints before proposing changes
-- treat exploration and planning as one continuum: diverge only enough to improve the decision, then converge
-- prefer one focused question at a time when clarification materially changes the outcome
-- make assumptions explicit instead of silently filling gaps
-- prefer incremental, testable moves over rewrites unless the complexity is structural
-- optimise for learning value, carrying cost, and reversibility, not novelty
-- remove unnecessary complexity ruthlessly
-
-## Modes
-
-Pick the lightest mode that fits. Switch modes as new information arrives.
-
-- **Problem framing**: clarify the real problem, user, constraint, and success signal before discussing solutions
-- **Ideation**: generate multiple plausible directions when the path is unclear or the first idea is too narrow
-- **Assumption testing**: surface what must be true, what evidence exists, and what would disprove the current idea
-- **Systems analysis**: map players, incentives, feedback loops, stocks/flows, and second-order effects when multiple actors interact, local optimisation can damage the whole, or effects compound over time
-- **Plan convergence**: compare approaches, choose the narrowest viable move, and define validation
-
-## Mode Selection
-
-Before doing substantive work, choose the current mode from the user's actual bottleneck:
-
-- unclear problem or weak framing -> **Problem framing**
-- clear problem, unclear options -> **Ideation**
-- promising option, unclear evidence or risks -> **Assumption testing**
-- multi-actor, ecosystem, or incentive-heavy problem; at least two actors with misaligned incentives; or clear risk of second-order effects -> **Systems analysis**
-- enough context gathered, main question is "what should we do?" -> **Plan convergence**
-
-If the bottleneck changes, say so briefly and switch modes. Do not stay in ideation once one option is clearly ahead and the remaining work is evaluation or planning.
+Use **recursive-thinking** instead when the main job is to challenge, premortem, or find weaknesses in an already-formed plan, diagnosis, design, or recommendation. Switch to the appropriate execution or artifact-specific skill once the material trade-off is settled.
 
 ## Workflow
 
-1. **Inspect** the current code, docs, arguments, and constraints.
-2. **Understand what is stuck.**
-   - State the goal, success criteria, and out-of-scope items.
-   - If the user starts with a solution, check whether the underlying problem is actually settled.
-   - If ambiguity is low and one viable path exists, skip heavy ideation.
-3. **Explore only enough to improve the decision.**
-   - Ask one focused question at a time.
-   - Prefer multiple choice when choosing one direction.
-   - If the answer will not change the design, make a labeled assumption and continue.
-4. **Diverge** when the solution space is still underexplored.
-   - Generate 3-7 distinct directions depending on task size.
-   - Vary along meaningful dimensions: scope, user segment, timing, process vs product, add vs remove, quick win vs durable investment.
-   - Include at least one subtraction or inversion option when useful.
-   - Do not evaluate too early; weak divergence produces fake convergence.
-   - Stop diverging once the option set is meaningfully different and further ideas would mostly repeat earlier patterns.
-5. **Name what matters.**
-   - Steelman the core claim or proposal before critiquing it.
-   - List key assumptions, missing evidence, and the riskiest unknown.
-   - For complex systems, map players, incentives, feedback loops, stocks, and flows.
-   - Activate systems analysis when at least two actors have meaningfully different incentives, when a local improvement could hurt the broader system, or when delayed effects are likely to matter.
-   - Trace second-order effects before recommending changes that shift incentives or constraints.
-   - If reasoning gets tangled, break it into sequential steps and revise earlier conclusions explicitly.
-   - If the user mainly wants critique of an already-formed plan, spend most of the pass here instead of reopening wide ideation.
-6. **Compare** 2-3 serious approaches when the choice materially affects the outcome.
-   - Compare on: user value, complexity, risk, reversibility, time-to-validate, and carrying cost.
-   - For each rejected approach, state why it lost in one line.
-   - If only one viable approach exists, say so and skip the forced comparison.
-7. **Choose what changes next.**
-   - "Narrowest" means the smallest step that meaningfully improves the situation or tests the key assumption.
-   - When narrowest conflicts with quality, prefer quality unless explicitly time-boxed.
-   - For high-uncertainty ideas, prefer the cheapest credible experiment over a full build.
-8. **Produce** a concrete output using the structure below.
-   - If the best next move is learning rather than building, the output may be an experiment, decision memo, or research step instead of an implementation plan.
+1. **Inspect the available context.** Read relevant code, documents, evidence, constraints, and prior decisions before asking for facts that can be discovered.
+2. **Frame the decision.** State the goal, success signal, important constraints, and what is out of scope. If the user starts with a solution, verify that the underlying problem is settled.
+3. **Resolve material ambiguity.** Ask one focused question when its answer would change the recommendation. Otherwise state a labeled assumption and continue.
+4. **Explore when useful.** Generate meaningfully different approaches only while the option set is underdeveloped. Vary scope, timing, affected stakeholder, process versus product, addition versus subtraction, or reversible experiment versus durable investment. Include the status quo, deferral, or stopping when one is a credible alternative; do not add it as filler. Stop when further options would repeat the same trade-offs.
+5. **Identify decision drivers.** Separate evidence from assumptions, identify any unknown material enough to change the recommendation, and trace second-order effects when incentives or dependencies matter. Steelman serious options before rejecting them.
+6. **Compare serious options.** When the choice is material, compare the strongest two or three approaches on value, complexity, risk, reversibility, time to validate, and carrying cost. Do not invent weak alternatives to fill a table.
+7. **Choose the next move.** Recommend the smallest credible action or experiment that improves the situation or tests the key assumption. Prefer necessary quality over artificial narrowness.
+8. **Define validation.** Make validation proportionate to the move's cost, reversibility, and uncertainty. Name success or failure signals, evidence to collect, and a revisit point when they add decision value.
 
-## Decision Rules
+## Decision rules
 
-- Understand the argument in terms its owner would accept before critiquing it.
-- Separate conclusions, supporting points, evidence, and assumptions.
-- Distinguish symptoms from root causes; keep asking why until the frame stops moving.
-- Keep the core cadence visible in the response: what is stuck, what matters, and what changes next.
-- Keep divergence and convergence explicit; do not mix them so loosely that the user cannot tell whether you are still exploring or already recommending.
-- Flag hidden incentives and local optimisations that could damage the larger system.
-- Prefer options that create durable leverage, not just local relief.
-- Use frameworks as tools, not templates. Pull in only the smallest one that improves the decision.
-- If new constraints appear during implementation, update the plan before continuing.
+- Keep conclusions, evidence, and assumptions distinguishable.
+- Distinguish symptoms from root causes without forcing repeated why-questions after the framing stabilizes.
+- Prefer reversible learning when uncertainty is high and durable leverage when evidence is strong.
+- Skip broad exploration when one viable path is already clear.
+- Make the recommendation explicit; do not end with an unranked list unless the user requested options only.
+- Name why a rejected serious approach lost in one sentence.
 
-## Planning Stop Test
+## Completion test
 
-Thinking is sufficient when all three are true:
+Stop when all are true:
 
-- the next step is concrete
-- the main trade-off has been decided or explicitly deferred
-- validation is clear enough to detect failure
+- the recommended next step is concrete
+- the main trade-off is decided or explicitly deferred
+- any material assumption or unknown is visible
+- validation or a revisit condition is proportionate to the move
 
-## Anti-patterns
+## Output
 
-- converging on the first plausible idea without exploring alternatives
-- inventing weak alternatives just to satisfy the comparison step
-- asking broad discovery questions that do not change the decision
-- treating frameworks like checklists instead of thinking tools
-- critiquing a claim before restating it fairly
-- analysing only first-order effects in multi-stakeholder systems
-- staying in ideation after the decision has effectively been made
-- using "narrowest" to justify avoiding necessary quality improvements
-- producing a plan that sounds organised but leaves the next action ambiguous
-
-## Output Structure
-
-Scale to task size.
-
-These are optional output templates; use them when they make the answer
-clearer, not as mandatory scaffolding.
-
-**Small tasks** (clear issue, bounded change):
+Scale the response to the task. For a small decision, use:
 
 ```markdown
-## Goal
-One sentence.
+## Decision
+The recommended direction.
 
-## Key Insight
-What matters most about the problem or trade-off.
+## Why
+The decisive evidence, assumption, or trade-off.
 
-## Approach
-What to change or test and why.
-
-## Validation
-How to verify it worked.
-```
-
-**Medium tasks** (multiple files, meaningful trade-offs, moderate ambiguity):
-
-```markdown
-## Goal
-What we're trying to achieve and what success looks like.
-
-## Constraints
-What must not break, what is out of scope.
-
-## Assumptions
-What we're taking as given and what would invalidate the plan.
-
-## Approach Comparison
-| Approach | Pros | Cons | Risk |
-|----------|------|------|------|
-| A        | ...  | ...  | ...  |
-| B        | ...  | ...  | ...  |
-
-Chosen: A, because [reason]. Not B, because [reason].
-
-## Key Changes
-By subsystem, file group, or experiment.
+## Next move
+The concrete action or experiment.
 
 ## Validation
-Tests, manual checks, or acceptance criteria.
+How to verify it worked or when to revisit it.
 ```
 
-**Large or ambiguous tasks** (cross-cutting, ecosystem, or strategic):
-
-```markdown
-## Goal
-What we're trying to achieve and why it matters now.
-
-## System View
-Players, incentives, constraints, and important second-order effects.
-
-## Assumptions and Risks
-What must be true, what is most likely to fail, and what evidence is missing.
-
-## Approach Comparison
-| Approach | Upside | Cost | Risk | Reversibility |
-|----------|--------|------|------|---------------|
-| A        | ...    | ...  | ...  | ...           |
-| B        | ...    | ...  | ...  | ...           |
-
-Chosen: A, because [reason]. Not B, because [reason].
-
-## Phases
-Ordered steps with dependencies noted.
-
-## Validation
-What success and failure look like.
-
-## Rollback
-What to do if the chosen path fails.
-```
+For medium or large decisions, read [references/output-templates.md](references/output-templates.md). Use only sections that improve the decision; do not force the template.

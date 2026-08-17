@@ -10,7 +10,9 @@ The published repository is intentionally small at the root:
 
 - `README.md` and `AGENTS.md` document the repo and its working rules
 - `.agents/skills/` contains the published skills
-- `scripts/check-skills.sh` runs structural validation for the skill inventory
+- `scripts/check_skills.py` runs cross-platform structural validation for the skill inventory
+- `scripts/check-skills.sh` is the Bash wrapper for the same validator
+- `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
 - `LICENSE` covers the repository contents
 
 ## Repository Layout
@@ -24,7 +26,9 @@ The published repository is intentionally small at the root:
       scripts/      # optional
       assets/       # optional
 scripts/
-  check-skills.sh    # structural repository validation
+  check_skills.py       # cross-platform structural validator
+  check-skills.sh       # Bash wrapper
+  test_check_skills.py  # validator regression tests
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
@@ -84,7 +88,7 @@ The repository's published skills are grouped into these families.
 
 ### Skill Authoring And Documentation
 
-- `agent-skill-generator` — create or revise reusable agent skills from a problem statement, workflow, or existing skill folder
+- `agent-skill-generator` — design, create, revise, audit, validate, or optimize reusable agent skills and portable `SKILL.md` packages across platforms
 - `agents-md-generator` — create or revise repository `AGENTS.md` files from repo inspection and existing docs
 - `documenter` — baseline documentation overlay for substantial documentation authoring or restructuring, including README files, specs, ADRs, tutorials, how-to guides, reference docs, API docs, code comments, changelogs, and agent-facing docs
 - `documenter-coauthoring` — companion overlay for multi-round collaborative drafting of large specs, proposals, decision docs, and similar documents
@@ -147,18 +151,18 @@ Defaults:
 ### Workflow Skills
 
 - `context-engineering` — workflow for curating, auditing, compacting, and refreshing AI-agent context before or during agent work
-- `dream-thinking` — reflective sleep-and-dream heuristic for learning from recent work
+- `dream-thinking` — explicitly invoked creative retrospective that uses simulated dream imagery and metaphor to derive grounded hypotheses and next observations or actions without treating imagery as evidence
 - `go-testing-with-testify` — workflow for writing, reviewing, and hardening Go tests built on the standard `testing` package plus `stretchr/testify`, including `assert`, `require`, `mock`, and `suite`
 - `playwright-testing` — workflow for generating, debugging, reviewing, and hardening Playwright E2E specs in an existing harness, including `playwright-cli` exploration and flake triage
 - `prompt-engineering` — workflow for designing, rewriting, debugging, evaluating, and optimizing LLM prompts, system prompts, developer prompts, few-shot examples, structured outputs, tool-use prompts, and prompt eval cases
-- `recursive-thinking` — recursive self-questioning to stress-test plans, diagnoses, designs, and recommendations
+- `recursive-thinking` — adversarial review workflow for pressure-testing an existing plan, diagnosis, design, argument, proposal, or recommendation without replacing domain-specific review
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
 - `story-implementation-orchestrator` — companion process overlay for running the full story-to-plan pipeline across story clarification, repo scouting, and model-aware implementation planning into a single handoff packet before coding
 - `story-implementation-planner` — workflow for turning a clarified story card plus repo context into an actionable implementation plan optimized for the target model, agent, or human, including first action, validation, and rollback
 - `story-repo-scout` — workflow for using a story card, ticket, or acceptance criteria to find relevant repo files, evidence, documented commands, and do-not-touch boundaries before coding
 - `tester-mindset` — testing mindset workflow for designing meaningful tests, validation strategy, acceptance criteria, edge cases, experiments, and probes
-- `thinking` — planning and design guidance for quick-to-medium structured problem solving
+- `thinking` — decision-framing workflow for exploring an ambiguous problem, comparing serious approaches, and converging on a testable next move
 - `user-story-clarifier` — workflow for drafting, rewriting, splitting, and auditing story-level requirements, user stories, feature definitions, definitions of done, and acceptance criteria into unambiguous story cards for humans and coding agents
 
 Story-to-plan family: use `user-story-clarifier` for clarification or
@@ -175,6 +179,9 @@ Defaults:
 - Use `playwright-testing` when a Playwright setup exists and the job is to design, generate, harden, or review Playwright browser tests.
 - Use `prompt-engineering` when the main artifact is an LLM prompt, system or developer prompt, prompt eval set, structured-output instruction, or prompt-behavior diagnosis.
 - Use `context-engineering` when the main artifact is a context packet, context audit, long-session compaction, or handoff summary for AI-agent work.
+- Use `thinking` when no candidate has won yet and the job is to frame an ambiguous decision, compare plausible approaches, and converge. It may precede or accompany implementation while the decision remains open.
+- Use `recursive-thinking` when a candidate already exists and the user wants a premortem, countercase, assumption challenge, or evidence-based stress test.
+- Use `dream-thinking` only for an explicit dream, sleep, nightmare, or metaphorical-reflection request; use ordinary retrospective or postmortem guidance otherwise, and never treat dream imagery as an evidence basis.
 - Use `story-implementation-orchestrator` when the user wants the complete story-to-plan preparation workflow before code changes.
 - Use `story-implementation-planner` after a story and repo context exist and the next need is an actionable implementation plan for a target executor, with first action, dependencies, rollback, and validation.
 - Use `story-repo-scout` after a story or ticket is clear enough and before implementation when relevant repo files, evidence, validation commands, and do-not-touch boundaries need to be found and appended.
@@ -211,12 +218,16 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 
 ## Validation
 
-This repository does not currently have an application build, test, or lint
-pipeline. It does have a structural skill-inventory checker:
+This repository does not currently have an application build or lint pipeline.
+It has a structural skill-inventory checker and focused validator tests:
 
-```bash
-bash scripts/check-skills.sh
+```console
+python scripts/test_check_skills.py
+python scripts/check_skills.py
 ```
+
+On Unix-like systems, `bash scripts/check-skills.sh` runs the same validator
+through a convenience wrapper.
 
 Validation is structural:
 

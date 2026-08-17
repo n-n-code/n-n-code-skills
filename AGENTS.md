@@ -4,15 +4,16 @@
 
 This repository stores reusable agent skills. Most work should be limited to root documentation and folders under `.agents/skills/`.
 
-The root currently contains `README.md`, `AGENTS.md`, `LICENSE`, and
-`scripts/check-skills.sh` in addition to `.agents/skills/`.
+The root currently contains `README.md`, `AGENTS.md`, `LICENSE`,
+`scripts/check_skills.py`, `scripts/check-skills.sh`, and
+`scripts/test_check_skills.py` in addition to `.agents/skills/`.
 
 ## Structure
 
 - Skills live in `.agents/skills/<skill-name>/`
 - Each skill must include `SKILL.md`
 - Supporting files such as `references/`, `scripts/`, or templates are allowed when they directly serve the skill
-- Repository validation lives in `scripts/check-skills.sh`
+- Repository validation lives in `scripts/check_skills.py`; `scripts/check-skills.sh` is its Bash wrapper and `scripts/test_check_skills.py` covers validator regressions
 
 ## Skill Composition Model
 
@@ -84,19 +85,23 @@ and describe clearly when the companion should be added. Example:
 
 ## Validation
 
-There is no application build, test, or lint workflow. For repository
-structural validation, run:
+There is no application build or lint workflow. For repository structural
+validation and its focused regression tests, run:
 
-```bash
-bash scripts/check-skills.sh
+```console
+python scripts/test_check_skills.py
+python scripts/check_skills.py
 ```
+
+On Unix-like systems, `bash scripts/check-skills.sh` runs the same validator.
 
 Before finishing, verify:
 
 - new or edited skills still live under `.agents/skills/`
 - each skill folder still has `SKILL.md`
-- `bash scripts/check-skills.sh` passes when the change affects skill files,
+- `python scripts/check_skills.py` passes when the change affects skill files,
   references, root docs, or validation behavior
+- `python scripts/test_check_skills.py` passes when validator behavior changes
 - root docs do not claim nonexistent commands or automation
 - root docs still match the current root files and published skill inventory
 - examples and references point to real files

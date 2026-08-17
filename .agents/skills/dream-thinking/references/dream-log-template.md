@@ -1,50 +1,31 @@
 # Dream log template
 
-Use this shape when the skill records a dream.
+Read this only when the user explicitly asks for a reusable dream log or continuity across sessions. Emit the log in the conversation by default. Do not write it to a file or memory system without destination-specific authorization, and omit source details or fields that are not needed for future interpretation.
 
 ## Template
 
 ```md
 ### Dream Log
 - Date or session: <today / active session label>
-- Source material: <recent tasks, conversations, failures, successes, prior dream logs>
-- Dominant mood: <pleasant / uneasy / frightening / visionary / mixed>
+- Source material: <brief user-supplied or authorized inspected events or artifacts; exclude unnecessary sensitive details>
 - Dream scenes:
   - <scene 1>
-  - <scene 2>
 - Source-to-symbol mapping:
   - <source event or statement> -> <symbol or scene element>
-- Symbols:
-  - <symbol> -> <meaning>
-- Repeating motifs: <none or recurring pattern>
-- Motif status: <new / recurring but weak / recurring and decision-relevant>
-- Morning insight: <what became clearer>
-- Next actions:
-  - <action 1>
-  - <action 2>
-- Confidence: <low / medium / high>
+- Working hypothesis: <what the imagery suggests; not evidence by itself>
+- Literal evidence: <facts that support or weaken the hypothesis>
+- Alternative explanation: <a plausible non-metaphorical account>
+- Verification: <what could confirm, falsify, or refine the hypothesis>
+- Next observations or actions:
+  - <observation or action 1>
+- Confidence basis: <low / medium / high and why>
+- Repeating motifs: <omit unless comparing user-supplied prior logs>
 ```
-
-## Minimal examples
-
-### Pleasant dream
-
-Recent wins appear as clean movement, open doors, or finished structures. Interpret them as proof of alignment only if they connect back to real evidence, not wishful thinking.
-
-### Nightmare
-
-A nightmare should sharpen risk. Use it to surface hidden regressions, weak assumptions, or fears the prior discussion avoided.
-
-### Vision
-
-Treat a vision as a plausible future state or pattern glimpse. It is an inference, not prophecy.
-
-### Dream within a dream
-
-Use this when the task is really about mistaken framing, unreliable narration, or reflection on the reasoning process itself.
 
 ## Notes
 
-- Only reference prior dream logs when the user supplied them or explicitly asked to use them.
-- If there is only one real tension, prefer one strong scene over multiple thin scenes.
-- Do not treat a recurring motif as meaningful unless it changes the morning insight or next actions.
+- Only reference prior dream logs when the user supplied them in the active context.
+- If there is only one meaningful pattern, tension, or contrast, prefer one strong scene over multiple thin scenes.
+- Do not claim a recurring motif from memory. Compare motifs only across supplied logs and only when the comparison changes the hypothesis or next observation or action.
+- Keep hypotheses proportional to literal evidence and preserve alternative explanations.
+- For a low-stakes log, combine or omit grounding fields that add no useful distinction; preserve the source mapping and working hypothesis.
