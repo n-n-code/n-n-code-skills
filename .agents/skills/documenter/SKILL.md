@@ -1,6 +1,6 @@
 ---
 name: documenter
-description: "Baseline overlay for substantial documentation authoring or restructuring: README, specs, ADRs, tutorials, how-to guides, reference docs, explanations, API docs, code comments, changelogs, and agent-facing docs. Use when the agent should classify doc type, ground claims in repo truth, and validate examples before finishing."
+description: "Baseline overlay for substantial documentation authoring or restructuring other than root or nested repository AGENTS.md: README, specs, ADRs, tutorials, how-to guides, reference docs, explanations, API docs, code comments, changelogs, and other agent-facing docs. Use when the agent should classify doc type, ground claims in repo truth, and validate examples before finishing. Use agents-md-generator as primary for AGENTS.md."
 ---
 
 # Documenter
@@ -18,6 +18,7 @@ Documentation workflow for repo docs, technical writing, and inline API comments
 
 ## Not For
 
+- root or nested repository `AGENTS.md`; use `agents-md-generator` as primary
 - binary document manipulation such as `.docx`, `.pdf`, `.pptx`, or `.xlsx`
 - tiny typo, grammar, or copy edits that do not require document-type
   decisions, repo-truth checks, or restructuring

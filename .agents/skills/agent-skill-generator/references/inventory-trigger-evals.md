@@ -184,6 +184,7 @@ Expected `documenter`:
 
 - `Rewrite this README section so it matches the current repo behavior.`
 - `Create an ADR for this implementation decision using evidence from the code.`
+- `Write an onboarding guide for people who use coding agents in this repo.`
 
 Expected `documenter` + `documenter-coauthoring`:
 
@@ -194,6 +195,23 @@ Expected `agents-md-generator`:
 
 - `Create an AGENTS.md for this repo from the README and existing scripts.`
 - `Convert this CLAUDE.md guidance into repo-accurate AGENTS.md instructions.`
+- `Review our repository coding-agent instructions for stale commands, but do not edit files.`
+- `Draft repo-wide coding-agent guidance for this monorepo and recommend where local overrides are justified.`
+- `Improve the existing AGENTS.md without overwriting unrelated edits.`
+
+Expected not `agents-md-generator` as primary:
+
+- `Rewrite this contributor guide for developers using coding agents.` -> use `documenter`.
+- `Write a tool-specific CLAUDE.md and leave AGENTS.md alone.` -> use `documenter`.
+- `Create a reusable skill for generating repository instructions.` -> use `agent-skill-generator`.
+
+Instruction-behavior pressure cases for `agents-md-generator`:
+
+- `Audit the current AGENTS.md and show a complete replacement, but do not edit files.` -> task `audit`, output `findings + draft`, root target, no writes.
+- `Create services/api/AGENTS.md for its different test workflow; keep the existing root file unchanged.` -> task `create`, output `apply`, named nested target, root unchanged.
+- A validation command is declared in the repository but its runtime is missing locally. -> retain the sourced command, record execution as environment-blocked, and do not present it as passed.
+- `Draft a migration from CLAUDE.md to AGENTS.md, but preserve the tool-specific entry point and do not edit files.` -> task `migrate`, output `draft`, preserve the adapter, no writes.
+- `Create an AGENTS.md for this small single-tool repo.` -> task `create`, output `apply`, root target, and a concise handoff limited to applicable evidence.
 
 ## User Stories
 

@@ -1,161 +1,119 @@
 ---
 name: agents-md-generator
-description: Create or revise repository AGENTS.md files from repo inspection, existing docs, and a small number of high-impact clarifications. Use when the user asks to create an AGENTS.md, improve agent instructions for a repo, convert CLAUDE.md-style guidance into AGENTS.md, or write coding-agent instructions for a repository.
+description: Create, draft, audit, revise, or migrate root and nested repository AGENTS.md files from repo evidence. Use when the user asks to create or review an AGENTS.md, improve repository coding-agent instructions, convert CLAUDE.md-style guidance into AGENTS.md, or decide instruction scope in a monorepo. Primary for AGENTS.md; use documenter for README, contributor, and other agent-facing documentation.
 ---
 
 # AGENTS.md generator
 
-Create portable, high-signal `AGENTS.md` files that are grounded in the actual repository and remain especially useful for Codex-style coding agents.
+Create high-signal, repository-grounded instructions with a host-neutral semantic core for coding-agent hosts that support `AGENTS.md`. Treat tool-specific instruction files as adapters when a host requires them.
+
+## Scope and side effects
+
+- `findings` and `draft` do not authorize instruction-file edits. Only `apply` authorizes those edits, limited to the requested files; validation side effects require separate authorization under the rule below.
+- The default target is the root `AGENTS.md`. Create or revise a nested target only when the user names or approves that path and selects `apply`.
+- Repository inspection is read-only. Validation commands may write caches or artifacts, install dependencies, use the network, or trigger external systems. Assess them first, run the smallest safe check, and get authorization before consequential validation.
+- Before editing, inspect the target file and any existing worktree diff. Preserve unrelated and pre-existing changes.
+- Never delete or overwrite source instruction files such as `CLAUDE.md` without explicit confirmation. Report any validation artifacts that cannot be safely cleaned up.
 
 ## Core workflow
 
-1. Identify whether the task is `new`, `revise`, or `migrate`.
-2. Inspect the repo before asking avoidable questions.
-3. Ask only the missing, high-impact questions.
-4. Draft or revise the root `AGENTS.md`.
-5. Recommend nested `AGENTS.md` files only when the repo structure clearly needs local overrides.
-6. Run a token-optimization pass before finalizing.
+1. Define the task, output, and target independently so mixed requests remain representable.
+2. Inspect the repository, existing instruction files, and target-file worktree state.
+3. Resolve operational facts, policy, host compatibility, and source conflicts using the rules below.
+4. Ask only the missing questions that materially affect the result.
+5. Produce findings, a draft, or authorized edits for the selected root or nested target.
+6. Decide whether nested files or host-specific adapters are justified.
+7. Validate claims and, after writes, review the resulting diff.
+8. Tighten the instructions and hand off evidence, assumptions, and residual uncertainty.
 
-Do not skip repo inspection unless the user gives the full repo context directly.
+Do not skip repository inspection unless the user supplies the complete relevant context.
 
-## Phase 1: Identify the task mode
+## Phase 1: Define task, output, and target
 
-Start by classifying the request:
+Choose each dimension independently:
 
-- `new`: create a root `AGENTS.md` for a repo that does not have one
-- `revise`: improve an existing `AGENTS.md`
-- `migrate`: consolidate repo guidance from files such as `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, or CI config into a cleaner `AGENTS.md`
+- task: `create`, `revise`, `migrate`, or `audit`
+- output: `findings`, `draft`, or `apply`
+- target: root `AGENTS.md` or one or more named nested paths
 
-If the user asks for "agent instructions", "repo instructions", or "coding-agent guidance", treat that as an `AGENTS.md` request unless they clearly want another format.
+`audit + findings` is the default for a review request. Pair `audit + draft` when the user also wants proposed replacement content. A migration can produce a read-only draft or applied changes. Use `apply` only when the user requests instruction-file edits; never turn `findings` or `draft` into those edits without new authorization.
 
-## Phase 2: Inspect the repo first
+If the user asks for "agent instructions", "repo instructions", or "coding-agent guidance", treat it as an `AGENTS.md` request only when the desired artifact is repository instruction scope rather than another document type.
 
-Before asking questions, inspect the repo for the facts that should shape the file.
+## Phase 2: Inspect before asking
 
-Look for:
+Prefer targeted inspection over broad reading. Establish:
 
-- existing `AGENTS.md`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, and release docs
-- package manifests, build files, test config, lint config, and task runners
-- CI workflows in `.github/workflows/`
-- monorepo layout, apps, packages, services, or other subtrees with distinct workflows
-- repo-specific hazards such as generated code, vendor trees, migrations, secrets, or destructive operations
+- repository purpose, structure, toolchains, and important subtrees
+- declared setup, build, test, lint, validation, and review commands
+- existing root, nested, and tool-specific instruction files
+- generated, vendored, secret-bearing, migration, deployment, and other risk boundaries
+- when nesting, adapters, or cross-host compatibility is in scope, instruction-file support and scope semantics for the relevant hosts
 
-Prefer targeted inspection over broad reading. Open the minimum set of files needed to answer:
+Read [references/inspection-and-content-checklist.md](references/inspection-and-content-checklist.md) when inspection is non-trivial, such as a migration, multiple manifests or instruction sources, risky validation, conflicting evidence, or a dirty target-file worktree.
 
-- how to set up the repo
-- how to build, test, lint, or validate changes
-- what commands matter before commit or PR
-- what constraints or forbidden actions agents must respect
-- whether any subdirectory genuinely needs its own local override file
+## Phase 3: Resolve migration and source conflicts
 
-Use `references/inspection-and-content-checklist.md` to make sure the repo inspection and final file are complete.
+For `migrate`, determine whether each source file is ordinary prose or an instruction entry point loaded by a target host. Keep a required entry point as a thin adapter when possible. Recommend replacing it with a pointer only when the host follows that pointer and the user confirms the change.
 
-## Phase 3: Ask only the missing questions
+Resolve conflicts by claim type:
 
-After inspection, ask only questions that materially change the final `AGENTS.md`.
+- For operational facts such as command names, flags, paths, and supported versions, prefer executable configuration and current repository structure.
+- For normative rules such as review policy, safety constraints, ownership, and required checks beyond CI, prefer maintained policy documents. Treat user direction as durable repository policy only when the user confirms it should govern future agents.
+- Do not infer that a check is optional merely because CI does not run it.
+- When evidence remains materially ambiguous, ask the user or report the conflict instead of silently choosing a source.
 
-Typical missing questions:
+Record each material conflict and its resolution in the handoff.
 
-- who the primary agent audience is, if the repo serves multiple very different workflows
-- how strict the repo should be about tests, formatting, commit hygiene, or review gates
-- whether the team wants nested `AGENTS.md` files in specific subtrees
-- whether any undocumented local conventions should be treated as required
+## Phase 4: Ask only high-impact questions
 
-Do not ask questions that the repo can answer on its own.
+Ask only about decisions that repository evidence cannot settle, such as:
 
-If ambiguity remains and the user does not care, choose a sensible default and mark it as an explicit assumption in the final draft.
+- which coding-agent hosts the instructions must support when compatibility affects the layout
+- whether an undocumented or request-specific preference should become durable policy for future agents
+- how strict review or validation gates should be when existing sources conflict
+- whether the user authorizes recommended nested files or changes to host-specific adapters
 
-## Phase 4: Draft or revise the root `AGENTS.md`
+Use a sensible default for low-impact ambiguity. Keep temporary authoring assumptions in the handoff, not the durable `AGENTS.md`; include an assumption in the file only when future agents need it to act correctly.
 
-Default output is a root `AGENTS.md`.
+## Phase 5: Produce the authorized output
 
-The file should be concise, executable, and repo-specific. Include only the sections that improve agent execution.
+- For `findings`, return prioritized observations, evidence, and residual uncertainty without drafting or editing unless another output was also requested.
+- For `draft`, return proposed content and intended paths without editing the repository. It may accompany audit findings.
+- For `apply`, edit only the authorized targets. Use [assets/agents-md-skeleton.md](assets/agents-md-skeleton.md) for a new root file and delete every inapplicable section or placeholder; write a new nested file as a local delta instead of copying the root skeleton.
+- When revising, preserve real constraints and unrelated sections, remove stale or duplicate guidance, and review both the pre-existing and resulting diff.
 
-Typical content:
+Prefer concrete commands, scoped boundaries, and decision rules over generic advice or product branding.
 
-- what this repo is and any structure the agent must understand
-- setup/build/test/lint/validation commands
-- coding and testing expectations
-- review, commit, or PR expectations if the repo clearly has them
-- repo-specific boundaries, hazards, or forbidden actions
-- where deeper docs live
+## Phase 6: Decide on nested files and host adapters
 
-Do not write a generic manifesto. Prefer concrete commands, boundaries, and decision rules.
+Do not claim universal `AGENTS.md` or nested-file support. Confirm the named host behavior when the result depends on it; if support is unknown, keep a single root file with clearly scoped subsections.
 
-When revising:
+Recommend nested files only for materially different subtree rules. State the proposed directories, local deltas, root responsibilities, and known inheritance behavior before writing them.
 
-- preserve real repo constraints
-- remove stale, duplicate, or product-branded wording unless the user explicitly wants to keep it
-- consolidate scattered instruction text into one coherent document
+Use [references/nested-files-and-token-optimization.md](references/nested-files-and-token-optimization.md) when nested scope, host adapters, or a long draft requires closer judgment.
 
-## Phase 5: Decide on nested `AGENTS.md`
+## Phase 7: Validate claims and changes
 
-Do not create or recommend nested files by default.
+For each material command, path, or policy claim, record the exact repository source. Track execution separately as passed, failed, environment-blocked, or not run when execution evidence matters. Do not force a formal evidence taxonomy onto trivial or undisputed facts.
 
-Recommend nested `AGENTS.md` only when a subtree has materially different:
+Then:
 
-- commands or toolchains
-- ownership boundaries
-- safety constraints
-- generated/vendor rules
-- workflow expectations
+- verify commands in manifests, task runners, scripts, CI, or maintained docs before including them
+- run only safe, proportionate checks; an environment failure does not invalidate a repository-declared command
+- remove or reword a command only when repository evidence shows it is stale, contradicted, or unsupported, not merely because local execution is blocked
+- verify paths against the current filesystem and use `git ls-files` as supplemental evidence when Git is available; do not assume intentionally untracked paths are invalid
+- trace constraints, hazards, and forbidden actions to repository evidence or explicit user policy
+- after writes, review the diff and remove only validation artifacts that are safely attributable to this run
 
-If nested files are warranted, state clearly:
+Report exact commands run, results, skipped checks, environment limitations, and remaining artifacts. Never imply that an unrun check passed.
 
-- which directories need them
-- what local overrides belong there
-- what should remain in the root file
+## Phase 8: Tighten and hand off
 
-Use `references/nested-files-and-token-optimization.md` for the decision rules.
+Delete repeated or generic guidance, keep global rules in the root and local deltas in nested files, and link to maintained repository docs instead of copying bulky detail.
 
-## Phase 6: Token optimization pass
-
-Before finalizing:
-
-- delete repeated guidance
-- compress broad prose into concrete rules
-- remove background explanations the agent does not need
-- avoid restating information that is better discovered from the repo
-- keep the root file small enough that it reads like an execution guide, not a handbook
-- compare the final root-file inventory against `git ls-files` and the current
-  root directory so durable docs do not claim missing files or omit published
-  tracked files
-
-If a topic is useful but bulky, move the detail to existing repo docs and point to them from `AGENTS.md` instead of inflating the file.
+Always state the output paths, files changed or read-only status, and validation actually performed. When material, also report source conflicts, execution limitations or side effects, temporary assumptions, host-compatibility limits, and nested-file recommendations. Omit empty categories instead of producing a ceremonial checklist.
 
 ## Quality bar
 
-The finished `AGENTS.md` should:
-
-- help a coding agent act correctly on the first pass
-- include commands and constraints that are actually grounded in the repo
-- stay generic enough to remain portable across agent tools
-- avoid tool branding unless the repo explicitly depends on it
-- recommend nested files only when the repository layout truly needs them
-
-## Examples
-
-### Example: greenfield repo instructions
-
-User request:
-`Create an AGENTS.md for this repository.`
-
-Expected behavior:
-
-1. Inspect manifests, CI workflows, README files, and the directory layout.
-2. Ask only the missing questions about undocumented constraints.
-3. Draft a root `AGENTS.md` with setup, test, lint, review, and safety rules.
-4. Recommend nested files only if the repo has clearly different subtrees.
-5. Tighten the final wording for token efficiency.
-
-### Example: migrate CLAUDE.md-style guidance
-
-User request:
-`Convert this repo's CLAUDE.md guidance into AGENTS.md.`
-
-Expected behavior:
-
-1. Read the existing instruction files and the source-of-truth repo docs.
-2. Preserve repo-specific operational rules.
-3. Remove stale or product-specific phrasing that does not belong in a generic `AGENTS.md`.
-4. Produce a cleaner root `AGENTS.md` and note whether any nested overrides are needed.
+The result should help a coding agent act correctly on the first pass, preserve unrelated work, and contain no unsupported command, path, or policy claim. Its content should remain tool-neutral where possible without claiming support from hosts that were not identified or verified.
