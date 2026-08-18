@@ -89,13 +89,14 @@ The repository's published skills are grouped into these families.
 ### Skill Authoring And Documentation
 
 - `agent-skill-generator` — design, create, revise, audit, validate, or optimize reusable agent skills and portable `SKILL.md` packages across platforms
-- `agents-md-generator` — create or revise repository `AGENTS.md` files from repo inspection and existing docs
-- `documenter` — baseline documentation overlay for substantial documentation authoring or restructuring, including README files, specs, ADRs, tutorials, how-to guides, reference docs, API docs, code comments, changelogs, and agent-facing docs
+- `agents-md-generator` — create, draft, audit, revise, or migrate root and nested repository `AGENTS.md` files from repo evidence
+- `documenter` — baseline documentation overlay for substantial documentation authoring or restructuring, including README files, specs, ADRs, tutorials, how-to guides, reference docs, API docs, code comments, changelogs, and agent-facing docs other than repository `AGENTS.md`
 - `documenter-coauthoring` — companion overlay for multi-round collaborative drafting of large specs, proposals, decision docs, and similar documents
 
 Defaults:
 
 - Start with `documenter` for ordinary documentation work.
+- Use `agents-md-generator` as primary for root or nested repository `AGENTS.md` work.
 - Add `documenter-coauthoring` when the task needs explicit iteration, outline approval, or section-by-section collaboration.
 
 ### Principle Skills
@@ -219,15 +220,27 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 ## Validation
 
 This repository does not currently have an application build or lint pipeline.
-It has a structural skill-inventory checker and focused validator tests:
+
+For changes to skills, supporting files, root documentation, or validation
+behavior, run the structural skill-inventory checker:
 
 ```console
-python scripts/test_check_skills.py
 python scripts/check_skills.py
 ```
 
-On Unix-like systems, `bash scripts/check-skills.sh` runs the same validator
-through a convenience wrapper.
+When `scripts/check_skills.py` or `scripts/test_check_skills.py` changes, also
+run the focused validator tests:
+
+```console
+python scripts/test_check_skills.py
+```
+
+When `scripts/check-skills.sh` changes, run its wrapper on a Bash-capable
+system:
+
+```console
+bash scripts/check-skills.sh
+```
 
 Validation is structural:
 
