@@ -211,7 +211,10 @@ technical slice is the smallest honest deliverable.
   or proposal writing.
 - Use `tester-mindset` when the main task is test strategy, risk coverage, or
   deciding whether evidence is enough.
-- Use implementation skills (`project-core-dev` plus the matching
-  `coding-guidance-<lang>` overlay) when the story is already clear and the
-  user wants code changes. Add `tester-mindset` when validation design or risk
-  coverage is the main concern.
+- Use the matching `coding-guidance-<lang>` principle skill plus
+  `project-core-dev` when the story is already clear, the user wants routine
+  repo-owned code changes, no specialized project concern is primary, and
+  repository-specific completion checks still need discovery or reporting.
+  Otherwise omit it. Use the matching config, platform, release, or vendor
+  overlay when that concern leads the work. Add `tester-mindset` when validation
+  design or risk coverage is the main concern.

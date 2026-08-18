@@ -234,14 +234,17 @@ Reject and rewrite when these appear in a draft plan:
   story `Status` and `Confidence` from the upstream skills. See
   `story-implementation-orchestrator` for the canonical vocabulary block.
 - **Downstream skills.** When the executor is an agent and the story implies
-  repo-owned code changes, the plan should hand off to `project-core-dev`, plus
-  the matching `coding-guidance-<lang>` overlay (e.g., `coding-guidance-go`,
-  `coding-guidance-python`) and any relevant systems overlay
-  (`backend-systems-guidance`, `ui-guidance`, `ui-design-guidance`). Use
-  `documenter` for docs-only implementation plans and `project-config-and-tests`
-  when config behavior or deterministic test coverage is the primary concern.
-  Add `tester-mindset` when validation design, risk coverage, or
-  acceptance-oracle quality is central to the story.
+  routine repo-owned code changes, hand off to the matching
+  `coding-guidance-<lang>` principle skill (e.g., `coding-guidance-go`,
+  `coding-guidance-python`). Add `project-core-dev` only when repo-specific
+  completion checks still need discovery or reporting. Use
+  `project-config-and-tests`,
+  `project-release-maintainer`, or `project-vendor-boundary` when that project
+  concern is primary; use `project-platform-diagnose` first for unresolved
+  environment-dependent failures. Add relevant systems overlays such as
+  `backend-systems-guidance`, `ui-guidance`, or `ui-design-guidance`. Use
+  `documenter` for docs-only implementation plans. Add `tester-mindset` when
+  validation design, risk coverage, or acceptance-oracle quality is central.
 - **Re-scout, do not guess.** If repo context is weak or stale, return a
   `Needs Inputs` plan that asks for a re-scout instead of inventing paths.
 - Use `user-story-clarifier` first when the story is unclear.

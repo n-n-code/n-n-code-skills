@@ -304,25 +304,113 @@ Expected `project-core-dev`:
 - `Implement this routine repo-owned bug fix and run the smallest proof.`
 - `Add this small feature and report build/test/format validation.`
 
+Expected not `project-core-dev` as primary:
+
+- `Change config precedence and test missing, empty, and invalid values.` -> use
+  `project-config-and-tests` with the matching principle skill.
+- `Debug why the packaged binary starts locally but fails in a headless
+  container.` -> use `project-platform-diagnose` first.
+
+Static with/without added-value fixtures for `project-core-dev`:
+
+- `Fix this Python bug; AGENTS.md already names the exact focused test, format
+  check, and required final report.` -> `coding-guidance-python` is sufficient;
+  adding `project-core-dev` should produce no distinct behavior, so omit it.
+- `Add this Go feature; validation commands are split across AGENTS.md, CI, and
+  a Makefile, and it is unclear which gates apply to the touched package.` ->
+  `coding-guidance-go` + `project-core-dev`; the project overlay resolves and
+  reports the repository-specific completion path.
+- `Refactor this C++ component; the repo has several build presets and only some
+  are mandatory for this target.` -> `coding-guidance-cpp` +
+  `project-core-dev` when the applicable preset and proof remain unclear.
+- `Implement this routine change in a repo with no documented validation
+  commands.` -> matching principle skill + `project-core-dev`; report the gap
+  and use the narrowest honest proof without inventing a repo workflow.
+
 Expected `project-config-and-tests`:
 
 - `Change config precedence and add deterministic tests for defaults and env overrides.`
 - `Review path-helper behavior for temp directories and repo-relative files.`
 
+Expected not `project-config-and-tests` as primary:
+
+- `Write table-driven tests for this Go parser.` -> use `coding-guidance-go` or
+  `go-testing-with-testify` when testify is the main artifact.
+- `Decide which failure cases and oracles matter for this billing flow.` -> use
+  `tester-mindset`.
+
 Expected `project-platform-diagnose`:
 
 - `Debug why this service starts locally but fails in a headless container.`
+- `Debug why this test suite passes locally but fails in CI.`
 - `Diagnose install/runtime behavior that depends on the current platform.`
+
+Expected not `project-platform-diagnose` as primary:
+
+- `Repair Playwright browser installation and webServer configuration in this
+  repo.` -> use `setup-playwright`.
+- `Fix this reproducible null dereference in app-owned code.` -> use the matching
+  principle skill; add `project-core-dev` only when repository-specific
+  completion evidence remains unclear.
 
 Expected `project-release-maintainer`:
 
 - `Update release-facing install docs and packaging hygiene before publishing.`
-- `Review license, workflow, and distribution docs for a release cut.`
+- `Review license and notice alignment, release automation, and distribution
+  docs for a release cut.`
+
+Expected not `project-release-maintainer` as primary:
+
+- `Rewrite this README paragraph for clarity without changing shipped
+  behavior.` -> use `documenter`.
+- `Refactor this internal helper; no package, install, or public documentation
+  changes are involved.` -> use the matching principle skill; add
+  `project-core-dev` only when repository-specific completion evidence remains
+  unclear.
 
 Expected `project-vendor-boundary`:
 
 - `Change integration code around a vendored dependency without modifying vendor files.`
 - `Review whether this third-party subtree patch belongs upstream or in app-owned glue.`
+
+Expected not `project-vendor-boundary` as primary:
+
+- `Upgrade this package-manager dependency and lockfile; no third-party source
+  is checked into the repo.` -> use the matching language or packaging guidance.
+- `Security-review this checked-in third-party parser for exploitable paths.` ->
+  use `security` first and add `project-vendor-boundary` only for patch ownership
+  and provenance.
+
+Project-overlay collision and composition cases:
+
+- `Add a small HTTP route and run the repo's focused checks.` -> matching
+  principle skill + `backend-guidance`; add `project-core-dev` only when the
+  repo-specific completion path is not concrete.
+- `The env override works locally but CI falls back to the wrong default.` ->
+  start with `project-platform-diagnose`; add `project-config-and-tests` when the
+  failure is isolated to config precedence or normalization.
+- `Update the install guide after changing which files the package ships.` ->
+  `project-release-maintainer` + `documenter`.
+- `Ship a patched vendored library and update its notice and package manifest.`
+  -> `project-vendor-boundary` + `project-release-maintainer`.
+
+Instruction behavior after explicit selection:
+
+- `Use project-core-dev, but the documented validator is unavailable on this
+  machine.` -> do not install tooling merely to close the checklist; report the
+  exact gap and narrowest next command without implying it passed.
+- `Use project-config-and-tests for this malformed security-sensitive config;
+  help and version output must still work.` -> preserve safe recovery paths,
+  fail closed for unsafe execution, and do not print secret values.
+- `Use project-platform-diagnose to investigate this CI-only failure, but do not
+  modify the machine or source code.` -> diagnose and report evidence only;
+  permanent environment changes and code fixes remain out of scope.
+- `Use project-release-maintainer to review release readiness, but do not tag,
+  sign, upload, publish, or use credentials.` -> inspect local evidence and
+  report unavailable checks without performing external release actions.
+- `Use project-vendor-boundary for an app-owned adapter-only change around a
+  vendored library.` -> validate the integration seam without editing vendor
+  source, provenance, patch records, license files, or notices unnecessarily.
 
 ## Skill Authoring And Fusion
 

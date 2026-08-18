@@ -13,7 +13,8 @@ This skill provides portable Bash engineering principles. Compose with:
 
 - **Workflow:** **thinking** (planning), **recursive-thinking** (stress-testing),
   **security** (threat modeling)
-- **Domain overlays:** **project-core-dev** (repo-specific build/test commands),
+- **Domain overlays:** **project-core-dev** (repo-specific completion discovery
+  and reporting when needed),
   **project-platform-diagnose** (environment-sensitive diagnosis)
 
 ## When Not to Lean on This Skill

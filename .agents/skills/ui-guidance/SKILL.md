@@ -1,13 +1,15 @@
 ---
 name: ui-guidance
-description: Overlay for graphical UI and web frontend code. Use alongside the repo's implementation skill when implementing or reviewing UI changes.
+description: Overlay for graphical UI and web frontend code. Use with matching implementation guidance when implementing or reviewing UI changes.
 ---
 
 # UI/Frontend Guidance
 
 This is a composable overlay, not a standalone workflow.
-Use alongside the repo's implementation skill (e.g. **coding-guidance-cpp**, **project-core-dev**)
-when the change touches UI or frontend code.
+Use alongside the matching principle skill (for example,
+`coding-guidance-cpp`) when the change touches UI or frontend code. Add
+`project-core-dev` only when repository-specific completion checks still need
+to be discovered or reported.
 
 Use this as the thin default overlay for ordinary UI work.
 If the task is redesign-heavy, frontend-polish heavy, or needs a stronger UX

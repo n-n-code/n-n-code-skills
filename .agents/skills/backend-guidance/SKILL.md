@@ -1,13 +1,15 @@
 ---
 name: backend-guidance
-description: Overlay for server-side networked code — HTTP handlers, gRPC services, message consumers. Use alongside the repo's implementation skill when implementing or reviewing backend logic.
+description: Overlay for server-side networked code — HTTP handlers, gRPC services, message consumers. Use with matching implementation guidance when implementing or reviewing backend logic.
 ---
 
 # Backend Guidance
 
 This is a composable overlay, not a standalone workflow.
-Use alongside the repo's implementation skill (e.g. **coding-guidance-cpp**, **project-core-dev**)
-when the change touches backend code.
+Use alongside the matching principle skill (for example,
+`coding-guidance-cpp`) when the change touches backend code. Add
+`project-core-dev` only when repository-specific completion checks still need
+to be discovered or reported.
 
 Use this as the thin default backend overlay for ordinary backend work.
 If the task includes service-boundary refactors, repository or transaction work,

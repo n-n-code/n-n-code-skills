@@ -17,8 +17,10 @@ with:
 - **Workflow:** `thinking` for planning, `recursive-thinking` for
   stress-testing, `tester-mindset` for validation strategy, and `security` for
   sensitive input, shell execution, token display, or filesystem access
-- **Project overlays:** `project-core-dev` for repo validation,
-  `project-config-and-tests` for config and deterministic tests, and
+- **Project overlays:** `project-core-dev` for repo-specific completion
+  discovery and reporting when needed,
+  `project-config-and-tests` for config and deterministic tests at config or
+  path seams, and
   `project-platform-diagnose` for terminal capability, piped stdio, SSH,
   alt-screen, shell, platform, install, or runtime smoke issues
 - **Go depth:** `coding-guidance-go` only when the non-TUI Go package design,
