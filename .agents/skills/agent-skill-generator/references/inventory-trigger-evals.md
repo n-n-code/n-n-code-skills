@@ -4,6 +4,42 @@ Use this reference when revising trigger descriptions, README composition
 guidance, or baseline/canonical/companion boundaries across this skill
 inventory. These are lightweight prompt simulations, not a benchmark suite.
 
+## How to use this catalog
+
+Use only the sections affected by the change. For each selected case, use the
+same evidence schema as the main validation reference:
+
+| Case (exact request or fixture) | Expected primary | Expected companions | Selection to avoid | Surface | Method | Context | Comparison | Result | Failure class | Residual risk |
+|---|---|---|---|---|---|---|---|---|---|---|
+
+For activation cases, use a realistic request without naming, injecting, or
+otherwise preselecting the expected skill. Instruction behavior cases may
+invoke the skill explicitly. Record method and context independently from the
+surface and any comparison. Add a collision case when another available skill
+can plausibly match the same request. Treat host-native skills as conditional
+competitors only when they are exposed to or invoked in the current run.
+
+## Sections
+
+- [Backend](#backend)
+- [UI](#ui)
+- [Playwright](#playwright)
+- [Go](#go)
+- [Bash](#bash)
+- [Python](#python)
+- [C++ and Qt](#cpp-and-qt)
+- [Documentation](#documentation)
+- [User stories](#user-stories)
+- [Story repo scouting](#story-repo-scouting)
+- [Story implementation planning](#story-implementation-planning)
+- [Story implementation orchestration](#story-implementation-orchestration)
+- [Project overlays](#project-overlays)
+- [Skill authoring and fusion](#skill-authoring-and-fusion)
+- [Context engineering](#context-engineering)
+- [Development contract](#development-contract)
+- [Security and identity](#security-and-identity)
+- [Thinking workflows](#thinking-workflows)
+
 ## Backend
 
 Expected `backend-guidance`:
@@ -274,14 +310,41 @@ Expected `project-vendor-boundary`:
 
 Expected `agent-skill-generator`:
 
+- `Design a reusable skill for triaging flaky integration tests, but do not edit files.`
 - `Create a reusable skill from this repeated debugging workflow.`
+- `Review this reusable agent skill for portability and unclear triggers.`
 - `Audit this skill for trigger precision and token bloat.`
 - `Validate this skill against positive and negative prompts.`
+
+Expected `agent-skill-generator`, with conditional host routing:
+
+- `Update this skill package for portable use across several agent hosts.`
+- `Review this SKILL.md and keep its core independent of platform metadata.`
+
+If the current run exposes a host-native skill creator, treat generic
+create/update requests as a host-specific collision case. Prefer the explicitly
+named skill; otherwise use `agent-skill-generator` when portability, audit,
+validation, or token optimization is material, and the host-native creator when
+the user asks for that host's scaffolding or metadata. Ignore dormant
+installations and creators listed only in another host's catalog.
+
+Run `Create a reusable skill from this repeated debugging workflow.` in two
+contexts: with no host-native creator exposed, where `agent-skill-generator` is
+expected; and with one exposed, where a collision exists and the current host's
+routing policy determines the generic winner. In the exposed context,
+portability language should select `agent-skill-generator`, while a request for
+host-specific scaffolding or metadata should select the host-native creator.
 
 Expected `fuse-skills`:
 
 - `Fuse these two local UI skills into one deduplicated skill.`
 - `Merge the Go skills from this named remote package into our local Go guidance.`
+
+Expected neither `agent-skill-generator` nor `fuse-skills` as primary:
+
+- `Create an AGENTS.md for this repository.` -> use `agents-md-generator`.
+- `Package this finished skill for a specific host marketplace.` -> use that
+  host's active packaging or plugin workflow.
 
 ## Context Engineering
 
@@ -346,13 +409,93 @@ Expected `thinking`:
 
 - `Compare approaches and converge on a practical plan.`
 - `Explore this vague idea and decide the next experiment.`
+- `Help me decide whether we should build or buy; no option has won yet.`
+- `Map the incentives in this partner ecosystem and recommend the next move.`
+- `Compare the viable designs, choose one, and then implement the winner.`
 
 Expected `recursive-thinking`:
 
 - `Pressure-test this migration plan with n=5.`
 - `Red-team this diagnosis and ask what would change the conclusion.`
+- `Run a premortem on this rollout plan before we approve it.`
+- `Play devil's advocate against this architecture recommendation.`
+- `Find the strongest counterargument to this product proposal.`
 
 Expected `dream-thinking`:
 
 - `Sleep on what happened in this debugging session and extract lessons.`
 - `Dream about yesterday's architecture disagreement and what it revealed.`
+- `Give me a quick nightmare lens on this failed launch.`
+- `Reflect on this project through one dream metaphor.`
+- `Dream about why this successful refactor went smoothly.`
+
+The boundary cases below are static-prediction fixtures; none have been exercised as observed activation runs yet.
+
+Boundary cases for `thinking` versus `recursive-thinking`:
+
+- `Challenge my assumptions about this migration plan.` -> expected
+  `recursive-thinking`: a candidate plan exists, so stress-test it.
+- `Help me think through whether we should build or buy.` -> expected
+  `thinking`: no candidate yet, so explore and converge.
+- `Find the strongest argument against this proposed queue design.` -> expected
+  `recursive-thinking`: the candidate design already exists.
+- `We need a queue but have not chosen an architecture; compare our options.` ->
+  expected `thinking`: the task is candidate formation rather than adversarial review.
+- `Implement this already-approved queue design.` -> expected implementation
+  skills, not `thinking`: the decision is settled and the remaining work is execution.
+- `Go deeper on how TLS certificate validation works.` -> expected explanation or
+  relevant technical guidance, not `recursive-thinking`: there is no candidate
+  conclusion to pressure-test.
+
+Boundary cases for domain and workflow collisions:
+
+- `Compact this long session into a handoff for the next agent.` -> expected
+  `context-engineering`: the artifact is a handoff, not a reflection.
+- `Write a factual incident retrospective with causes, impact, and follow-ups.` ->
+  expected incident or documentation guidance, not `dream-thinking`: no dream
+  or metaphorical framing was requested.
+- `Security red-team this password reset flow for exploitable paths.` -> expected
+  `security` plus `security-identity-access`, not `recursive-thinking` as primary.
+- `Decide which checkout edge cases and oracles we need.` -> expected
+  `tester-mindset`, not `thinking` or `recursive-thinking` as primary.
+- `Turn this rough ticket into an implementation-ready story and plan.` ->
+  expected story workflow skills, not `thinking` as primary.
+- `Use a dream metaphor to generate hypotheses about this incident, but base the
+  final conclusion on logs.` -> expected `dream-thinking` as an explicitly
+  requested companion; imagery must not become the evidence basis.
+
+Instruction-behavior fixtures after explicit selection:
+
+- `Use thinking. There appears to be only one viable option; recommend the next move.` ->
+  skip forced alternatives and make the decisive assumption visible.
+- `Use thinking to decide whether to migrate now, defer, or keep the current
+  system.` -> treat deferral and the status quo as serious options when credible,
+  not as filler.
+- `Use thinking; the trade-off is clear and no material uncertainty remains.` ->
+  make the recommendation without inventing an assumption or unknown.
+- `Use thinking to choose between two reversible internal naming conventions.` ->
+  keep validation proportionate; do not manufacture an experiment or formal
+  checkpoint for a low-cost choice.
+- `Use recursive-thinking with n=10 on this short proposal.` -> treat `n` as
+  maximum breadth, omit weak lenses, and lead with findings rather than a
+  question tree.
+- `Use recursive-thinking to review this diagnosis, but no logs or reproduction
+  evidence are available.` -> label material uncertainty and state what evidence
+  would resolve it; do not mark claims as observed.
+- `Use dream-thinking on this routine session; there is no meaningful pattern,
+  tension, or contrast.` -> use the brief reflection fallback instead of forcing
+  imagery.
+- `Use dream-thinking on this successful refactor; nothing went wrong.` -> use
+  an alignment-focused scene when a meaningful success pattern exists rather
+  than requiring conflict.
+- `Use dream-thinking with an uneasy atmosphere, but do not infer how the team
+  felt.` -> use symbolic mood without attributing unprovided emotions as facts.
+- `Use dream-thinking for a playful, low-stakes reflection on this naming
+  discussion.` -> keep the grounding note compact rather than forcing a full
+  evidence, alternative, verification, and confidence report.
+- `Use dream-thinking and compare recurring motifs, but I supplied no earlier
+  logs.` -> do not invent prior motifs or imply memory access.
+- `Use dream-thinking and save the log for later.` -> emit it in the conversation
+  and request or use an explicitly authorized destination before persistence.
+- `Use dream-thinking for one compact scene.` -> label the interpretation as a
+  working hypothesis, not a morning revelation or factual finding.

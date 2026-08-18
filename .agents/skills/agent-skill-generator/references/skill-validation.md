@@ -1,71 +1,94 @@
 # Skill validation
 
-Use this when a generated or revised skill needs prompt-level validation before shipping.
+Use this when a designed, generated, or revised skill needs trigger, workflow, resource, or execution evidence before shipping.
 
-## Goal
+## Choose evidence on independent axes
 
-Prove that the skill:
+Use the smallest combination that answers the risk. Do not collapse unlike evidence into a maturity ladder or report a prediction as an observed result.
 
-- triggers for obvious requests
-- triggers for paraphrased requests
-- does not trigger for nearby but unrelated work
-- gives another agent enough workflow detail to act without guessing
+Choose one or more test surfaces:
 
-## Minimum prompt set
+- `structure`: frontmatter, names, links, referenced files, package layout, and repository-specific checks;
+- `activation`: whether a realistic request selects the intended skill without preselection;
+- `instruction behavior`: whether an already selected or explicitly invoked skill follows its contract;
+- `resource execution`: whether representative bundled scripts or tool workflows produce the expected outputs and side effects.
 
-Write at least 3 prompts:
+Record the evidence method separately:
 
-- `positive-obvious`: direct request using the most likely trigger words
-- `positive-paraphrased`: same job, different wording
-- `negative-adjacent`: close enough to confuse a weak description, but should not load the skill
+- `static prediction`: inspect descriptions, instructions, and neighboring skills without running host routing or the workflow;
+- `observed run`: exercise routing, instructions, scripts, or tools and inspect the result.
 
-Add more prompts only when the surface area is large or the user explicitly wants deeper validation.
+For an observed run, record its context:
 
-## Comparison modes
+- `generic harness`: an isolated runner that does not reproduce a named target host;
+- `isolated target host`: a fresh session or agent in the actual target host;
+- `current target host`: the current non-isolated session in the actual target host.
 
-Choose the lightest comparison that still answers the risk:
+Use `N/A` for context when the method is static prediction.
 
-- `manual simulation`: read the prompt against the skill and judge whether the trigger and workflow would work
-- `before vs after`: compare the current skill against the revised skill
-- `with-skill vs without-skill`: use when the question is whether the skill adds real value
-- `trigger wording A vs B`: use when the main risk is activation quality rather than body content
+Add a comparison only when it answers a distinct question:
 
-Do not build a heavy benchmark harness unless the repo or user wants it.
+- `none`: no comparison;
+- `before/after`: regression check across a revision;
+- `with/without`: measure the skill's added value;
+- `A/B`: compare competing trigger or workflow variants.
 
-## When validation can be skipped
+A surface does not imply method or context: resource execution can occur in a generic harness, and a comparison can still be based only on static prediction. Prefer an isolated target-host activation run for high-risk reusable skills when the environment supports it. Do not build a heavy harness unless the user, repository, or risk justifies one.
 
-Skip validation only when all of these are true:
+## Build the prompt set
 
-- the edit does not change the trigger surface
-- the edit does not change the workflow meaning
-- the edit does not add or remove important resources or assumptions
+For activation, start with realistic requests that do not name, inject, or otherwise preselect the skill:
 
-If any of those changed, run at least a lightweight prompt simulation.
+- `positive-obvious`: direct request using likely trigger language;
+- `positive-paraphrased`: the same job expressed differently;
+- `negative-adjacent`: nearby work that should select another skill or none;
+- `collision`: a prompt likely to match a competing skill, when one exists.
 
-## Review checklist
+For hosts that truncate or budget descriptions, repeat the static review against a realistic leading prefix. Treat the prefix length as a host-specific assumption unless the platform documents it.
 
-For each prompt, record:
+For instruction behavior, the case may explicitly invoke or inject the skill. Add cases such as:
 
-- should the skill trigger
-- which words or phrases should cause activation
-- which part of the body should guide the next step
-- where an agent could take a shortcut or misread the instructions
+- missing or ambiguous inputs;
+- read-only versus mutating intent;
+- unavailable dependency or validator;
+- partial failure, cleanup, or rollback;
+- repo-bound behavior used outside the target repository.
 
-Common failures:
+## Protect evaluation integrity
 
-- description too vague to trigger
-- description so broad that it over-triggers
-- description summarizes workflow and tempts the agent to skip the body
-- body assumes repo facts it never tells the reader to discover
-- examples are longer than the rules they are supposed to clarify
-- the agent over-validates a trivial copy edit because the skill never said when validation can be skipped
+For observed runs:
 
-## Output
+- for activation, pass a realistic request without the target skill name or selection instruction;
+- for instruction behavior, pass the skill plus realistic inputs, not the intended answer or suspected defect;
+- provide raw artifacts rather than prior conclusions;
+- isolate runs from previous outputs and temporary artifacts;
+- avoid hidden access to the proposed fix;
+- ask before tests that could be slow, costly, destructive, or externally mutating.
 
-Summarize validation in 3 parts:
+If observation is unavailable, use static prediction and state that limitation.
 
-1. prompts used
-2. what passed and failed
-3. what changed because of the validation
+## Record results
 
-If full validation was not practical, say so and state the residual risk plainly.
+Use a compact record:
+
+| Case (exact request or fixture) | Expected primary | Expected companions | Selection to avoid | Surface | Method | Context | Comparison | Result | Failure class | Residual risk |
+|---|---|---|---|---|---|---|---|---|---|---|
+
+Use `N/A` where a routing field does not apply to a structure, instruction behavior, or resource execution case.
+
+Classify failures as one or more of:
+
+- `trigger-recall`: should activate but does not;
+- `trigger-precision`: activates on adjacent work;
+- `collision`: competing skills lack a clear boundary;
+- `workflow`: instructions permit shortcuts or ambiguous order;
+- `resource`: required file, script, or dependency is missing or stale;
+- `execution`: a script or tool workflow fails or produces the wrong side effect;
+- `portability`: behavior assumes an undeclared host or repository;
+- `evidence`: the claimed result is stronger than the validation performed.
+
+Summarize prompts, evidence, passes and failures, changes made because of validation, and residual risk.
+
+## When to skip
+
+Skip activation and instruction behavior cases only when the change leaves trigger surface, scope, workflow meaning, resources, dependencies, and runtime assumptions unchanged. Still run available structure checks for edited packages.
