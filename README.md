@@ -41,6 +41,7 @@ This repo uses a small role vocabulary to keep overlapping skills understandable
 - **Baseline overlay** — the thin default overlay for routine work in a domain.
 - **Canonical overlay** — the stronger overlay for the same domain when the task is more demanding; it should subsume the baseline's core expectations rather than drift into a separate job.
 - **Companion overlay** — a narrowly scoped overlay that adds an optional workflow on top of a baseline overlay without replacing it.
+- **Project overlay** — cross-language guidance for a repository concern such as completion evidence, configuration, platform diagnosis, release maintenance, or vendored source boundaries.
 - **Template overlay** — a pattern for repo-local adaptation rather than the default skill to load directly in this repo.
 - **Process overlay** — workflow or enforcement guidance that composes with implementation skills.
 - **System skill** — a build/create/install skill that leaves behind a repo-owned system rather than only guiding day-to-day execution.
@@ -57,11 +58,16 @@ Most tasks should compose skills in this order:
 
 Examples:
 
-- routine Python feature work: `coding-guidance-python` + `project-core-dev`
-- routine Go feature work: `coding-guidance-go` + `project-core-dev`
-- Charmbracelet Go TUI work: `coding-guidance-go-tui` + `project-core-dev`;
-  add `project-platform-diagnose` for terminal, shell, or runtime smoke issues
-- backend feature or config change: principle skill + `backend-guidance` + `project-config-and-tests`
+- routine Python feature work: `coding-guidance-python`; add
+  `project-core-dev` when repo-specific completion checks need discovery or
+  reporting
+- routine Go feature work: `coding-guidance-go`; add `project-core-dev` on the
+  same condition
+- Charmbracelet Go TUI work: `coding-guidance-go-tui`; add
+  `project-platform-diagnose` for terminal, shell, or runtime smoke issues
+- routine backend feature: principle skill + `backend-guidance`; add
+  `project-core-dev` when the repo-specific completion path is not concrete
+- backend config change: principle skill + `backend-guidance` + `project-config-and-tests`
 - frontend redesign or polish work: principle skill + `ui-design-guidance`
 - Go tests with stretchr/testify: `go-testing-with-testify`; add
   `tester-mindset` for claim or edge-case framing, plus `backend-guidance` or
@@ -134,11 +140,11 @@ Go TUI skill note:
 - `backend-systems-guidance` — canonical strong backend overlay for non-trivial service boundaries, repositories, queues, reliability, trust-boundary hardening, and backend review that needs stronger testing discipline
 - `development-contract-process` — process overlay for repos that require tracked change contracts, verifier evidence, and smallest-proof validation
 - `development-contract-repo-overlay-template` — template for the thin repo-local overlay a target repository should have after adopting the development-contract system
-- `project-config-and-tests` — overlay for config contracts, defaults, path helpers, and deterministic test coverage
-- `project-core-dev` — overlay for day-to-day feature work and bug fixes in repo-owned code
-- `project-platform-diagnose` — overlay for environment-sensitive diagnosis such as startup issues, install problems, and runtime smoke checks
-- `project-release-maintainer` — overlay for release-facing docs, install layout, workflows, licenses, and hygiene scripts
-- `project-vendor-boundary` — overlay for app-owned versus vendored dependency boundaries
+- `project-config-and-tests` — project overlay for config precedence, defaults, parsing, normalization, path helpers, and deterministic tests at those seams
+- `project-core-dev` — thin project overlay for discovering, selecting, and reporting repository-specific completion checks when the validation path is not already concrete
+- `project-platform-diagnose` — diagnostic project overlay for environment-dependent build, install, startup, CI, container, headless, terminal, and runtime failures
+- `project-release-maintainer` — project overlay for release and packaging maintenance across install layout, shipped assets, release automation, license and notice alignment, and release-facing docs
+- `project-vendor-boundary` — project overlay for checked-in or submodule-managed third-party source, provenance, local patches, and the app-owned integration seam
 - `ui-guidance` — thin baseline overlay for ordinary graphical UI and frontend work
 - `ui-design-guidance` — canonical strong UI overlay for redesigns, frontend polish, and UX-heavy UI work; extends the baseline with design-direction and UX-priority guidance
 
@@ -148,6 +154,11 @@ Defaults:
 - Prefer `backend-systems-guidance` when the task includes multi-layer backend work, repositories or transactions, auth or trust-boundary logic, queue or webhook processing, or backend review that needs explicit testing and reliability checks.
 - Start with `ui-guidance` for ordinary UI changes that mostly need repo-native consistency and basic UI hygiene.
 - Prefer `ui-design-guidance` when the task needs stronger design direction, more frontend polish, or explicit UX review across accessibility, interaction, layout, forms, navigation, or data display.
+- Add `project-core-dev` when repository-specific completion checks or gap reporting still need to be discovered for routine repo-owned implementation. Omit it when the selected principle skill plus repository context already makes that evidence concrete.
+- Prefer `project-config-and-tests`, `project-platform-diagnose`, `project-release-maintainer`, or `project-vendor-boundary` when that concern is primary. Add matching language or discipline guidance only when the task needs implementation judgment in that domain.
+- Use `project-platform-diagnose` first while the environment remains a plausible cause; hand off to the matching implementation, config, setup, release, or vendor skill after the failure is isolated.
+- Use `documenter` alone for content-only release or install documentation. Compose it with `project-release-maintainer` when documentation must be reconciled with shipped artifacts or release automation.
+- Compose specialized project overlays only when each adds a distinct decision or evidence obligation, such as vendor plus release for a patched library that also changes package metadata.
 
 ### Workflow Skills
 

@@ -63,8 +63,8 @@ digraph route {
 
 ## Adjacent Skills
 
-- **project-config-and-tests** — when the work changes config shape,
-  defaults, test layout, or deterministic coverage expectations.
+- **project-config-and-tests** — when the work changes configuration
+  precedence, defaults, path helpers, or deterministic tests at those seams.
 - **coding-guidance-python**, **coding-guidance-cpp**, **coding-guidance-bash**,
   or another principle skill when setup needs non-trivial code in that
   language.

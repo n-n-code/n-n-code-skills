@@ -16,8 +16,10 @@ Compose with:
   stress-testing, `security` for threat modeling
 - **Domain overlays:** `backend-guidance` for server-side code,
   `backend-systems-guidance` for deeper backend architecture/reliability/trust
-  boundaries, `project-core-dev` for repo validation, and
-  `project-config-and-tests` for config contracts and deterministic tests
+  boundaries, `project-core-dev` for repo-specific completion discovery and
+  reporting when needed, and
+  `project-config-and-tests` for config contracts and deterministic tests at
+  config or path seams
 - **Testing:** `go-testing-with-testify` when the main artifact is testify-based
   Go test code, test review, or Go test flake triage
 

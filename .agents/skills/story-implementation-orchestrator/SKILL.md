@@ -244,16 +244,23 @@ When rejecting, name the failing gate(s) and re-run the relevant stage.
 After the packet passes the Final Quality Gate, route the executor to the
 matching implementation skill set:
 
-- Default for repo-owned code changes: `project-core-dev`.
-- Language overlay: `coding-guidance-go`, `coding-guidance-python`,
+- Default for repo-owned code changes: `project-core-dev`. Use this default only
+  for routine work when no specialized project concern is primary and
+  repository-specific completion checks still need discovery or reporting;
+  otherwise omit it.
+- Language principle: `coding-guidance-go`, `coding-guidance-python`,
   `coding-guidance-cpp`, `coding-guidance-bash`, `coding-guidance-qt`, or
   `coding-guidance-go-tui` based on the workspace named in `Repo Context`.
 - Systems overlay: `backend-systems-guidance` (or `backend-guidance` for
   thin handler work), `ui-guidance` (or `ui-design-guidance` for redesign-
   heavy work) when the story implies UI changes.
-- Documentation/config overlay: `documenter` for docs-only implementation
-  plans, and `project-config-and-tests` when config behavior or deterministic
-  test coverage is the primary concern.
+- Project concern: replace `project-core-dev` with `project-config-and-tests`,
+  `project-release-maintainer`, or `project-vendor-boundary` when that concern
+  is primary; use `project-platform-diagnose` first for unresolved
+  environment-dependent failures.
+- Documentation: use `documenter` for docs-only implementation plans and
+  compose it with `project-release-maintainer` when docs must match shipped
+  artifacts or release automation.
 - Workflow overlay: `tester-mindset` when validation design, risk coverage, or
   acceptance-oracle quality is central to the story.
 - Process overlay: `security` only when security is the primary concern (do

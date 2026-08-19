@@ -18,7 +18,8 @@ This skill provides portable Qt engineering principles. Compose with:
   **security** (threat modeling)
 - **Domain overlays:** **ui-guidance** (ordinary graphical UI work),
   **ui-design-guidance** (stronger design and UX work),
-  **project-core-dev** (repo-specific build/test commands),
+  **project-core-dev** (repo-specific completion discovery and reporting when
+  needed),
   **project-platform-diagnose** (environment-sensitive diagnosis)
 
 Use this as the default principle skill for Qt code. Reach for

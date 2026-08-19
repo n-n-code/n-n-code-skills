@@ -1,36 +1,35 @@
 ---
 name: project-core-dev
-description: Overlay for day-to-day feature work and bug fixes in repo-owned code. Provides a validation checklist for build, test, format, and analysis. Use alongside the repo's principle skill.
+description: Project overlay for discovering and reporting repository-specific completion checks for routine repo-owned changes. Use when the validation path is unclear; prefer specialized project overlays for config, platform, release, or vendor concerns.
 ---
 
 # Project Core Dev
 
-This is a composable overlay, not a standalone workflow.
-Use alongside the repo's principle skill (e.g. **coding-guidance-cpp**) for
-normal feature work and bug fixes in repo-owned code.
+This is a thin project overlay, not a standalone implementation workflow.
+Use it with matching implementation guidance only when repository-specific
+checks or gaps remain unclear. Omit it when another selected skill plus repo
+context already supplies exact commands and reporting obligations.
 
 ## When to use
 
-The task is a feature, bug fix, or refactor in repo-owned code that needs a
-standard build-test-format-analyze validation pass.
+The task is a routine repo-owned change whose completion path is not yet
+concrete.
 
 ## Not for
 
-Vendored dependency changes (use **project-vendor-boundary**), release/packaging
-work (use **project-release-maintainer**), config/test-focused work (use
-**project-config-and-tests**), or environment diagnosis (use
-**project-platform-diagnose**).
+Use `project-config-and-tests`, `project-platform-diagnose`,
+`project-release-maintainer`, or `project-vendor-boundary` when that specialized
+concern leads. Do not use this skill to restate a generic validation checklist.
 
-## Validation Checklist
+## Completion Workflow
 
-Run the repo's equivalents of these steps before finishing:
-
-- build with the development preset or debug configuration
-- run the test suite with output on failure for covered changes
-- run the formatter or format-check target
-- run a lightweight smoke test (e.g. `--help` or `--version` on the main binary)
-- add analyzer, sanitizer, or memory-checking validation when the change surface
-  justifies it
-- run static analysis targets when available
-- if a relevant validation step is unavailable or too expensive for the current
-  change, state the exact gap and the narrowest next command that would close it
+1. Read the applicable repository instructions, README, CI configuration,
+   contributor docs, and presets. Identify authoritative commands and mandatory
+   gates; do not invent a second workflow.
+2. Map the touched surface to the narrowest honest repo-defined proof. Do not run
+   broad checks merely because they exist.
+3. Execute within the task's authority. Prefer check modes for read-only work;
+   do not install tools, start services, or mutate the environment just to close
+   a checklist.
+4. Report exact commands, outcomes, gaps, and the narrowest next command that
+   would close each material gap without implying it passed.

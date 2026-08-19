@@ -17,7 +17,8 @@ This skill provides portable C++ engineering principles. Compose with:
   **backend-systems-guidance** (stronger backend architecture, reliability, and
   trust-boundary work),
   **ui-guidance** (graphical UI/web frontend),
-  **project-core-dev** (repo-specific build/test commands)
+  **project-core-dev** (repo-specific completion discovery and reporting when
+  needed)
 
 ## When Not to Lean on This Skill
 
