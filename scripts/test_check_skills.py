@@ -129,6 +129,59 @@ class CheckSkillsTests(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_guidance_family_requires_neighbor_and_review_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            skill_dir = root / ".agents" / "skills" / "ui-guidance"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                "---\n"
+                "name: ui-guidance\n"
+                "description: Routine UI implementation and review guidance.\n"
+                "---\n"
+                "\n# UI Guidance\n",
+                encoding="utf-8",
+            )
+
+            errors = check_skills.check_guidance_family_invariants(root, "")
+
+        self.assertTrue(
+            any("ui-design-guidance" in error for error in errors),
+            errors,
+        )
+        self.assertTrue(
+            any("read-only boundary" in error for error in errors),
+            errors,
+        )
+        self.assertTrue(
+            any("shared review-only contract" in error for error in errors),
+            errors,
+        )
+
+    def test_go_tui_description_requires_one_shot_huh_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            skill_dir = root / ".agents" / "skills" / "coding-guidance-go-tui"
+            skill_dir.mkdir(parents=True)
+            skill_file = skill_dir / "SKILL.md"
+            skill_file.write_text(
+                "---\n"
+                "name: coding-guidance-go-tui\n"
+                "description: Go TUI implementation and review; use "
+                "coding-guidance-go for other work.\n"
+                "---\n"
+                "\nReview requests are read-only.\n",
+                encoding="utf-8",
+            )
+            readme = check_skills.README_GUIDANCE_REVIEW_CONTRACT
+
+            errors = check_skills.check_guidance_family_invariants(root, readme)
+
+        self.assertTrue(
+            any("one-shot Huh" in error for error in errors),
+            errors,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

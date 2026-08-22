@@ -1,6 +1,6 @@
 ---
 name: coding-guidance-cpp
-description: C++ implementation and review skill. Use when writing, modifying, refactoring, or reviewing C++ code, especially modern C++17/20/23 code that needs strong ownership, type safety, and testable design. Portable across C++ repos and build systems.
+description: C++ implementation and review guidance for modern ownership, type safety, API design, and tests; use `coding-guidance-qt` when QObject lifetime, signals and slots, QWidget/model-view behavior, Qt threading, or Qt build tooling is the main concern. Portable across C++17/20/23 repositories and build systems.
 ---
 
 # C++ Coding Guidance
@@ -11,7 +11,8 @@ This skill adds portable C++ implementation, refactoring, and review guidance.
 
 This skill provides portable C++ engineering principles. Compose with:
 
-- **Workflow:** **thinking** (planning), **recursive-thinking** (stress-testing),
+- **Workflow:** **thinking** (ambiguous decision framing),
+  **recursive-thinking** (stress-testing),
   **security** (threat modeling)
 - **Domain overlays:** **backend-guidance** (server-side code),
   **backend-systems-guidance** (stronger backend architecture, reliability, and
@@ -19,6 +20,8 @@ This skill provides portable C++ engineering principles. Compose with:
   **ui-guidance** (graphical UI/web frontend),
   **project-core-dev** (repo-specific completion discovery and reporting when
   needed)
+- **Qt specialization:** **coding-guidance-qt** when Qt object lifetime,
+  eventing, widgets, models, thread affinity, or generated build steps dominate
 
 ## When Not to Lean on This Skill
 
@@ -83,110 +86,35 @@ instead:
    with real impact, and missing tests.
 4. State findings with concrete evidence and the likely consequence.
 
+Do not edit code or require findings to be fixed unless the user also asks for
+remediation.
+
 ## C++ Rules
 
-Read these by failure theme, not as an exhaustive checklist.
+Keep the critical portable defaults in view:
 
-### Construction, ownership, and lifetime
+- Make ownership explicit. Prefer values and RAII, use `std::unique_ptr` for
+  sole ownership, and treat raw pointers and references as non-owning.
+- Establish invariants during construction and prefer rule-of-zero types.
+- Do not let references, views, iterators, pointers, or other borrowed state
+  outlive their owners, especially across callbacks, coroutines, or threads.
+- Prevent unchecked bounds access, silent narrowing, signed/unsigned mistakes,
+  and representation operations that violate aliasing or lifetime rules.
+- Keep error handling consistent within a path, preserve must-check failures,
+  and use `[[nodiscard]]` when ignoring a result is likely a bug.
+- Encode ownership, units, nullability, and easily confused argument semantics
+  in types or named parameter objects when call sites would otherwise be
+  ambiguous.
+- Keep headers free of namespace pollution, hidden global initialization,
+  fragile macros, and accidental transitive-include dependencies.
+- Prefer structured thread ownership, explicit cancellation, and test seams
+  over detached work or ambient process state.
+- Use modern vocabulary types and library features only when the repository's
+  C++ target supports them and they make the contract clearer.
 
-- Treat raw pointers and references as non-owning; never transfer ownership by
-  raw pointer or reference
-- Avoid `new` and `delete`; bind resource lifetime to object lifetime with RAII
-- Prefer `std::unique_ptr` by default; use `std::shared_ptr` only for real
-  shared lifetime and `std::weak_ptr` to break cycles
-- Prefer values and stack allocation over heap allocation when ownership is
-  simple
-- Prefer rule-of-zero types; if you write a destructor or custom special member
-  function, justify it
-- Initialize objects into valid states immediately; construction should
-  establish invariants instead of relying on later “remember to initialize”
-  steps
-- Do not store or return references, views, iterators, or pointers into
-  temporaries or short-lived owners; when the lifetime proof is not obvious,
-  return or store an owning value instead
-- Treat moved-from objects as valid but semantically narrow; only destroy,
-  reassign, or call operations whose post-move contract is explicit
-- Do not cross async, callback, coroutine-suspend, or thread-handoff
-  boundaries with borrowed state unless the lifetime proof is explicit
-
-### Type, bounds, and representation safety
-
-- Avoid unchecked bounds access; prefer `.at()`, iterators, range-for, or
-  `std::span` when bounds are uncertain
-- Avoid silent narrowing conversions; use explicit casts or narrowing helpers
-- Avoid signed/unsigned comparison traps; use `std::cmp_*`, `std::in_range`,
-  or a deliberate common type when integer domains differ
-- Prefer compile-time checking to runtime checking when the type system can
-  express the rule
-- Avoid C-style casts; use `static_cast`, `const_cast`, `reinterpret_cast`, and
-  `dynamic_cast` deliberately
-- Prefer `std::bit_cast` or byte-wise copy for object-representation
-  reinterpretation; do not use `reinterpret_cast` where aliasing or lifetime
-  rules make the behavior fragile
-- Avoid raw memory APIs, `memset`/`memcpy` tricks, or pointer arithmetic on
-  non-trivial, polymorphic, or lifetime-sensitive types
-- Use `const` and `constexpr` by default; mutability should be the exception
-- Prefer `enum class` over plain enums and `nullptr` over `NULL`
-- Prefer `std::array` over C arrays, `std::string_view` for non-owning strings,
-  and `std::span` for non-owning ranges when lifetime rules are clear
-
-### API contracts and call-site clarity
-
-- Do not mix exception and error-code styles inconsistently inside one path
-- Do not ignore must-check results from allocation, parsing, synchronization,
-  numeric conversion, or OS/library APIs when failure changes behavior
-- Use `[[nodiscard]]` when ignoring a result is likely a bug
-- Prefer explicit constructors, conversions, and named types when ownership,
-  units, or semantics would otherwise be implicit
-- Avoid forwarding, overload, and default-argument combinations that make calls
-  ambiguous or silently select the wrong overload
-- Treat virtual dispatch boundaries as bug-prone: use `override`, avoid near
-  misses, and do not rely on shadowing or signature accidents
-- Keep declarations and definitions consistent across headers and sources:
-  parameter names, qualifiers, defaults, and ownership cues should not drift
-- Be suspicious of adjacent same-type parameters; named types, parameter
-  objects, or strong typedefs are often clearer than comments
-- Prefer interfaces that make argument order hard to misuse and bool/int/string
-  sentinels hard to confuse
-- Prefer APIs that encode units, domains, and nullability in types rather than
-  relying on comments, magic values, or positional conventions
-
-### Headers, globals, and build surface
-
-- Avoid `using namespace std` in headers
-- Keep warnings at zero in repo-owned code
-- Keep macros narrow, parenthesized, side-effect-safe, and out of API shaping;
-  prefer language features unless a macro is the least-bad tool
-- Avoid reserved identifiers, namespace pollution, and definitions in headers
-  that quietly change ODR or rebuild behavior
-- Prefer include sets that are minimal and explicit; unused includes, include
-  cycles, and transitive-include dependence are design smells
-- Use `constinit` for non-local static or thread-local objects that must not
-  rely on dynamic initialization
-- Prefer compile-time constants, local statics, or explicit startup wiring over
-  hidden global initialization side effects
-
-### Concurrency, async, and testability
-
-- Prefer structured thread ownership and explicit cancellation over detached
-  threads or ad hoc stop flags; `std::jthread` and `std::stop_token` are good
-  defaults when the codebase already uses standard thread primitives
-- Assume container modifications may invalidate iterators, references, pointers,
-  and views unless the container contract says otherwise
-- Prefer seams that keep core logic testable without real threads, clocks,
-  filesystem, process state, or ambient globals when the domain does not
-  require those dependencies
-
-### Expressive modern defaults
-
-- Prefer vocabulary types such as `std::optional`, `std::variant`, and
-  `std::expected` when they encode real domain states better than sentinels or
-  ad hoc conventions
-- Prefer standard algorithms and ranges over open-coded loops when they make the
-  intent clearer
-- Prefer standard library and language replacements for deprecated,
-  legacy-C-leaning, or handwritten utilities when the replacement is clearer
-  and already acceptable in the repo toolchain
+Read [references/cpp-core-rules.md](references/cpp-core-rules.md) when the task
+needs the detailed ownership, type-safety, API, header, concurrency, or modern
+C++ checklist.
 
 ### Advanced design judgment
 
@@ -197,28 +125,14 @@ features, template-heavy interfaces, headers with broad rebuild impact,
 coroutines, synchronization strategy, ABI/plugin/C interop boundaries, or
 abstraction design. Keep ordinary feature work in the default rules above.
 
-## Clang-Tidy-derived emphasis
-
-Use the full `clang-tidy` catalog as a source of recurring failure modes, not as
-a portable checklist to paste into every repo.
-
-- Treat `bugprone`, `cppcoreguidelines`, `modernize`, `performance`, `misc`,
-  `portability`, and the CERT/HIC++ aliases as high-signal prompts for code
-  review and refactoring
-- Fold only portable semantics into this principle skill; repo-specific naming,
-  include order, formatter preferences, test-framework style, platform APIs,
-  and library-pack rules belong in repo config or overlays
-- If a repo ships `clang-tidy`, read its enabled checks before introducing new
-  patterns; local suppressions and allowlists often document real constraints
-- When multiple checks point at the same design issue, fix the design cause
-  instead of satisfying each warning mechanically
-
 ## Resource map
 
+- [references/cpp-core-rules.md](references/cpp-core-rules.md): detailed
+  portable rules for ownership, bounds and representation safety, API clarity,
+  headers, concurrency, and modern vocabulary types
 - [references/clang-tidy-derived-guidance.md](references/clang-tidy-derived-guidance.md):
-  triage of the current clang-tidy check catalog into portable principles,
-  repo-level rules, and non-portable families that should stay out of this
-  skill
+  read when analyzer findings, enabled check families, or portable versus
+  repo-specific static-analysis policy is part of the task
 - [references/cpp-advanced-design-judgment.md](references/cpp-advanced-design-judgment.md):
   deeper guidance for public API design, error models, advanced features,
   headers, synchronization, and abstraction choices
@@ -227,8 +141,8 @@ a portable checklist to paste into every repo.
 
 Use these when the right choice is not obvious:
 
-- **Scope check:** if a change touches more than 3 public interfaces, stop and
-  plan before continuing; the change is bigger than it looks.
+- **Scope check:** if a change crosses several public interfaces or compatibility
+  boundaries, stop and plan the contract changes before continuing.
 - **Ownership clarity:** if ownership is not obvious from the type signature,
   redesign the interface or add a one-line contract comment.
 - **Error-model consistency:** do not mix exceptions, error codes, and
@@ -246,9 +160,9 @@ Use these when the right choice is not obvious:
   exposing implementation detail, narrow the interface before adding more code.
 - **Build-surface pressure:** if a design pushes more logic, templates, or
   dependencies into public headers, justify the compile-time and rebuild cost.
-- **Parameter pressure:** when adjacent parameters have the same type, or the
-  function needs more than 2-3 meaningful inputs, prefer a named type or helper
-  struct.
+- **Parameter pressure:** when adjacent parameters have the same type or call
+  sites cannot communicate argument meaning clearly, prefer named types or a
+  cohesive parameter object.
 - **Lifetime pressure:** if a non-owning type crosses async, callback, return,
   or storage boundaries, prefer an owning type unless the lifetime proof is
   obvious from the interface.
@@ -263,14 +177,15 @@ Use these when the right choice is not obvious:
 - **Testability pressure:** if a design forces tests to spin threads, sleep,
   touch the real filesystem, or patch globals just to exercise core logic,
   introduce a seam before adding more behavior.
-- **Test setup size:** if test setup exceeds about 20 lines, extract a fixture
-  only when the setup is reused or the test intent becomes unclear.
+- **Test setup pressure:** extract a fixture when repeated setup or incidental
+  detail obscures the behavior under test; keep one-off setup local when it is
+  clearer there.
 - **Narrowness vs. quality:** implement the narrowest change that solves the
   problem. When narrowness conflicts with correctness or safety, prefer
   correctness. When it conflicts with style alone, prefer narrowness unless the
   task is explicitly a cleanup.
-- **Refactor boundary:** outside explicit refactor work, fix at most one small
-  adjacent issue while you are in the file.
+- **Adjacent issues:** do not modify unrelated issues unless they are required
+  for the requested change's correctness or safety; report them separately.
 - **Abstraction threshold:** three similar code blocks or repeated API-shaping
   pain is a pattern; before extracting, check whether a free function, helper
   type, or composed object is the simpler move.
@@ -282,7 +197,7 @@ Use these when the right choice is not obvious:
 
 ## Validation
 
-A change is done when:
+For implementation, a change is done when:
 
 - the code compiles without new warnings, unless the repo explicitly treats a
   known warning set as baseline debt outside the change
@@ -294,4 +209,7 @@ A change is done when:
 - available sanitizers are clean for the touched paths when the change affects
   memory safety, threading, or undefined-behavior risk
 - performance-sensitive changes are measured instead of justified by intuition
-- review findings at `Critical` and `Important` severity are addressed
+
+For review, completion means `Critical` and `Important` findings are reported
+with concrete evidence, likely consequence, and any validation gap. Unfixed
+findings do not make the review incomplete.

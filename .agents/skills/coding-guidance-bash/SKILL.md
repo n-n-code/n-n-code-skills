@@ -1,6 +1,6 @@
 ---
 name: coding-guidance-bash
-description: Bash implementation and review skill. Use when writing, modifying, refactoring, or reviewing Bash scripts, especially automation and repo tooling that need defensive error handling, safe quoting, predictable control flow, and maintainable shell boundaries. Portable across Bash-based repos and script stacks.
+description: Bash implementation and review guidance for automation and repository scripts; not for one-off command execution, POSIX `sh`, or release-workflow design where `project-release-maintainer` is primary. Covers safe quoting, explicit failure handling, process ownership, and maintainable shell boundaries.
 ---
 
 # Bash Coding Guidance
@@ -11,11 +11,25 @@ This skill adds portable Bash implementation, refactoring, and review guidance.
 
 This skill provides portable Bash engineering principles. Compose with:
 
-- **Workflow:** **thinking** (planning), **recursive-thinking** (stress-testing),
+- **Workflow:** **thinking** (ambiguous decision framing),
+  **recursive-thinking** (stress-testing),
   **security** (threat modeling)
 - **Domain overlays:** **project-core-dev** (repo-specific completion discovery
   and reporting when needed),
-  **project-platform-diagnose** (environment-sensitive diagnosis)
+  **project-platform-diagnose** (environment-sensitive diagnosis),
+  **project-release-maintainer** (release or packaging workflows that happen to
+  use Bash)
+
+## Reference Map
+
+Load references only when the task needs that depth:
+
+- [references/failure-and-cleanup.md](references/failure-and-cleanup.md) for
+  strict options, `errexit` edge cases, traps, temporary resources, and explicit
+  failure propagation
+- [references/process-and-filesystem-safety.md](references/process-and-filesystem-safety.md)
+  for command construction, background process ownership, concurrent
+  invocation, filename-safe iteration, and cross-platform tool boundaries
 
 ## When Not to Lean on This Skill
 
@@ -25,6 +39,8 @@ This skill provides portable Bash engineering principles. Compose with:
   Bash-only defaults)
 - large data processing jobs that should realistically move to Python, awk, or
   another language with stronger structure
+- broader release, packaging, or publishing workflow design that only happens
+  to call Bash; use `project-release-maintainer` first
 
 ## Implementation Workflow
 
@@ -36,8 +52,9 @@ This skill provides portable Bash engineering principles. Compose with:
 3. Keep the contract narrow: inputs, outputs, exit codes, environment
    dependencies, filesystem effects, and external tool requirements should be
    explicit.
-4. Implement with defensive mode, safe quoting, arrays for argv construction,
-   functions for meaningful substeps, and cleanup traps for temporary state.
+4. Implement with deliberate failure handling, safe quoting, arrays for argv
+   construction, functions for meaningful substeps, and cleanup traps for
+   temporary state.
 5. Add or update shell tests when the repo has them; otherwise add the smallest
    reproducible validation path you can run directly.
 6. Run the narrowest relevant formatter, linter, and script tests the repo
@@ -72,14 +89,20 @@ instead:
    assumptions, and missing tests.
 4. State findings with concrete evidence and the likely consequence.
 
+Do not edit scripts or require findings to be fixed unless the user also asks
+for remediation.
+
 ## Bash Rules
 
 ### First tier - causes bugs
 
 - Start executable Bash scripts with `#!/usr/bin/env bash` unless the repo has
   a stricter shebang convention
-- Use `set -Eeuo pipefail` unless the script has a documented reason to manage
-  failures differently; scope exceptions narrowly
+- Follow the repo's failure-handling convention. Enable `-u`, `pipefail`, `-e`,
+  and `-E` only after checking how optional values, conditionals, functions,
+  pipelines, subshells, and command substitutions are expected to behave
+- Use explicit status checks where `errexit` semantics are ambiguous or failure
+  recovery is part of the contract
 - Quote expansions by default: `"$var"`, `"${arr[@]}"`, and `"$(cmd)"`
 - Use arrays for argument vectors; do not build command lines with string
   concatenation
@@ -107,42 +130,6 @@ instead:
 - Keep shellcheck findings at zero in repo-owned code unless the script has a
   documented exception
 
-### Defensive patterns
-
-- Consider `shopt -s inherit_errexit` when the Bash version and repo contract
-  allow it and command-substitution failures must propagate cleanly
-- Validate required env vars explicitly with `: "${VAR:?message}"`
-- Detect missing external tools up front with `command -v tool >/dev/null 2>&1`
-- Use `mktemp` for temp files and directories; never hand-roll temp paths in
-  shared locations
-- Prefer dry-run modes and idempotent behavior before destructive or expensive
-  operations
-- Use `trap` for cleanup and, when helpful, targeted `ERR` reporting with line
-  or function context
-
-### Command and process discipline
-
-- Pass user-controlled values as individual argv elements, not through `eval`
-  or re-parsed strings
-- Avoid `eval` unless the script is explicitly a shell metaprogramming tool and
-  the risk is justified
-- Prefer explicit path resolution and file existence checks before destructive
-  operations
-- When calling external tools, preserve argument boundaries and treat tool exit
-  codes as part of the contract
-- Be deliberate about `cd`; either scope it to a subshell or restore the prior
-  directory clearly
-- End option parsing with `--` when forwarding user arguments to external
-  commands
-- If the script spawns background jobs, make ownership explicit: track PIDs,
-  aggregate `wait` results deliberately, and forward or handle termination
-  signals rather than abandoning children
-- Avoid casual parallel destructive work; if concurrency matters, define the
-  locking, isolation, or idempotency rule up front
-- If concurrent invocations can interfere with each other, use an explicit lock
-  strategy such as `flock` or a documented equivalent instead of hoping paths
-  or timing stay unique
-
 ### Input, output, and contract design
 
 - Provide `--help` or usage text for non-trivial scripts
@@ -155,29 +142,6 @@ instead:
   explicitly best-effort
 - Use stable exit-code meanings when the script is likely to be called by other
   automation
-
-### Safe iteration and file handling
-
-- Prefer `while IFS= read -r line; do ...; done` over loops that split on
-  whitespace implicitly
-- Use NUL-safe patterns for filenames from `find`, `git`, or similar tools:
-  `-print0`, `xargs -0`, or `read -r -d ''`
-- Use `readarray` or `mapfile` when populating arrays from command output in
-  Bash-specific scripts
-- Avoid `for f in $(...)` for filenames or untrusted data; it is usually a bug
-- Prefer built-ins and parameter expansion over unnecessary subprocesses when
-  they make the script clearer and safer
-
-### Portability and platform fit
-
-- Use Bash-specific features only when the shebang and repo contract allow them
-- If the script must run on multiple platforms, check GNU vs. BSD tool
-  differences before adding flags with inconsistent behavior
-- If platform behavior matters, detect it explicitly instead of assuming Linux
-- Prefer the repo's existing helper scripts and path conventions over ad hoc
-  temp locations or duplicated wrappers
-- Move non-trivial parsing, JSON handling, or data shaping to a better-suited
-  language when shell stops being the clearest tool
 
 ### Style, testing, and tooling
 
@@ -213,8 +177,8 @@ Use these when the right choice is not obvious:
   problem. When narrowness conflicts with correctness or safety, prefer
   correctness. When it conflicts with style alone, prefer narrowness unless the
   task is explicitly a cleanup.
-- **Refactor boundary:** outside explicit refactor work, fix at most one small
-  adjacent issue while you are in the file.
+- **Adjacent issues:** do not modify unrelated issues unless they are required
+  for the requested change's correctness or safety; report them separately.
 - **Abstraction threshold:** three similar command sequences or repeated flag
   parsing pain is a pattern; before extracting, check whether a function, a
   helper script, or a small move to another language is the simpler move.
@@ -224,7 +188,7 @@ Use these when the right choice is not obvious:
 
 ## Validation
 
-A change is done when:
+For implementation, a change is done when:
 
 - shellcheck or the repo's equivalent linter reports no new findings
 - shell formatting is run when the repo has a formatter
@@ -239,9 +203,7 @@ A change is done when:
   fixture rather than assumed correct
 - portability-sensitive changes were tested on the affected platform or the
   remaining platform risk was called out explicitly
-- review findings at `Critical` and `Important` severity are addressed
 
-## Examples
-
-- `Review this Bash deploy script for quoting, traps, and rollback safety`
-- `Refactor this repo automation script to use arrays, safe temp files, and better argument parsing`
+For review, completion means `Critical` and `Important` findings are reported
+with concrete evidence, likely consequence, and any validation gap. Unfixed
+findings do not make the review incomplete.

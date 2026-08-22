@@ -1,7 +1,10 @@
 # Service boundaries
 
-Use this reference only when the Python task crosses a real I/O boundary such
-as HTTP, queues, cron jobs, subprocesses, or persistent workers.
+Use this reference only when a Python task crosses a real I/O boundary such as
+HTTP, queues, cron jobs, subprocesses, or persistent workers. It covers Python
+runtime mechanics; when the task has a server request or message-consumer
+boundary, add a backend overlay if architecture, authorization, transactions,
+retry policy, or cross-service reliability is the main concern.
 
 ## Use when
 
@@ -27,5 +30,9 @@ observable contract is command-line input/output.
   boundaries
 - Retry only transient failures, with bounded attempts and jittered backoff
 - Keep retry ownership in one layer; double-retry behavior is usually a bug
+- In async services and workers, propagate cancellation and keep synchronous
+  filesystem, network, or subprocess waits off the event loop
+- Construct subprocess argv as separate elements, set deliberate timeout and
+  cancellation behavior, and keep stdout data separate from stderr diagnostics
 - Keep domain decisions testable without running the transport, scheduler, or
   worker framework when the domain itself does not require that machinery

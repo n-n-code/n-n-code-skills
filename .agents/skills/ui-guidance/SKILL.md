@@ -1,6 +1,6 @@
 ---
 name: ui-guidance
-description: Overlay for graphical UI and web frontend code. Use with matching implementation guidance when implementing or reviewing UI changes.
+description: Baseline overlay for routine graphical UI and frontend changes that preserve the existing design language; use `ui-design-guidance` for redesign, polish-heavy implementation, or deep UX review. Compose with matching implementation guidance. Not for terminal UIs or pure plotting.
 ---
 
 # UI/Frontend Guidance
@@ -10,6 +10,13 @@ Use alongside the matching principle skill (for example,
 `coding-guidance-cpp`) when the change touches UI or frontend code. Add
 `project-core-dev` only when repository-specific completion checks still need
 to be discovered or reported.
+
+Choose the activity before applying the rules below:
+
+- for implementation, make only the requested UI changes and validate them
+- for review, inspect and report prioritized findings with evidence; do not
+  edit files or require findings to be fixed unless the user also asks for
+  remediation
 
 Use this as the thin default overlay for ordinary UI work.
 If the task is redesign-heavy, frontend-polish heavy, or needs a stronger UX
@@ -52,7 +59,7 @@ out of scope.
 
 ## Decision Heuristics
 
-- **Design language check:** before adding a new visual element, grep the
+- **Design language check:** before adding a new visual element, search the
   codebase for an existing element that serves a similar purpose. Match its
   spacing, color tokens, and component structure unless the task requires
   divergence.
@@ -68,12 +75,17 @@ out of scope.
 
 ## Validation
 
-A UI change is done when (in addition to the base implementation skill's
-validation):
+For implementation, a UI change is done when, in addition to the base
+implementation skill's validation:
 
 - visual output matches the existing design language or the requested redesign
-- interactive elements are keyboard-navigable
+- interactive elements are keyboard-navigable and expose appropriate names,
+  roles, or labels
 - layout is stable across supported viewports
 - when automated UI verification is absent, any implementation or review note
   you produce names the screenshots, snapshots, or manual checks used as
   evidence
+
+For review, completion means prioritized findings name the affected interaction
+or screen, supporting evidence, likely user impact, and any validation gap. Open
+findings do not make the review incomplete.

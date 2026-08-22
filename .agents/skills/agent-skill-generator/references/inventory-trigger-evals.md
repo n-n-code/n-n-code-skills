@@ -51,11 +51,21 @@ Expected `backend-systems-guidance`:
 
 - `Review this webhook consumer for idempotency, retry, and observability gaps.`
 - `Add a new protected endpoint with repository, transaction, and permission logic.`
+- `Apply one authorization policy to an HTTP endpoint and queue consumer that invoke the same business action.`
 
 Expected neither as primary:
 
 - `Refactor this HTTP client helper used by a CLI.`
 - `Run a security audit of this tenant boundary.` -> use `security` first.
+
+Instruction behavior after explicit selection:
+
+- `Use backend-systems-guidance to review this endpoint, but do not edit files.`
+  -> map the path and report prioritized evidence-backed findings; do not
+  remediate or require findings to be fixed.
+- `Use backend-guidance for an action reachable from HTTP and a queue.` ->
+  decode and authenticate at each ingress, enforce shared authorization before
+  the action, and keep domain and persistence invariants in their owning layers.
 
 ## UI
 
@@ -73,6 +83,15 @@ Expected neither as primary:
 
 - `Change a backend API response with no UI surface.`
 - `Fix a terminal ncurses screen unless the repo treats it as product UI.`
+
+Instruction behavior after explicit selection:
+
+- `Use ui-design-guidance to review this dashboard before release, but do not edit files.`
+  -> choose review activity independently from preserve or redesign direction,
+  then report prioritized findings and evidence without implementation.
+- `Use ui-design-guidance to redesign this landing page.` -> choose
+  implementation activity plus redesign direction, then build and validate the
+  requested UI.
 
 ## Playwright
 
@@ -116,6 +135,22 @@ Expected `coding-guidance-go`, not `coding-guidance-go-tui`:
 - `Add a Cobra subcommand that parses flags and writes plain text output.`
 - `Build a one-shot Huh questionnaire that exits after collecting answers.`
 
+Collision cases:
+
+- `Review the package boundaries around a Bubble Tea app; the screen behavior is unchanged.`
+  -> `coding-guidance-go` when non-TUI package design is the main risk; add
+  `coding-guidance-go-tui` only if the state machine or component integration
+  also needs judgment.
+- `Review this Bubble Tea model for focus and command-ordering bugs.` ->
+  `coding-guidance-go-tui`, not generic Go guidance as primary.
+
+Instruction behavior after explicit selection:
+
+- `Use coding-guidance-go to review this worker, but do not edit files.` ->
+  report findings without remediation and do not require findings to be fixed.
+- `Use coding-guidance-go to add a benchmark in a module targeting Go 1.23.` ->
+  preserve compatible `b.N` style rather than introducing `b.Loop`.
+
 Expected `go-testing-with-testify`:
 
 - `Write testify table-driven tests for this Go parser.`
@@ -144,6 +179,14 @@ Expected not `coding-guidance-bash` as primary:
 - `Run this one shell command and show me the output.`
 - `Design a broader release workflow that only happens to call Bash scripts.` -> use `project-release-maintainer` first.
 
+Instruction behavior after explicit selection:
+
+- `Use coding-guidance-bash to review this script, but do not edit it.` ->
+  report prioritized findings without remediation.
+- `Use coding-guidance-bash; the script intentionally recovers from several non-zero commands.`
+  -> inspect control flow before enabling `errexit`, and use explicit checks
+  where recovery is part of the contract.
+
 ## Python
 
 Expected `coding-guidance-python`:
@@ -160,6 +203,13 @@ Expected `tester-mindset` first:
 
 - `Decide what Python edge cases matter before writing tests for this parser.`
 
+Instruction behavior after explicit selection:
+
+- `Use coding-guidance-python in a Python 3.9 package that uses unittest.` ->
+  preserve version-compatible typing syntax and the existing test framework.
+- `Use coding-guidance-python to review this module, but do not edit files.` ->
+  report findings without remediation and do not require findings to be fixed.
+
 ## Cpp And Qt
 
 Expected `coding-guidance-cpp`:
@@ -173,6 +223,21 @@ Expected `coding-guidance-qt`:
 - `Fix this Qt QWidget layout and signal/slot behavior.`
 - `Review this QAbstractItemModel implementation for invalid indexes and notifications.`
 - `Move this Qt worker off the GUI thread without breaking QObject affinity.`
+
+Collision cases:
+
+- `Review this QWidget controller for QObject lifetime and queued-signal bugs.`
+  -> `coding-guidance-qt`, not generic C++ guidance as primary.
+- `Optimize the non-Qt parsing library used by this Qt application.` ->
+  `coding-guidance-cpp` when no QObject, event-loop, widget, or Qt build
+  behavior changes.
+
+Instruction behavior after explicit selection:
+
+- `Use coding-guidance-qt to review this dialog, but do not edit files.` ->
+  report Qt-specific evidence without remediation.
+- `Use coding-guidance-cpp to review this ownership refactor, but do not edit files.`
+  -> report findings without requiring them to be fixed.
 
 Expected `coding-guidance-cpp` + `project-vendor-boundary`:
 

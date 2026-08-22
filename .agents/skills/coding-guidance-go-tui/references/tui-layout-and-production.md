@@ -61,17 +61,23 @@ load every time.
 - Keep optional integrations graceful. If clipboard, editor dispatch, syntax
   highlighting, markdown rendering, or image preview is unavailable, hide the
   shortcut or show a clear fallback.
+- When the component stack provides an accessible mode, expose it through user
+  configuration or environment detection rather than assuming one presentation
+  works for every terminal or assistive technology. Keep a plain-output path
+  when the full-screen interaction cannot be made usable.
 
 ## Performance Patterns
 
-- Use `strings.Builder` for non-trivial `View` assembly and call `Grow` when a
-  rough size is known.
-- Precompute package-level or model-owned styles. Avoid rebuilding the same
-  Lip Gloss styles on every frame.
-- Cache expensive derived output, such as Glamour-rendered markdown, syntax
-  highlighting, filtered result sets, or table layouts, by content and width.
-- Virtualize large lists and tables. Render visible rows, not the entire
-  dataset, when data can grow.
+- Apply these patterns when profiling, benchmarks, or realistic data sizes show
+  rendering cost; do not add caches or complexity merely because `View` runs
+  frequently.
+- Use `strings.Builder` for substantial repeated string assembly when it makes
+  construction clearer or reduces measured allocation pressure.
+- Precompute styles or cache expensive derived output, such as rendered
+  markdown, syntax highlighting, filtered results, or table layouts, by the
+  state and dimensions that actually determine it.
+- Virtualize large lists and tables when rendering the full dataset causes
+  measurable latency or memory pressure.
 - Use debounced commands for search or filtering that would otherwise fire on
   every keypress.
 - Tag async commands with request IDs, versions, or content hashes so stale

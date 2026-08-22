@@ -83,8 +83,9 @@ carry by default.
 
 ## APIs and abstraction
 
-- Functions should do one thing, stay at one level of abstraction, and justify
-  more than two meaningful parameters.
+- Functions should do one thing and stay at one level of abstraction. When
+  parameter meaning is unclear at call sites or several inputs form one
+  cohesive concept, introduce a named type or parameter object.
 - Treat boolean flag parameters as a design smell; split behavior or introduce
   a parameter object when that makes the contract clearer.
 - Prefer composition and value semantics over inheritance unless polymorphism is
