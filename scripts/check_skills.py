@@ -41,6 +41,29 @@ ROUTING_SUFFIX_PATTERN = re.compile(
     r"^\s*(?::|,)?\s*(?:skill\b|as\s+(?:the\s+)?(?:primary|companion)\b)",
     re.IGNORECASE,
 )
+GUIDANCE_DESCRIPTION_NEIGHBORS = {
+    "backend-guidance": "backend-systems-guidance",
+    "backend-systems-guidance": "backend-guidance",
+    "coding-guidance-bash": "project-release-maintainer",
+    "coding-guidance-cpp": "coding-guidance-qt",
+    "coding-guidance-go": "coding-guidance-go-tui",
+    "coding-guidance-go-tui": "coding-guidance-go",
+    "coding-guidance-qt": "coding-guidance-cpp",
+    "ui-design-guidance": "ui-guidance",
+    "ui-guidance": "ui-design-guidance",
+}
+GUIDANCE_REVIEW_BOUNDARY_PATTERN = re.compile(
+    r"(?:read-only|do\s+not\s+edit|without\s+editing)",
+    re.IGNORECASE,
+)
+GO_TUI_ONE_SHOT_HUH_PATTERN = re.compile(
+    r"(?:standalone|one-shot)[^.\n]*Huh|Huh[^.\n]*(?:standalone|one-shot)",
+    re.IGNORECASE,
+)
+README_GUIDANCE_REVIEW_CONTRACT = (
+    "For review-only work, guidance skills report prioritized evidence-backed "
+    "findings without editing files or requiring findings to be fixed."
+)
 
 
 @dataclass(frozen=True)
@@ -350,6 +373,65 @@ def read_required(path: Path, errors: List[str]) -> str:
         return ""
 
 
+def frontmatter_description(text: str) -> str:
+    match = re.search(r"^description:\s*(.+)$", text, re.MULTILINE)
+    if not match:
+        return ""
+    return match.group(1).strip().strip("'\"")
+
+
+def check_guidance_family_invariants(
+    root: Path,
+    readme_text: str,
+) -> List[str]:
+    """Protect stable routing and read-only contracts for guidance skills."""
+    errors: List[str] = []
+    skills_dir = root / ".agents" / "skills"
+
+    for skill_dir in sorted(skills_dir.glob("*guidance*")):
+        skill_file = skill_dir / "SKILL.md"
+        text = read_required(skill_file, errors)
+        if not text:
+            continue
+
+        description = frontmatter_description(text)
+        if "review" not in description.lower():
+            errors.append(
+                f"{skill_file}: missing guidance-family invariant: "
+                "frontmatter description must expose review capability"
+            )
+        if not GUIDANCE_REVIEW_BOUNDARY_PATTERN.search(text):
+            errors.append(
+                f"{skill_file}: missing guidance-family invariant: "
+                "review requests need an explicit read-only boundary"
+            )
+
+        neighbor = GUIDANCE_DESCRIPTION_NEIGHBORS.get(skill_dir.name)
+        if neighbor and neighbor not in description:
+            errors.append(
+                f"{skill_file}: missing guidance-family invariant: "
+                f"description must route against {neighbor!r}"
+            )
+
+        if (
+            skill_dir.name == "coding-guidance-go-tui"
+            and not GO_TUI_ONE_SHOT_HUH_PATTERN.search(description)
+        ):
+            errors.append(
+                f"{skill_file}: missing guidance-family invariant: "
+                "description must exclude standalone or one-shot Huh prompts"
+            )
+
+    compact_readme = re.sub(r"\s+", " ", readme_text)
+    if README_GUIDANCE_REVIEW_CONTRACT not in compact_readme:
+        errors.append(
+            f"{root / 'README.md'}: missing guidance-family invariant: "
+            "shared review-only contract"
+        )
+
+    return errors
+
+
 def require_contains(
     path: Path,
     text: str,
@@ -560,6 +642,7 @@ def validate_repository(root: Path) -> ValidationResult:
     errors.extend(skill_errors)
 
     readme = root / "README.md"
+    readme_text = ""
     if readme.is_file():
         try:
             readme_text = readme.read_text(encoding="utf-8")
@@ -573,6 +656,7 @@ def validate_repository(root: Path) -> ValidationResult:
     sources = collect_markdown_sources(root)
     errors.extend(check_relative_links(sources))
     errors.extend(check_skill_references(sources, skill_names))
+    errors.extend(check_guidance_family_invariants(root, readme_text))
     errors.extend(check_repo_specific_invariants(root, sources))
 
     return ValidationResult(tuple(errors), len(skill_dirs))

@@ -1,6 +1,6 @@
 ---
 name: ui-design-guidance
-description: Canonical overlay for graphical UI and web frontend work that is redesign-heavy, frontend-polish-heavy, or UX-review-heavy. Use alongside the repo's implementation skill when visual direction, accessibility, interaction quality, responsive behavior, forms, navigation, or data presentation need stronger design discipline; use `ui-guidance` for routine UI changes.
+description: Canonical overlay for graphical UI or frontend redesign, polish-heavy implementation, and deep UX review; use `ui-guidance` for routine changes. Compose with matching implementation guidance when visual direction, accessibility, interaction, responsive behavior, forms, navigation, or data presentation need stronger discipline.
 ---
 
 # UI Design Guidance
@@ -12,6 +12,10 @@ UI or web frontend code.
 This is the stronger UI overlay in this repo.
 Prefer it over `ui-guidance` when the task is redesign-heavy, polish-heavy, or
 needs explicit UX review beyond basic UI hygiene.
+
+Choose activity independently from visual direction. A review request is
+read-only unless the user also asks for remediation; preserve versus redesign
+describes the intended product direction, not permission to edit files.
 
 ## When to use
 
@@ -34,31 +38,40 @@ needs explicit UX review beyond basic UI hygiene.
 ## Core workflow
 
 1. Read the touched UI files and nearby components first.
-2. Determine the mode:
+2. Choose the activity:
+   - implementation when the user asks to build, change, redesign, or remediate
+     the UI
+   - review when the user asks for findings, critique, or release assessment;
+     report evidence without editing or requiring findings to be fixed
+3. Determine the visual direction:
    - preserve mode when the repo already has a clear design language and the
      user did not ask for redesign
    - redesign mode when the user explicitly wants a new visual direction or the
      current UI is intentionally being reworked
-   - UX-review-heavy mode when the main risk is usability, interaction quality,
-     responsiveness, forms, navigation, or data presentation
-3. In preserve mode, derive tokens, spacing, interaction patterns, breakpoints,
+4. In preserve mode, derive tokens, spacing, interaction patterns, breakpoints,
    and component structure from the nearest existing screens or components.
-4. In redesign mode, choose one intentional aesthetic direction before coding:
-   define the interface purpose, audience, tone, and one memorable visual idea.
-5. In UX-review-heavy mode, evaluate the change in this order:
+5. In redesign mode, choose one intentional direction before coding: define
+   the interface purpose, audience, tone, and the visual idea that should make
+   the surface coherent. Read
+   [references/redesign-aesthetics.md](references/redesign-aesthetics.md) only
+   when the task needs deeper aesthetic direction.
+6. For deep implementation or review, evaluate priorities in this order:
    - accessibility
    - interaction and feedback
    - layout and responsiveness
    - typography and color clarity
    - forms, navigation, and data presentation when they apply
-6. Implement real working UI code that fits the chosen mode:
+7. For implementation, build real working UI code that fits the chosen
+   direction:
    - preserve mode should feel native to the repo
    - redesign mode should feel distinctive, cohesive, and production-grade
-   - UX-review-heavy mode should strengthen usability without drifting away from
-     the repo's design language unless redesign is requested
-7. Verify accessibility, keyboard behavior, responsive layout stability, and
+   - UX remediation should strengthen usability without drifting away from the
+     repo's design language unless redesign is requested
+8. For review, report prioritized findings with the affected interaction,
+   evidence, likely user impact, and validation gaps; do not modify code.
+9. Verify accessibility, keyboard behavior, responsive layout stability, and
    visual output with the strongest evidence the repo supports.
-8. When the repo lacks UI docs or automated checks, record the fallback
+10. When the repo lacks UI docs or automated checks, record the fallback
    evidence: files inspected, viewport sizes tested, and screenshots or manual
    checks used.
 
@@ -72,7 +85,7 @@ needs explicit UX review beyond basic UI hygiene.
 - Match implementation complexity to the visual goal. Refined minimalism needs
   precision and restraint; bold maximalism needs deliberate structure and
   stronger visual systems.
-- Before adding a new visual element, grep for a similar existing element and
+- Before adding a new visual element, search for a similar existing element and
   reuse its patterns unless redesign mode justifies divergence.
 - Prefer concise, durable heuristics over giant style catalogs. Use repo
   context first, not generic design-library sprawl.
@@ -115,25 +128,10 @@ needs explicit UX review beyond basic UI hygiene.
 - charts and data views must remain readable without relying on color alone
 - empty, loading, and error states should explain what the user can do next
 
-## Aesthetic rules
-
-- Choose typography intentionally. Avoid default stacks and overused safe
-  choices unless the repo already standardizes on them.
-- Commit to a cohesive palette and define reusable tokens or variables instead
-  of scattering one-off colors.
-- Use motion deliberately. Prefer a few meaningful transitions or reveal
-  sequences over noisy micro-interactions everywhere.
-- Build atmosphere with backgrounds, texture, layering, contrast, shadows, or
-  pattern where the design direction benefits from it.
-- Avoid generic AI-UI habits: purple-on-white defaults, interchangeable hero
-  sections, timid palettes, and cookie-cutter dashboard layouts.
-- Keep distinctive choices consistent across the whole surface so the UI feels
-  designed rather than decorated.
-
 ## Validation
 
-A UI change is done when, in addition to the base implementation skill's
-validation:
+For implementation, a UI change is done when, in addition to the base
+implementation skill's validation:
 
 - visual output matches the existing design language or the requested redesign
 - interactive elements are keyboard-navigable and labeled appropriately
@@ -143,14 +141,6 @@ validation:
 - the evidence names the files, screenshots, snapshots, or manual checks used
   when automated UI verification is absent
 
-## Examples
-
-- `Polish this React settings screen without changing the product style`:
-  stay in preserve mode, inspect nearby screens, reuse tokens and spacing, and
-  verify keyboard and viewport behavior.
-- `Redesign this marketing landing page so it feels memorable`:
-  switch to redesign mode, pick one clear aesthetic direction, then implement a
-  cohesive page with stronger typography, layout, and motion choices.
-- `Review this dashboard for UX issues before release`:
-  switch to UX-review-heavy mode, walk the priority list from accessibility
-  through data presentation, and report concrete issues with evidence.
+For review, completion means the findings are prioritized, evidence-backed,
+and explicit about user impact and unverified behavior. Unfixed findings do not
+make the review incomplete.

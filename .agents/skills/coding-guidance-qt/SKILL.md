@@ -1,6 +1,6 @@
 ---
 name: coding-guidance-qt
-description: Qt implementation and review skill. Use when writing, modifying, refactoring, or reviewing Qt C++ QWidget desktop code, especially Widgets, `.ui` forms, Designer-generated UI, models, `QAbstractItemModel`, signals and slots, `eventFilter`, `QThread`, CMake-based Qt5/Qt6 builds, layout-heavy UI, and QObject lifetime or thread-affinity problems. Portable across Qt-based C++ application repos.
+description: Qt C++ implementation and review guidance for QObject, QWidget/model-view, signals and slots, thread affinity, `.ui` forms, and Qt build tooling; use `coding-guidance-cpp` for non-Qt C++ design. Portable across Qt5/Qt6 repositories with a QWidget desktop focus.
 ---
 
 # Qt Coding Guidance
@@ -14,7 +14,8 @@ QObject, threading, and build guidance also applies to non-UI Qt C++ code.
 
 This skill provides portable Qt engineering principles. Compose with:
 
-- **Workflow:** **thinking** (planning), **recursive-thinking** (stress-testing),
+- **Workflow:** **thinking** (ambiguous decision framing),
+  **recursive-thinking** (stress-testing),
   **security** (threat modeling)
 - **Domain overlays:** **ui-guidance** (ordinary graphical UI work),
   **ui-design-guidance** (stronger design and UX work),
@@ -40,6 +41,8 @@ Open bundled references only when the task actually needs them:
   for layout, dialog, panel, and desktop-UX work
 - [references/qt-model-view-checklist.md](references/qt-model-view-checklist.md)
   for `QAbstractItemModel`, roles, resets, selections, and model/view contract work
+- [references/qt-review-evidence.md](references/qt-review-evidence.md) for
+  Qt-specific review hotspots and the evidence needed to support findings
 
 Stay in the main skill when the task is broad Qt implementation or review and
 no single failure mode dominates yet.
@@ -110,6 +113,9 @@ instead:
    reset boundaries for model issues, and the visible interaction path for
    layout or `.ui` regressions.
 
+Do not edit code or require findings to be fixed unless the user also asks for
+remediation.
+
 ## Qt Rules
 
 ### First tier - causes bugs
@@ -121,8 +127,11 @@ instead:
 - Every Widgets application gets exactly one `QApplication`; create it before
   any widget, `QPixmap`, `QIcon`, or other GUI object
 - Do not copy `QObject` subclasses; keep lifetime and ownership explicit
-- Use `deleteLater()` rather than immediate deletion when an object may still be
-  participating in the event loop
+- Use `deleteLater()` when direct deletion could occur during event handling,
+  from the wrong thread, or before queued work is safely drained. Direct
+  destruction is appropriate when ownership, thread affinity, and event-loop
+  state make it safe. Verify that the owning event loop will actually process a
+  deferred deletion.
 - Do not touch GUI objects from non-GUI threads
 - Bind connection lifetime to a context object when possible so queued work does
   not outlive the receiver
@@ -148,166 +157,42 @@ instead:
 - Follow the repo's Qt version and idioms before introducing newer Qt APIs
 - Keep compiler, clazy, and Qt-specific warnings at zero in repo-owned code
 
-### Architecture and object lifetime
+### Ownership, eventing, and threads
 
-- This section mixes general Qt lifetime guidance with QWidget screen-structure
-  defaults.
-- For Widgets apps, keep application bootstrap, main-window construction, and
-  signal wiring easy to find
-- In `QMainWindow` code, separate central-widget setup, action/menu setup, and
-  signal wiring instead of burying everything in one constructor
-- Use this default boundary unless the repo already chose differently:
-  plain C++ domain logic owns rules and state transitions; Qt-facing models or
-  adapters translate domain state for the UI; widgets own presentation, local
-  interaction, and signal wiring
-- For non-trivial screens, a presenter, controller, or adapter seam is often
-  simpler than stuffing decisions into slots
-- Parent-child ownership is convenient, but only when the parent truly owns the
-  child for the same lifetime
-- Use raw pointers for non-owning QObject references only when lifetime is
-  obvious; use `QPointer` or a clearer ownership boundary when deletion can race
-  with callbacks or queued work
-- Avoid parented stack objects and mixed manual-plus-parent ownership
-- Make who creates, owns, and tears down long-lived objects obvious near the
-  construction site
-- Be careful with lambdas connected to signals; capture only what can outlive
-  the connection or tie the connection to a context object
+- Parent a QObject only when the parent truly owns it for the same lifetime.
+  Avoid parented stack objects and mixed manual-plus-parent ownership.
+- Use `QPointer` or a clearer ownership seam when a non-owning QObject reference
+  can be invalidated by queued work or callbacks.
+- Tie lambda connections to a context object unless every capture demonstrably
+  outlives the connection.
+- Treat signals as contracts. Keep connection types, reentrancy, thread hops,
+  recursive updates, and signal-chain length explicit when they affect behavior.
+- Do not create children for a parent in another thread or move an object while
+  its ownership, children, or event handling make the move invalid.
+- Own cancellation and teardown for timers, workers, asynchronous replies, and
+  queued callbacks, including application quit and window-close paths.
 
-### Signals, slots, and events
+### UI, model, build, and test boundaries
 
-- These rules apply to Qt C++ broadly, not only Widgets screens.
-- Treat signals as contracts; name them for state changes or completed actions,
-  not vague implementation detail
-- Prefer one clear signal over several partially overlapping ones when callers
-  need a stable contract
-- Avoid long signal chains that make control flow impossible to follow
-- Be explicit about connection type when thread hops or reentrancy matter
-- Guard against recursive updates and signal storms when setters feed models,
-  bindings, or other observers
-- If a signal appears connected but never fires, verify sender lifetime,
-  signature compatibility, and that moc ran after the last `Q_OBJECT` change
-- Use event filters sparingly; prefer normal event handlers when ownership and
-  routing are local
-
-### Models, views, and UI boundaries
-
-- This section is mostly QWidget model/view guidance; use the reference for
-  contract-heavy model work.
-- Preserve the formal contract of Qt item models; invalid indexes, role names,
-  and reset behavior are compatibility boundaries
-- Keep view state, model state, and domain state separated enough that each can
-  be tested and debugged directly
-- Prefer explicit model roles and property names over stringly ad hoc data
-  blobs
-- Avoid doing heavy logic in delegates, bindings, or paint paths
-- When a view needs derived presentation state, prefer a model or adapter seam
-  over burying logic in widget callbacks
-- In mixed QML/Widgets code, treat binding loops and context-property sprawl as
-  design smells; this skill still defaults to the QWidget side
-- Detailed model/view rules and review checks live in
-  [references/qt-model-view-checklist.md](references/qt-model-view-checklist.md)
-
-### Layouts and desktop UX
-
-- This section is Widgets-specific.
-- Layouts own geometry; use real layout types and desktop-native composition
-  instead of manual sizing or geometry hacks
-- Use `QFormLayout`, `QSplitter`, `QDockWidget`, `QGroupBox`, and
-  `QDialogButtonBox` deliberately where their semantics match the screen
-- Prefer standard buttons, shortcuts, dialogs, icons, and paths when Qt
-  provides them, instead of hard-coding one platform's desktop conventions
-- Be deliberate with `QSizePolicy`, stretch factors, margins, spacing,
-  accessibility names, and keyboard flow
-- Detailed layout and desktop-UX patterns live in
-  [references/qt-layouts-and-desktop-ux.md](references/qt-layouts-and-desktop-ux.md)
-
-### Threading, async, and responsiveness
-
-- These rules apply to Qt C++ broadly, not only Widgets screens.
-- Move blocking or long-running work off the GUI thread and define how results
-  are marshaled back
-- Use queued delivery deliberately when crossing thread boundaries; do not
-  assume the default connection behavior is always correct
-- Do not create children for a parent that lives in another thread
-- Do not move an object to another thread unless its ownership, children, and
-  event handling model all remain valid there
-- Prefer explicit task ownership, cancellation, and teardown rules for timers,
-  workers, and asynchronous replies
-- Treat shutdown, application quit, and window close paths as lifetime hazards
-  for queued callbacks and pending replies
-
-### Build and version compatibility
-
-- These rules apply to Qt C++ broadly; `.ui` guidance is Widgets-specific.
-- Respect moc, uic, qrc, and build-system boundaries; file moves or class shape
-  changes that affect generated code are not trivial refactors
-- Do not edit generated `ui_*.h` files; change the `.ui` form, the wrapper
-  widget, or the build inputs that generate them
-- When a repo uses Qt Widgets Designer, treat `.ui` XML, form settings, custom
-  widget declarations, and generated includes as part of the source contract
-- If the repo supports both Qt5 and Qt6, use version-driven CMake patterns
-  rather than hard-coded `Qt5::` or `Qt6::` targets
-- In Qt6-first CMake repos that are not already standardized on a stable local
-  pattern, prefer Qt's own helper commands such as
-  `qt_standard_project_setup()` and `qt_add_executable()` over ad hoc target
-  setup
-- Treat Qt version compatibility as a public build contract; test each claimed
-  variant instead of assuming dynamic `find_package` is enough
-- Prefer stable resource lookup and path handling over current-working-directory
-  assumptions
-- Mark user-visible strings for translation through the repo's chosen path,
-  `tr()` by default; do not introduce raw UI text that bypasses extraction
-- Keep translation keys, object names, and user-visible strings deliberate
-  rather than incidental
-- Do not introduce obsolete Qt classes or deprecated members in new code when a
-  maintained alternative exists; if a touched API is obsolete, treat migration
-  pressure as part of the design review
-- If a subsystem is mostly plain C++, keep Qt-specific concerns at the boundary
-  instead of spreading Qt types everywhere without benefit
-- Detailed build and compatibility patterns live in
-  [references/qt-build-compatibility.md](references/qt-build-compatibility.md)
-
-### Testing and debugging
-
+- Keep domain rules in plain C++ where practical, translate through Qt-facing
+  models or adapters, and keep widgets focused on presentation and local
+  interaction.
+- Treat item-model indexes, roles, begin/end notifications, resets, selections,
+  and persistent indexes as formal compatibility contracts. Load the model/view
+  reference for contract-heavy work.
+- Let layouts own geometry and keep accessibility, keyboard flow, size policy,
+  margins, and platform-native widget semantics deliberate. Load the layout
+  reference for detailed desktop-UX work.
+- Treat moc, uic, qrc, `.ui` files, resources, translations, and claimed Qt5 or
+  Qt6 variants as source and build contracts. Never edit generated `ui_*.h`
+  files; load the Designer and build references when those seams change.
 - Test visible behavior, model transitions, emitted signals, and lifecycle
-  edges, not just private helper functions
-- Prefer deterministic UI tests and offscreen smoke paths over fragile timing-
-  dependent visual assertions
-- Treat build verification as part of test completion; generated or updated
-  tests that do not compile are incomplete
-- Use `qDebug()` and `qWarning()` deliberately for widget size, object class,
-  state transitions, and connection-path diagnostics
-- For memory or lifecycle bugs in C++, prefer AddressSanitizer and Qt-aware
-  lifetime inspection over guessing
-- Detailed failure categorization and diagnosis steps live in
-  [references/qt-debugging-checklist.md](references/qt-debugging-checklist.md)
+  edges. Prefer deterministic Qt Test or offscreen checks, and use the debugging
+  reference plus sanitizers for diagnosis rather than guessing.
 
-## Review Hotspots
-
-- missing `Q_OBJECT`, stale moc output, or signal/slot signature mismatch
-- wrong QObject ownership or `deleteLater()` timing
-- cross-thread object parenting or GUI-thread violations
-- incorrect model notifications, reset behavior, or invalid index handling
-- edits to generated `ui_*.h` instead of the underlying `.ui` or wrapper code
-- new user-visible strings that bypass translation or break existing i18n paths
-- newly introduced obsolete Qt APIs or deprecated members
-- hidden layout regressions from `QSizePolicy`, stretch, spacing, or minimum
-  size changes
-- Qt5/Qt6 target-family drift in CMake
-
-## Review Evidence
-
-- For signal or slot bugs, name the sender, receiver, connection style, and the
-  lifetime or signature fact that breaks the path
-- For thread-affinity bugs, name which object lives on which thread and where
-  the illegal GUI or parenting access occurs
-- For model/view bugs, name which contract breaks: wrong `data()` role,
-  missing `begin*/end*`, invalid index handling, reset misuse, or stale
-  selection/persistent-index assumptions
-- For layout or `.ui` bugs, name the affected screen path and the geometry or
-  form-setting change that causes the regression
-- For build or generated-code bugs, name the specific moc/uic/qrc or CMake
-  input that is stale, missing, or version-skewed
+The Quick Routing references contain the detailed model/view, layout, Designer,
+build, review, and diagnosis checklists. Load only the reference matching the
+dominant failure mode.
 
 ## Decision Heuristics
 
@@ -337,8 +222,9 @@ Use these when the right choice is not obvious:
   problem. When narrowness conflicts with correctness or lifecycle safety,
   prefer correctness. When it conflicts with style alone, prefer narrowness
   unless the task is explicitly a cleanup.
-- **Refactor boundary:** outside explicit refactor work, fix at most one small
-  adjacent issue while you are in the file.
+- **Adjacent issues:** do not modify unrelated issues unless they are required
+  for the requested change's correctness or lifecycle safety; report them
+  separately.
 - **Abstraction threshold:** three similar widget handlers, signal-wiring paths,
   model-shaping steps, or dialog flows is a pattern; before extracting, check
   whether a small helper, adapter, presenter, or model object is the simpler
@@ -349,7 +235,7 @@ Use these when the right choice is not obvious:
 
 ## Validation
 
-A change is done when:
+For implementation, a change is done when:
 
 - the code builds without new compiler, moc, or Qt-specific warnings
 - existing tests pass
@@ -361,10 +247,7 @@ A change is done when:
 - Qt5/Qt6 compatibility changes were validated on each claimed build variant
 - resource paths, generated-code inputs, and translation-sensitive changes were
   verified when touched
-- review findings at `Critical` and `Important` severity are addressed
 
-## Examples
-
-- `Review this Qt dialog and layout refactor for ownership, size-policy, and accessibility regressions`
-- `Refactor this Qt widget controller so business logic moves out of slots and the UI stays responsive`
-- `Fix this Qt CMake setup so the repo can build cleanly against both Qt5 and Qt6`
+For review, completion means `Critical` and `Important` findings are reported
+with concrete Qt-specific evidence, likely consequence, and any validation
+gap. Unfixed findings do not make the review incomplete.

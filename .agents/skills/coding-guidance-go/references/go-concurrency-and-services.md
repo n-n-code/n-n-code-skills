@@ -47,8 +47,10 @@ boundaries, or transport error mapping.
 
 - Close channels only from the sending side that owns completion.
 - Specify channel direction in function signatures when possible.
-- Default channels to unbuffered or size one. Larger buffers need a documented
-  reason, backpressure behavior, and overload expectation.
+- Choose channel capacity from the synchronization and backpressure contract.
+  Use unbuffered channels when the handoff itself must synchronize participants;
+  use a bounded buffer when measured or designed burst tolerance requires it,
+  and document what happens when the bound is reached.
 - For pipelines, make every stage observe cancellation, close only its owned
   outbound channel, and propagate errors without leaving senders or receivers
   blocked.

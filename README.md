@@ -10,7 +10,8 @@ The published repository is intentionally small at the root:
 
 - `README.md` and `AGENTS.md` document the repo and its working rules
 - `.agents/skills/` contains the published skills
-- `scripts/check_skills.py` runs cross-platform structural validation for the skill inventory
+- `scripts/check_skills.py` runs cross-platform validation for skill structure,
+  inventory, links, and stable routing contracts
 - `scripts/check-skills.sh` is the Bash wrapper for the same validator
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
 - `LICENSE` covers the repository contents
@@ -26,7 +27,7 @@ The published repository is intentionally small at the root:
       scripts/      # optional
       assets/       # optional
 scripts/
-  check_skills.py       # cross-platform structural validator
+  check_skills.py       # cross-platform skill and routing-contract validator
   check-skills.sh       # Bash wrapper
   test_check_skills.py  # validator regression tests
 ```
@@ -55,6 +56,10 @@ Most tasks should compose skills in this order:
 1. Start with one principle skill when the work is language- or discipline-specific.
 2. Add the overlays that match the domain or repo concern.
 3. Add an orthogonal workflow skill only when the user explicitly wants that mode or the task clearly needs it.
+
+For review-only work, guidance skills report prioritized evidence-backed
+findings without editing files or requiring findings to be fixed. Add
+remediation only when the user asks for it.
 
 Examples:
 
@@ -114,6 +119,13 @@ Defaults:
 - `coding-guidance-bash` — portable Bash implementation and review guidance for automation scripts, repo tooling, refactors, and code review
 - `coding-guidance-qt` — portable Qt C++ QWidget desktop implementation and review guidance for widgets, models, signals and slots, layout-heavy UI, Qt5/Qt6 CMake work, and code review
 
+C++ and Qt routing note:
+
+- Use `coding-guidance-qt` when QObject lifetime, signals and slots, QWidget or
+  model/view behavior, thread affinity, or Qt-generated build steps are the main
+  concern. Use `coding-guidance-cpp` for non-Qt C++ design even when that code
+  happens to live in a Qt application repository.
+
 Python skill note:
 
 - `coding-guidance-python` includes bundled references under `.agents/skills/coding-guidance-python/references/` for packaging/layout and service-boundary concerns so the main skill stays focused on core Python engineering guidance.
@@ -133,6 +145,14 @@ Go TUI skill note:
   forms inside Bubble Tea flows, or related Charm stack patterns. Use
   `coding-guidance-go` instead when the task is a non-interactive Go CLI,
   library, worker, or service change with no TUI state machine.
+- Treat a one-shot Huh questionnaire as ordinary Go CLI work unless it is
+  embedded in a maintained Bubble Tea screen.
+
+Bash routing note:
+
+- Use `coding-guidance-bash` for Bash implementation and review. Use
+  `project-release-maintainer` first when the main job is designing or
+  maintaining a release or packaging workflow that only happens to call Bash.
 
 ### Implementation And Project Overlays
 
@@ -233,7 +253,7 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 This repository does not currently have an application build or lint pipeline.
 
 For changes to skills, supporting files, root documentation, or validation
-behavior, run the structural skill-inventory checker:
+behavior, run the repository skill validator:
 
 ```console
 python scripts/check_skills.py

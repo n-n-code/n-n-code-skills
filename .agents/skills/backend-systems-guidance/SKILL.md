@@ -1,6 +1,6 @@
 ---
 name: backend-systems-guidance
-description: Canonical overlay for non-trivial server-side networked code that needs multi-layer architecture, data-access, reliability, trust-boundary, or deeper testing discipline. Use alongside the repo's implementation skill for backend services, APIs, middleware, queues, repositories, transactions, auth-sensitive flows, or backend refactors; use `backend-guidance` for thin routine handler work.
+description: Canonical overlay for non-trivial server-side networked implementation and review involving multi-layer architecture, data access, reliability, trust boundaries, or deeper testing; use `backend-guidance` for thin routine handlers. Compose with matching implementation guidance for APIs, queues, repositories, transactions, or auth-sensitive flows.
 ---
 
 # Backend Systems Guidance
@@ -8,6 +8,10 @@ description: Canonical overlay for non-trivial server-side networked code that n
 This is a composable overlay, not a standalone workflow.
 Use alongside the repo's implementation skill when the change touches backend
 code.
+
+Choose activity independently from backend depth. A review request is read-only
+unless the user also asks for remediation; use the architecture and reliability
+rules as inspection criteria and report findings instead of changing code.
 
 This is the canonical backend overlay in this repo.
 It extends the thin baseline `backend-guidance` overlay with stronger guidance
@@ -53,7 +57,11 @@ trust boundaries.
 1. Read the touched backend files and map the request or consumer path end to
    end: boundary, service logic, data access, external calls, and state
    changes.
-2. Pick the mode before changing code:
+2. Pick the activity and depth before changing code:
+   - implementation when the user asks to add, change, refactor, harden, or
+     remediate backend behavior
+   - review when the user asks for findings or assessment; inspect the remaining
+     steps without editing or requiring findings to be fixed
    - baseline backend change when the work is mostly a thin handler or small
      service fix
    - service-boundary change when responsibilities, data access, or dependency
@@ -70,9 +78,12 @@ trust boundaries.
      ordering
    - handlers and controllers do not reach directly into ORM or network clients
      unless the change is truly trivial and stays trivial
-5. Harden cross-cutting concerns at the edge:
-   - validate external input once at the boundary
-   - enforce auth and authorization before business actions
+5. Place trust and validation concerns in their owning layers:
+   - decode, authenticate, and validate the external transport shape at ingress
+   - enforce authorization in the earliest shared policy layer traversed by
+     every relevant entrypoint, before business actions
+   - enforce business invariants in service or domain code and persistence
+     constraints in the data layer
    - set timeouts, retry rules, and destination allowlists for outbound calls
    - use structured logging, correlation identifiers, and explicit error
      mapping for observable failure paths
@@ -101,8 +112,10 @@ trust boundaries.
 - Add a repository or data-access interface when it reduces duplication,
   isolates non-trivial queries, helps transaction composition, or makes tests
   materially simpler. Do not add one for single-call trivial CRUD.
-- Prefer one validation pass at the outer edge plus typed internal data. Avoid
-  repeated validation in every layer unless a trust boundary changes.
+- Validate transport shape once at ingress, then pass typed data inward. Keep
+  authorization, domain invariants, and persistence constraints in their
+  owning layers; avoid duplicate checks only when they protect the same
+  contract and boundary.
 - Treat retries as a design choice, not a default. Only retry idempotent or
   explicitly deduplicated work, and pair retries with deadlines or backoff.
 - Use idempotency keys or duplicate-detection for retried creates, webhook
@@ -116,16 +129,22 @@ trust boundaries.
 
 ## Validation
 
-A backend change is done when, in addition to the base implementation skill's
-validation:
+For implementation, a backend change is done when, in addition to the base
+implementation skill's validation:
 
 - handlers or consumers stay as boundary glue and delegate business decisions to
   testable service code
 - data access and external I/O live behind clear seams when the change is
   non-trivial
-- external input, auth, and transport-specific error mapping stay at the edge
+- external transport shape, authentication, and transport-specific error
+  mapping stay at the edge; shared authorization and domain invariants cannot
+  be bypassed through another entrypoint
 - retries, idempotency, timeouts, and failure handling are explicit where the
   change can duplicate work or call remote systems
 - tests cover the changed behavior at the correct level, including integration
   coverage for boundary behavior and permission or failure cases when relevant
 - new high-risk paths emit enough evidence to debug production behavior
+
+For review, completion means prioritized findings map the affected request or
+consumer path, cite evidence, explain likely impact, and identify unverified
+behavior. Unfixed findings do not make the review incomplete.

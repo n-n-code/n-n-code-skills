@@ -1,6 +1,6 @@
 ---
 name: coding-guidance-go
-description: Go implementation and review skill. Use when writing, modifying, refactoring, testing, optimizing, or reviewing Go code, especially production Go that needs clear errors, context propagation, concurrency safety, interface discipline, package boundaries, REST or gRPC service boundaries, standard-library testing, pprof-backed performance work, logging, and tooling discipline. Portable across Go repos and service stacks.
+description: Go implementation and review guidance for non-interactive CLIs, libraries, workers, and services; use `coding-guidance-go-tui` for interactive Bubble Tea and `go-testing-with-testify` for testify-focused test work. Covers errors, contexts, concurrency, package boundaries, standard tests, and measured performance.
 ---
 
 # Go Coding Guidance
@@ -12,7 +12,8 @@ guidance.
 
 Compose with:
 
-- **Workflow:** `thinking` for planning, `recursive-thinking` for
+- **Workflow:** `thinking` for ambiguous decision framing,
+  `recursive-thinking` for
   stress-testing, `security` for threat modeling
 - **Domain overlays:** `backend-guidance` for server-side code,
   `backend-systems-guidance` for deeper backend architecture/reliability/trust
@@ -22,10 +23,15 @@ Compose with:
   config or path seams
 - **Testing:** `go-testing-with-testify` when the main artifact is testify-based
   Go test code, test review, or Go test flake triage
+- **TUI specialization:** `coding-guidance-go-tui` when Bubble Tea state,
+  Bubbles components, Lip Gloss layout, or an interactive terminal screen is
+  the main concern
 
 ## When Not to Lean on This Skill
 
 - non-Go work
+- interactive Bubble Tea or Charmbracelet terminal screens; use
+  `coding-guidance-go-tui`
 - pure test strategy without implementation code or concrete Go test code; use
   `tester-mindset`
 - testify-specific assertion, mock, suite, or flake work; use
@@ -49,6 +55,9 @@ Load references only when the task needs that depth:
   for package/module layout, `go.mod`/`go.sum`, `go.work`, vendoring,
   generated code, release metadata, dependency pressure, profiling, and hot-path
   allocation guidance
+- [go-api-and-language-rules.md](references/go-api-and-language-rules.md) for
+  naming, declarations, exported-contract stability, interface placement,
+  generics, nil and collection semantics, and other detailed language rules
 
 ## Mode Selection
 
@@ -127,9 +136,13 @@ When reviewing, skip the implementation workflow and use this instead:
    linter will settle unless they hide a real readability or behavior issue.
 6. State findings with concrete evidence and the likely consequence.
 
+Do not edit code or require findings to be fixed unless the user also asks for
+remediation.
+
 ## Core Go Rules
 
-- Always run `gofmt`; run `goimports` when imports changed or the repo uses it.
+- Always run `gofmt`; run `goimports` when the repo uses or provides it and
+  imports changed.
 - Handle every error deliberately. Do not discard errors with `_` unless the
   call cannot fail meaningfully or a comment explains why it is safe to ignore.
 - Return the `error` interface from exported functions, not concrete error
@@ -151,12 +164,6 @@ When reviewing, skip the implementation workflow and use this instead:
 - Protect shared mutable state with a clear synchronization rule. Do not copy
   values containing `sync.Mutex`, `sync.WaitGroup`, `bytes.Buffer`, or similar
   pointer-owned state after first use.
-- Treat maps, slices, channels, and pointers as nil-capable contracts. Decide
-  whether nil and empty are equivalent before exposing them, especially for
-  JSON.
-- Always assign the result of `append`; the backing array may change.
-- Copy slices and maps at API boundaries when caller mutation would violate the
-  callee's invariants or returned state should be immutable to callers.
 - Use `crypto/rand` for keys, tokens, and security-sensitive randomness. Never
   use `math/rand` for secrets.
 - Do not hardcode environment-specific configuration in libraries or deep
@@ -166,37 +173,11 @@ When reviewing, skip the implementation workflow and use this instead:
   Return errors for ordinary failures; panic only for programmer errors,
   impossible states, or startup failures where recovery is not expected.
 
-## API Shape And Style
-
-- Prefer clarity, simplicity, concision, maintainability, then local
-  consistency, in that order.
-- Keep the normal path unindented. Handle errors and special cases first; omit
-  `else` after `return`, `break`, `continue`, or `goto`.
-- Use `if` or `switch` initialization to reduce scope, but avoid `:=`
-  shadowing that leaves the outer variable unchanged.
-- Use `var` for intentional zero values and package-level declarations. Use
-  `:=` for local values with obvious types.
-- Use MixedCaps identifiers, consistent initialisms (`URL`, `ID`, `HTTP`), and
-  short receiver names that stay consistent across a type's methods.
-- Avoid names that repeat package or receiver context: prefer `widget.New()` to
-  `widget.NewWidget()` and `p.Name()` to `p.ProjectName()`.
-- Document exported packages, types, functions, methods, constants, and
-  variables with comments that start with the exported name and read as
-  complete sentences.
-- Treat exported identifiers, module paths, JSON/database/protobuf/OpenAPI
-  tags, CLI flags, file formats, metrics, and log field names as compatibility
-  boundaries.
-- Define interfaces at the consumer side unless the producer owns a stable
-  abstraction used by many consumers.
-- Keep interfaces small. One to three methods is a seam; a wide interface is
-  often a hidden concrete type.
-- Accept interfaces and return concrete types by default. Returning an
-  interface is appropriate when the concrete implementation is intentionally
-  hidden behind a stable standard or package-owned abstraction.
-- Start with concrete code. Add generics only when multiple types share
-  identical logic and interfaces do not model the behavior cleanly.
-- Keep generic constraints minimal. Prefer standard constraints such as
-  `comparable` or `cmp.Ordered` when available; do not over-constrain unions.
+Detailed naming, declaration, interface, compatibility, collection, and
+generics guidance lives in
+[go-api-and-language-rules.md](references/go-api-and-language-rules.md). Load it
+when those choices are material; do not spend routine task context on a full
+style catalog.
 
 ## Decision Heuristics
 
@@ -230,12 +211,13 @@ When reviewing, skip the implementation workflow and use this instead:
 - **Narrowness vs. quality:** implement the narrowest change that solves the
   problem. When narrowness conflicts with correctness, resource safety, or race
   safety, prefer correctness.
-- **Refactor boundary:** outside explicit refactor work, fix at most one small
-  adjacent issue while you are in the file.
+- **Adjacent issues:** do not modify unrelated issues unless they are required
+  for the requested change's correctness, resource safety, or race safety;
+  report them separately.
 
 ## Validation
 
-A change is done when:
+For implementation, a change is done when:
 
 - `gofmt` or the repo's formatter has run on touched Go files
 - `goimports` or the repo's import formatter has run when imports changed
@@ -252,14 +234,7 @@ A change is done when:
   the repo's established commands
 - security-sensitive code gets the repo's security scan, such as `gosec`, when
   available
-- review findings at `Critical` and `Important` severity are addressed
 
-## Examples
-
-- `Review this Go worker for context cancellation, goroutine leaks, and race risks`
-- `Refactor this Go service package without breaking exported API or error contracts`
-- `Add a Go HTTP handler and keep business logic testable outside the transport`
-- `Add a gRPC method and preserve context deadlines, error mapping, and service-layer tests`
-- `Write standard Go tests for this parser, including error semantics and fuzz seeds`
-- `Design a constructor for this Go client without adding global mutable state`
-- `Optimize this Go hot path using benchmarks and pprof evidence, not speculation`
+For review, completion means `Critical` and `Important` findings are reported
+with concrete evidence, likely consequence, and any validation gap. Unfixed
+findings do not make the review incomplete.

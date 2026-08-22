@@ -3,7 +3,7 @@
 ## Repo Purpose
 
 This repository stores reusable agent skills. Most work should be limited to
-root documentation, `.agents/skills/`, and the structural validation scripts
+root documentation, `.agents/skills/`, and the validation scripts
 under `scripts/`.
 
 ## Structure

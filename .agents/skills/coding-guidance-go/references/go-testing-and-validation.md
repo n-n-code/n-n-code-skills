@@ -12,8 +12,9 @@ selection, race checks, fuzzing, benchmarking, or integration-test gating.
   complex comparisons justify it or the dependency is already present.
 - Write failures that can be diagnosed without rereading the test source:
   include function, inputs, got value, and want value. Print got before want.
-- Use `t.Error` by default so one run reports multiple failures. Use `t.Fatal`
-  only when setup failed or continuing would produce meaningless assertions.
+- Use `t.Error` when later assertions remain meaningful. Use `t.Fatal` when
+  setup failed or continuing would produce misleading failures or unsafe test
+  behavior.
 - Never call `t.Fatal`, `t.FailNow`, or `require.*` from a goroutine other than
   the test goroutine.
 
@@ -31,7 +32,8 @@ selection, race checks, fuzzing, benchmarking, or integration-test gating.
 
 ## Helpers And Fixtures
 
-- Call `t.Helper()` as the first statement in helpers.
+- Call `t.Helper()` in helpers whose failures should point at their caller;
+  place it before the helper reports failures.
 - Use `t.Cleanup()` for teardown owned by helpers.
 - Use `t.TempDir()` and `testdata/` for filesystem fixtures.
 - Use golden files only when the expected output is large or intentionally
@@ -72,7 +74,9 @@ selection, race checks, fuzzing, benchmarking, or integration-test gating.
 - Seed fuzz tests with representative valid and invalid cases.
 - Use benchmarks for performance claims, not as a replacement for behavior
   tests.
-- Reset timers after expensive benchmark setup and report allocations when
+- For repos targeting Go 1.24 or later, prefer `b.Loop()` for new benchmarks.
+  Preserve the repo's existing `b.N` style when compatibility requires it and
+  reset timers after expensive setup in that style. Report allocations when
   allocation count is part of the claim.
 
 ## Integration Tests

@@ -11,7 +11,8 @@ This skill adds portable Python implementation, refactoring, and review guidance
 
 This skill provides portable Python engineering principles. Compose with:
 
-- **Workflow:** **thinking** (planning), **recursive-thinking** (stress-testing),
+- **Workflow:** **thinking** (ambiguous decision framing),
+  **recursive-thinking** (stress-testing),
   **security** (threat modeling)
 - **Domain overlays:** **backend-guidance** (server-side code),
   **backend-systems-guidance** (stronger backend architecture, reliability, and
@@ -20,8 +21,15 @@ This skill provides portable Python engineering principles. Compose with:
   **project-core-dev** (repo-specific completion discovery and reporting when
   needed)
 
-Open the bundled references only when the task actually touches package
-distribution, entrypoint layout, or a real I/O/service boundary.
+Open bundled references only when the task needs that depth:
+
+- [references/python-language-and-testing-rules.md](references/python-language-and-testing-rules.md)
+  for typing, interface, test, data-state, module, and architecture decisions
+- [references/python-packaging-and-layout.md](references/python-packaging-and-layout.md)
+  for distribution, entrypoint, import-layout, or package-structure work
+- [references/python-service-boundaries.md](references/python-service-boundaries.md)
+  for async cancellation, subprocesses, workers, and real external I/O or
+  service boundaries
 
 ## When Not to Lean on This Skill
 
@@ -43,8 +51,9 @@ distribution, entrypoint layout, or a real I/O/service boundary.
 4. Implement with simple functions, clear module boundaries, explicit types
    where they improve the contract, and production-safe behavior at I/O
    boundaries.
-5. Add or update tests close to the changed behavior; prefer pytest-native
-   fixtures and parameterization over ad hoc setup.
+5. Add or update tests close to the changed behavior using the repo's existing
+   framework and conventions. Use fixtures or parameterization when they make
+   setup and cases clearer rather than merely shorter.
 6. Run the narrowest relevant formatter, linter, type checker, packaging check,
    and test targets the repo supports.
 
@@ -78,6 +87,9 @@ instead:
    the change actually crosses a real external boundary.
 4. State findings with concrete evidence and the likely consequence.
 
+Do not edit code or require findings to be fixed unless the user also asks for
+remediation.
+
 ## Python Rules
 
 ### First tier - causes bugs
@@ -99,114 +111,38 @@ instead:
 - Do not block the event loop with synchronous I/O in async code
 - Do not mix sync and async APIs inside one path without a clear boundary
 
-### Second tier - prevents mistakes
+### Design and verification rules
 
-- Prefer small functions and plain data flow before introducing classes
-- Use classes when they model stateful domain objects or a stable behavior
-  boundary, not just to group helpers
-- Prefer `pathlib.Path` over stringly typed path manipulation
-- Prefer `dataclass`, `TypedDict`, `Protocol`, `Enum`, and other standard
-  library types when they make contracts clearer
-- Use comprehensions and built-ins when they make intent clearer; avoid dense
-  one-liners that hide control flow
-- Avoid boolean flag parameters when separate functions or a small config type
-  would make behavior clearer
-- Keep warnings, lint findings, and type-checker regressions at zero in
-  repo-owned code
+- Prefer small functions and plain data flow before classes or framework
+  indirection; introduce abstractions only when they clarify a real state or
+  behavior boundary.
+- Use typing syntax supported by the repository's minimum Python version. Add
+  types where they clarify public or non-trivial contracts, and keep `Any` as an
+  explicit escape hatch rather than a default.
+- Follow the repository's existing test framework and conventions. Do not
+  migrate `unittest` to pytest merely because new tests are needed.
+- Mock external boundaries rather than the behavior under test, and add
+  integration coverage when a change crosses package, transport, persistence,
+  or subprocess seams.
+- Keep validation, serialization, persistence, and business rules separable;
+  replace long-lived dict-shaped data or hidden mutation with named contracts.
+- Keep module dependencies directed, public package APIs deliberate, and CLI,
+  transport, persistence, and domain logic testable at their own seams.
+- Keep sync and async entrypoints distinct, own background tasks and their
+  cancellation, and protect shared invariants rather than individual fields.
+- Make retry, timeout, fallback, observability, and resilience first-class only
+  when the task crosses a real external boundary.
 
-### Typing and interfaces
-
-- Add type hints to public functions, methods, and non-trivial internal seams
-  where they clarify real contracts
-- Prefer concrete types at boundaries and protocols for substitution seams
-  rather than broad `Any`
-- Use `Any` only when the repo truly needs a dynamic escape hatch and the cost
-  is explicit
-- Prefer modern union syntax and type narrowing over comments or sentinel-heavy
-  calling conventions
-- Public APIs should make invalid states hard to represent and expensive work
-  visible to callers
-- If a function takes more than 2-3 meaningful parameters, prefer a named type,
-  config object, or split responsibility
-- Make mutation visible in names and interfaces; hidden in-place updates are a
-  design smell
-- Use strict type checking where the repo supports it; if the codebase is not
-  yet strict, tighten changed modules instead of broadening exemptions
-
-### Tests and verification
-
-- Prefer pytest-style tests with clear arrange-act-assert flow
-- Use fixtures for reusable setup and teardown, not for hiding the meaning of
-  a test
-- Use parameterized tests when the same contract should hold across multiple
-  inputs
-- Mock external boundaries, not the internal behavior you are trying to prove
-- Add integration coverage when the change crosses package, transport,
-  persistence, or subprocess boundaries
-- Coverage is a signal, not a goal; prioritize meaningful path coverage over
-  percentage chasing
-
-### Data and state discipline
-
-- Keep validation, serialization, persistence, and business rules separated
-  enough that each can be tested directly
-- Be suspicious of dict-shaped data flowing through many layers without a named
-  contract
-- Prefer immutable or append-only data flow where shared mutation would make
-  behavior harder to reason about
-- Cache only when measurement or repeated cost justifies it; make cache scope
-  and invalidation rules explicit
-- Treat environment-variable reads, current working directory assumptions, and
-  process-global configuration as boundary concerns
-- Validate external input at the boundary instead of letting malformed data fail
-  deep in the call graph
-
-### Modules, structure, and packaging
-
-- Prefer narrow modules with clear import direction over utility grab bags
-- Avoid circular imports by moving shared contracts to a lower layer instead of
-  using late imports as a default escape hatch
-- Keep CLI, transport, persistence, and domain logic separated enough to test
-  each piece in isolation
-- Prefer shallow directory structures unless there is a real sub-domain split
-- Expose public package APIs deliberately; do not leak internal helpers,
-  framework types, or persistence models as public contracts by accident
-- Packaging-specific guidance that would otherwise bloat this file lives in
-  [references/python-packaging-and-layout.md](references/python-packaging-and-layout.md)
-
-### Architecture and anti-patterns
-
-- Prefer composition over inheritance unless inheritance matches the real domain
-  model
-- Wait for repeated pressure before extracting abstractions; avoid clever
-  registries, factories, or framework indirection that do not buy real clarity
-- Keep I/O and business logic separated enough that core logic can be tested
-  without transport or database setup
-- Do not duplicate retry, timeout, or fallback behavior at multiple layers
-- Do not hard-code secrets, production hosts, or environment-specific settings
-- Do not swallow exceptions, ignore partial failures silently, or hide
-  destructive side effects behind benign names
-
-### Concurrency, observability, and resilience
-
-- Keep sync and async entrypoints separate unless the repo already has a clear
-  bridging pattern
-- In async code, await real work promptly; do not create background tasks
-  casually without ownership, cancellation, and error propagation rules
-- Protect invariants, not individual fields, when threads or async tasks share
-  mutable state
-- Service-boundary concerns become first-class only when the task actually
-  crosses a real external boundary such as HTTP, queues, subprocesses, or
-  persistent workers
-- Service-boundary observability and resilience guidance lives in
-  [references/python-service-boundaries.md](references/python-service-boundaries.md)
+Load the references above for the detailed language, testing, packaging, async,
+subprocess, and service-boundary rules.
 
 ## Decision Heuristics
 
 Use these when the right choice is not obvious:
 
-- **Scope check:** if a change touches more than 3 modules or public entrypoints,
-  stop and plan before continuing; the change is bigger than it looks.
+- **Scope check:** if a change crosses several modules, public entrypoints, or
+  import contracts, stop and plan the compatibility and dependency effects
+  before continuing.
 - **State visibility:** if mutation or side effects are hard to see from the
   function signature, redesign the interface or add a one-line contract comment.
 - **Typing pressure:** if `Any`, untyped dicts, or loose tuples start spreading,
@@ -226,8 +162,8 @@ Use these when the right choice is not obvious:
   problem. When narrowness conflicts with correctness or clarity, prefer
   correctness. When it conflicts with style alone, prefer narrowness unless the
   task is explicitly a cleanup.
-- **Refactor boundary:** outside explicit refactor work, fix at most one small
-  adjacent issue while you are in the file.
+- **Adjacent issues:** do not modify unrelated issues unless they are required
+  for the requested change's correctness or safety; report them separately.
 - **Abstraction threshold:** three similar code blocks or repeated data-shaping
   pain is a pattern; before extracting, check whether a helper function, named
   type, or boundary cleanup is the simpler move.
@@ -242,7 +178,7 @@ Use these when the right choice is not obvious:
 
 ## Validation
 
-A change is done when:
+For implementation, a change is done when:
 
 - the code passes the repo's formatter or format-check
 - lint and static analysis report no new findings
@@ -253,9 +189,7 @@ A change is done when:
 - changed CLI, import, or service entrypoints have a narrow smoke path
 - packaging metadata and import paths are verified when the change affects a
   distributable library or CLI
-- review findings at `Critical` and `Important` severity are addressed
 
-## Examples
-
-- `Refactor this Python service module without breaking its typed public API`
-- `Review this async Python worker for retry, timeout, and test gaps`
+For review, completion means `Critical` and `Important` findings are reported
+with concrete evidence, likely consequence, and any validation gap. Unfixed
+findings do not make the review incomplete.

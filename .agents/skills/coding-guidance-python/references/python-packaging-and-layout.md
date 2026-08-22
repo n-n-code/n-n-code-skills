@@ -19,8 +19,11 @@ touch imports, packaging metadata, or published entrypoints.
 - Prefer `pyproject.toml` as the packaging configuration source of truth
 - Treat import paths, console entrypoints, and published metadata as
   compatibility boundaries, not routine refactor detail
-- Prefer `src/` layout for distributable libraries unless the repo has a clear
-  reason not to
+- Preserve an established working layout unless the task explicitly changes
+  it. For a new distributable library, compare `src/` and flat layouts against
+  the desired import and development workflow; prefer `src/` when preventing
+  accidental source-tree imports is worth requiring an installed or editable
+  development environment
 - For typed libraries, ship `py.typed` and keep runtime dependencies distinct
   from dev-only tooling
 - After package-layout changes, verify imports from an installed or package-like

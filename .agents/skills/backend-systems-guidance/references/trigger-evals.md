@@ -5,7 +5,7 @@ Use these prompts to spot over-triggering and boundary drift between
 
 ## Expected `backend-guidance`
 
-- "Fix this HTTP handler so it stops doing auth checks inline and just calls the service."
+- "Fix this thin HTTP handler so it authenticates at ingress, delegates shared authorization to the existing service policy, and maps domain errors."
 - "Clean up this gRPC method and move input parsing to the boundary."
 - "Review this small message consumer and make sure transport concerns stay at the edge."
 
@@ -21,20 +21,16 @@ Use these prompts to spot over-triggering and boundary drift between
 - "Threat-model our auth system and list likely attack paths."
 - "Set up Kubernetes deployment manifests and production dashboards."
 
-## Manual Simulation Summary
+## Static Prediction Record
 
-Prompts used:
+These are description-and-instruction predictions, not observed host routing.
 
-- positive-obvious: "Refactor this endpoint stack into controller, service, and repository layers and check for N+1 queries."
-- positive-paraphrased: "This backend change touches retries, auth, and webhook deduplication. Use the stronger backend overlay."
-- negative-adjacent: "Tune this HTTP client retry policy for outbound SDK calls."
-
-What passed:
-
-- obvious multi-layer backend work points clearly to `backend-systems-guidance`
-- paraphrased reliability and trust-boundary work still triggers the stronger
-  overlay
-- outbound-client-only work stays out of scope
+| Case | Expected primary | Expected companions | Selection to avoid | Surface | Method | Context | Comparison | Result | Failure class | Residual risk |
+|---|---|---|---|---|---|---|---|---|---|---|
+| "Refactor this endpoint stack into controller, service, and repository layers and check for N+1 queries." | `backend-systems-guidance` | matching implementation skill | `backend-guidance` alone | activation | static prediction | N/A | none | pass | N/A | host routing not observed |
+| "This backend change touches retries, authorization, and webhook deduplication." | `backend-systems-guidance` | matching implementation skill | `backend-guidance` alone | activation | static prediction | N/A | none | pass | N/A | host routing not observed |
+| "Tune this HTTP client retry policy for outbound SDK calls." | matching client or implementation guidance | none | both backend overlays | activation | static prediction | N/A | none | pass | N/A | host routing not observed |
+| "Review this protected endpoint for authorization bypasses, but do not edit files." | `security` | matching backend overlay when implementation structure matters | mutating backend workflow | activation | static prediction | N/A | none | pass | N/A | host routing not observed |
 
 Residual risk:
 
