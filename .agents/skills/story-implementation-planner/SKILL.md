@@ -1,263 +1,297 @@
 ---
 name: story-implementation-planner
-description: Model-aware implementation planning workflow for turning a clarified story card plus repo context into an actionable plan for a human or coding agent. Use after user-story-clarifier and story-repo-scout when a story needs ordered implementation steps; avoid for story drafting, repo scouting alone, or direct code implementation.
+description: Create a constraint-aware implementation plan from a Ready Story Card and sufficiently evidenced Repo Context. Use when the requested artifact is the plan itself; use story-to-plan-orchestrator for multi-stage preparation, packet completion, resumption, or validation. Avoid story drafting, repo scouting, and direct implementation.
 ---
 
 # Story Implementation Planner
 
-Turn a clear story and repo context into an implementation plan sized for the
-model, agent, or human who will execute it.
+Own the `Implementation Plan` artifact. Turn an implementation-ready story and
+repo evidence into an executable plan for a named or described executor without
+clarifying the story, scouting the repository, assembling a packet, or editing
+code.
 
-## When To Use
+## Activation Contract
 
-- create an actionable implementation plan from a story card and repo context
-- optimize a plan for a named model, local model, coding agent, or human
-- prepare a handoff before implementation starts
-- break a story into ordered steps, risks, and validation targets
+Use this skill only when all of these are true:
 
-## Not For
+- the requested output is an implementation plan;
+- the input is one materialized active Story Card, not a Split Story Set, with
+  `Artifact Type: Story Card`, `Status: Ready`, observable acceptance criteria,
+  and a settled implementation boundary;
+- Repo Context contains enough evidence to locate the existing implementation,
+  validation surface, and any convention needed for proposed files;
+- every planning-critical external claim, when present, has current and
+  applicable primary-source support in Repo Context `External Evidence`; and
+- executor constraints are known or can be stated conservatively without
+  changing the required behavior or safety policy.
 
-- clarifying vague product behavior; use `user-story-clarifier`
-- finding relevant repo files; use `story-repo-scout`
-- direct code edits after a plan already exists
-- broad architecture strategy or open-ended technical design
+Use `story-to-plan-orchestrator` when the request spans clarification, scouting,
+planning, packet assembly, readiness validation, or resumption. Use
+`story-clarifier` for unresolved product behavior and `story-repo-scout` for
+missing, weak, or stale repository evidence. Do not perform those stages here.
+A ready Split Story Set still requires slice selection and materialization by
+the orchestrator before it becomes valid planning input.
 
-## Core Workflow
+If this skill is invoked with inadequate inputs, return the supported portions
+of the artifact with a non-ready status and route the missing work to its owner.
+Do not fill gaps by guessing.
 
-1. Read the `Story Card`, `Repo Context`, acceptance criteria, open questions,
-   and relevant file list before planning.
-2. Select a model profile:
-   - `standard-agent` by default when the user is unsure
-   - `frontier-gpt` for strong GPT/Codex-style agents with broad context and
-     reliable multi-file reasoning
-   - `local-small` for smaller local models such as Qwen-class 20B-30B models
-   - `human` when the plan is primarily for a developer to execute manually
-3. Check readiness. If behavior, repo context, or blockers are too unclear to
-   plan honestly, list the missing inputs instead of inventing work.
-4. Define the implementation boundary:
-   - files likely to change
-   - files likely to read only
-   - files likely unrelated or explicitly not to touch
-   - tests or validation targets
-   - explicit non-goals and assumptions
-5. Decide task shape before writing steps:
-   - prefer vertical slices that produce working behavior
-   - keep shared design decisions above the tasks that depend on them
-   - mark dependencies and parallelizable work explicitly
-6. Produce ordered steps that preserve behavior and reduce context load.
-7. Attach the smallest validation path that proves the story.
-8. Run a self-review before finishing: check acceptance-criteria coverage,
-   placeholders, dependency order, risky assumptions, and rollback needs.
-9. Tighten the plan for the selected model profile before finishing.
+## Status Contract
 
-## Model Profiles
-
-### `standard-agent`
-
-- Use 4-8 ordered steps.
-- Treat 9-12 steps as a warning range that may need re-splitting.
-- Keep each step tied to known files or behavior.
-- Include assumptions, blockers, and validation commands when known.
-- Avoid broad refactors unless the story requires them.
-
-### `frontier-gpt`
-
-- Allow parallelizable tracks when file ownership is clear. Express as named
-  tracks (e.g., `Track A: API`, `Track B: UI`) with explicit join points.
-- Permit reading >5 files in parallel before the first edit when multi-file
-  reasoning is required.
-- Allow refactors when the story warrants and the repo's existing patterns
-  support it; flag the refactor scope explicitly so it can be approved or cut.
-- Require an invariant matrix when changes touch shared state across files
-  (rows: invariants; columns: files affected).
-- Include cross-file invariants, sequencing risks, and integration checks.
-- Call out where deeper repo reading should happen before editing.
-- Treat 9-12 top-level steps or tracks as a warning range that may need
-  re-splitting.
-- Keep the plan concise; do not use model strength as a reason to overplan.
-
-### `local-small`
-
-- Use simple linear steps with one main goal per step.
-- Limit the first edit pass to 1-3 files when possible.
-- Treat more than 8 steps as too large for this profile unless the user
-  explicitly accepts the risk.
-- Prefer explicit file paths, exact search terms, and concrete checkpoints.
-- Avoid implicit architecture leaps, broad renames, and speculative abstractions.
-- Include a `First Action` block with exact files to open, first change or
-  decision, first validation checkpoint, and stop condition.
-- Add a stop-and-report checkpoint before any risky or unclear change.
-- **Output budget.** Plan ≤200 lines. Each step ≤5 lines. No inline code blocks
-  longer than 10 lines unless naming an exact existing function signature.
-
-### `human`
-
-- Use a concise task list with rationale and validation notes.
-- Surface decisions-needed-from-human as explicit checkpoints (`Decide:` lines).
-- Name the runnable git/build/test commands the human will use, not pseudo-
-  commands. Example: `pnpm test packages/auth -- --run`, not `run the tests`.
-- Omit agent-only constructs (`First Action`, `Stop if`, model token budgets);
-  the human reads the whole plan.
-- Annotate steps with rough complexity (`~5 min`, `~30 min`, `half-day`) so the
-  human can sequence around their own time.
-- Name decisions the human should confirm before coding starts.
-- Keep implementation details practical, not agent-instructional.
-- Human plans may be longer than agent plans, but large plans should still name
-  decision checkpoints and validation milestones.
-
-## Implementation Plan Output
-
-Use this structure by default:
+Every output starts with:
 
 ```markdown
 ## Implementation Plan
 
-Plan Status: Ready | Needs Inputs | Blocked
+Artifact Type: Implementation Plan
+Status: Ready | Needs Input | Blocked
+Reason: None | <concise readiness reason>
+```
 
-### Target Executor
-Model/profile and why it was chosen.
+Use the statuses operationally:
 
-### Size
-Small | Medium | Large - relative to the executor profile. For agent profiles,
-9-12 top-level steps/tracks is a warning range and more than 12 should be
-re-split. For `local-small`, more than 8 steps should be re-split or accepted
-explicitly by the user.
+- `Ready`: the plan is executable as written and has no unresolved blocking
+  input; write `Reason: None`.
+- `Needs Input`: a specific answer, upstream revision, or re-scout can make the
+  plan executable. Name each missing input, its owner, and the next action; do
+  not write unsupported downstream steps.
+- `Blocked`: a hard dependency or constraint prevents an honest plan and the
+  required input cannot currently be obtained through the preparation
+  workflow. Name the evidence, unblock condition, and safe stopping point.
+
+Risks are uncertainties the ready plan can manage. Blocking inputs prevent the
+plan from being ready; never combine them in one list.
+
+## Core Workflow
+
+1. Read the complete active Story Card and Repo Context. Confirm that the story
+   artifact is one materialized `Story Card`, not a `Split Story Set`, and
+   preserve its source, acceptance-criterion identifiers, Out of Scope,
+   authoritative constraints, dependencies, assumptions, open questions, and
+   Validation Notes.
+2. Check readiness before planning. Treat behavior-changing ambiguity,
+   conflicting upstream evidence, stale critical paths, missing validation or
+   file-convention evidence, and missing, conflicting, or version-mismatched
+   material external evidence as inputs to resolve, not planning latitude.
+3. Record the target executor and the constraints that affect plan shape:
+   autonomy, context capacity, tool access, parallelism, and checkpoint needs.
+4. Define the evidence and file boundary from Repo Context. Apply the detailed
+   path, external-evidence, and authoritative-boundary trace rules below.
+5. Describe the scope and risk drivers: behavior surfaces, subsystem breadth,
+   state or contract changes, integration points, evidence strength, blast
+   radius, reversibility, and external coordination.
+6. Decompose work into narrow end-to-end outcomes that are demoable or
+   independently verifiable where practical; apply the vertical and enabling
+   outcome rules below rather than forcing layer-only tasks.
+7. Build and validate the outcome dependency graph as specified below. Make
+   ownership, blockers, joins, and shared invariants explicit before claiming
+   parallel work.
+8. Choose delivery and recovery measures according to affected surfaces and
+   risk. Apply the wide-change rule below when needed; do not add migration or
+   rollout boilerplate automatically.
+9. Map every acceptance criterion to validation using the smallest-sufficient
+   observable-seam rules below.
+10. Review the plan for unsupported paths or commands, placeholder work,
+    dependency order, criterion coverage, unmanaged risk, and status accuracy.
+
+## Executor Constraints
+
+Describe capabilities, not model stereotypes:
+
+- **Autonomy:** decisions the executor may make versus checkpoints requiring a
+  person or upstream owner.
+- **Context capacity:** how much cross-file state can be carried reliably and
+  where re-entry summaries or smaller outcome batches are useful.
+- **Tool access:** repository, build, test, network, deployment, or other tools
+  available and unavailable.
+- **Parallelism:** whether independent tracks can run concurrently and how they
+  rejoin.
+- **Checkpoint needs:** review, stop-and-report, or validation points required
+  before risky or irreversible actions.
+
+A named model or agent may be recorded as the executor label, but it supplies
+no capability facts by itself. Use only constraints the user supplied or the
+environment demonstrated. Unknown constraints do not justify weaker safety,
+completeness, validation, or recovery. State neutral assumptions or request
+input only when the missing constraint would materially change the plan.
+
+Adapt presentation to the constraints: use narrower outcome batches and an
+optional `First Action` for limited context or autonomy; include tool
+preconditions or alternatives for limited access; and use parallel tracks only
+when the executor can coordinate them safely. Do not impose arbitrary file or
+step counts, and do not invent human time estimates.
+
+## Output Contract
+
+After the common header, use this structure:
+
+```markdown
+### Target Executor and Constraints
+- Executor:
+- Autonomy:
+- Context capacity:
+- Tool access:
+- Parallelism:
+- Checkpoint needs:
 
 ### Goal
-The behavior to implement, in one or two sentences.
+The behavior and boundary this plan will deliver.
 
 ### Inputs
-- Story card, repo context, assumptions, and blockers used for planning.
+- Story Card:
+- Repo Context:
+- External primary evidence: None, or `EXT-*` - planning use.
+- Accepted assumptions or decisions:
+- Non-blocking open questions:
+
+### Scope and Risk Drivers
+- Scope drivers:
+- Risk drivers:
+
+### Files
+- Existing Change: path - purpose; matching Repo Context evidence.
+- Existing Read: path - decision or invariant; matching Repo Context evidence.
+- Existing Validate: path - behavior or oracle; matching Repo Context evidence.
+- Proposed Create: path - purpose; matching Proposed Paths entry and convention basis.
+- Authoritative Do Not Edit: path or scope - source and basis.
 
 ### First Action
-Required for `local-small`, optional for agent profiles when it reduces
-handoff ambiguity, and omitted for `human`.
-
 - Open:
 - Do:
 - Check:
 - Stop if:
 
-### Files
-- Change: path/to/file.ext - expected reason.
-- Read: path/to/file.ext - context needed.
-- Test: path/to/test.ext - validation target.
-- Do Not Touch: path/to/file.ext - boundary reason.
-
 ### Steps
-1. Ordered, concrete implementation step.
+1. `P1 - Stable outcome title` - deliver a narrow end-to-end, demoable or independently verifiable outcome.
+   - Blocked by: None, or direct step IDs.
+   - Ordered substeps when the outcome crosses layers or surfaces.
+   - Checkpoint or observable result.
 
-### Dependencies
-- Step ordering, blockers, and safe parallel work.
+### Dependencies and Parallel Work
+- Starting frontier: step IDs with no unsatisfied blockers.
+- External prerequisites, safe parallel tracks, shared invariants, and join points.
 
-### Risks and Blockers
-- Anything that could change the plan or needs confirmation.
+### Risks
+- Non-blocking uncertainty - mitigation, signal to watch, and contingency.
 
-### Validation
-- Smallest checks, tests, or manual probes that prove the acceptance criteria.
+### Blocking Inputs
+- Missing input - owner, next action, and unblock condition.
 
-### Rollback
-- How to back out or pause safely if the plan is risky.
+### Acceptance Criteria and Validation
+| Acceptance Criterion | Planned Outcome | Validation Seam | Validation Evidence |
+|---|---|---|---|
+| AC-1 | Step ID or behavior | Existing observable seam | Supported command, probe, assertion, or oracle |
 
-### Handoff Notes
-- What the implementing agent or human should do first.
+### Delivery and Recovery
+- Delivery approach and why the affected surface and risk warrant it.
+- Backout, rollback, restore, or forward-fix approach when needed.
+
+### Handoff
+- Starting context, decision checkpoints, and completion evidence to return.
 ```
 
-Omit empty sections when they add no signal. Never invent paths, commands, or
-repo structure not supported by the story or repo context.
+Always include `Target Executor and Constraints`, `Goal`, `Inputs`, `Files`,
+`Steps`, and `Acceptance Criteria and Validation` in a ready plan. Include
+`First Action` only when it materially reduces ambiguity for a constrained
+executor. Include `Blocking Inputs` only for `Needs Input` or `Blocked`; a
+`Ready` plan cannot contain unresolved items there. Omit other empty optional
+sections.
 
-`Plan Status` legend: `Ready` = plan is executable as written;
-`Needs Inputs` = listed blockers must be resolved first; `Blocked` = cannot
-plan honestly without missing repo or story input. See
-`story-implementation-orchestrator` for the canonical vocabulary block when run
-end-to-end.
+Preserve non-blocking questions from Ready upstream artifacts under Inputs;
+also map one to Risks when its uncertainty needs a mitigation or contingency.
+Any question that can change behavior, path selection, an authoritative
+boundary, validation feasibility, or plan executability is a Blocking Input and
+requires a non-ready plan instead.
 
-## Planning Rules
+Reference every planning-critical external claim under Inputs by its stable
+Repo Context `EXT-*` ID and state only its planning use. Keep the owning source,
+section, and applicable version in `External Evidence`. Missing support,
+conflicting primary sources, or a material version or applicability mismatch
+makes the plan non-ready and routes the gap to `story-repo-scout`; do not
+silently resolve it in the plan.
 
-- Preserve the story boundary; split the plan if the work spans unrelated goals.
-- Prefer existing repo patterns over new abstractions.
-- Keep steps observable: each step should produce code, tests, or a decision.
-- Put validation close to the behavior it proves.
-- Preserve `Do Not Touch` boundaries from repo scouting unless the story or user
-  explicitly changes scope.
-- For `local-small`, the `First Action` block must be executable without reading
-  the whole plan again.
-- Every verification step must name a runnable command, manual probe, or a clear
-  reason validation is not yet available.
-- If repo context is weak, include a scouting follow-up instead of guessing.
-- If acceptance criteria and repo context disagree, flag the contradiction before
-  planning implementation.
-- **Migration / flag / rollout.** If the change alters persisted data, schema,
-  wire format, public API, or shared file format: include a forward migration
-  step, a backward-compatibility or rollback step, a backfill plan when data
-  is rewritten, and a feature-flag or staged-rollout step. Risky or
-  irreversible changes default to flag-gated. Note when the rollout requires
-  coordinated deploys (e.g., consumer first, producer second).
-- **Re-splitting.** If the plan exceeds 12 top-level steps or tracks for
-  `standard-agent` or `frontier-gpt`, or 8 steps for `local-small`, recommend
-  re-splitting the story instead of compressing steps. Return `Plan Status:
-  Needs Inputs` with a split rationale unless the user explicitly accepts the
-  larger plan.
-- **Incremental delivery.** When possible, order steps so a working, verifiable
-  checkpoint exists every 2-3 steps. Do not front-load all refactors before any
-  behavior is visible.
-- **Spike steps.** When a critical unknown (API contract, data shape, performance
-  budget) blocks honest planning, include a `Spike:` step with a time-box, a
-  concrete question to answer, and a stop-and-report checkpoint. Do not guess
-  past a spike.
+List each path under its intended use and make its Repo Context trace explicit.
+Every `Existing Read`, `Existing Change`, and `Existing Validate` path must map
+to inspected `Existing Evidence`. Every `Proposed Create` path must map to a
+scout-supplied `Proposed Paths` entry whose basis is an inspected parent,
+sibling convention, manifest, registration point, or documented rule. A test
+that must change belongs under `Existing Change`; it may also appear as
+validation evidence. If a required path lacks that upstream evidence, make the
+plan non-ready and route the gap to `story-repo-scout` instead of inventing it.
+Use `Authoritative Do Not Edit` only for a boundary backed by the user,
+repository instructions, ownership, generated or vendored-source policy, or
+another explicit authority. Do not promote a scout's nearby non-target into a
+hard prohibition.
 
-## Anti-Patterns
+Keep one stable, unique ID and title for each outcome while its identity is
+unchanged. `Blocked by` names immediate plan-step IDs only; put external
+prerequisites in `Dependencies and Parallel Work`. The starting frontier is
+exactly the steps whose direct blockers and external prerequisites are
+satisfied. A ready plan has no duplicate or unknown IDs, cycles, or hidden
+blocking edges.
 
-Reject and rewrite when these appear in a draft plan:
+Prefer vertical outcomes. An enabling outcome must cite the evidence for the
+coupling, required seam, or safety constraint it resolves and must itself have
+an observable completion condition. For an evidence-backed wide mechanical
+change that cannot land green vertically, model expand, migrate batches, and
+contract as explicit outcomes with direct blockers and validation; add an
+integration join and final verification when a batch cannot stand alone.
 
-- **Vague refactor step.** `Refactor X for clarity` without a named target,
-  observable change, or test that proves equivalence.
-- **Vague test step.** `Add tests` without naming the assertion, fixture, or
-  command that runs them.
-- **Mixed-layer step.** A single step that touches DB schema and API surface
-  and UI all at once. Split by layer with explicit ordering.
-- **Missing rollback.** Plan changes production data, schema, or external
-  contracts but has no rollback or backout entry.
-- **Invented path.** Step references a file or symbol not present in repo
-  context. Re-scout instead of guessing.
-- **Placeholder padding.** Steps such as `Handle edge cases`, `Polish`, or
-  `Finalize` without concrete behavior or verification.
-- **Oversized plan.** A plan that exceeds the warning or split budget for its
-  executor profile without flagging re-splitting or explicit acceptance.
+Treat discovery as a plan step only when its decision branches and exit evidence
+are known. An unresolved material decision cannot be hidden in a step or
+checkpoint unless the inputs explicitly delegate it to the executor and bound
+the available choices, authority, and exit criteria. Otherwise make it a
+blocking input. A known unsatisfied execution prerequisite, including an
+unfinished blocking slice, is also a Blocking Input: the supported plan may be
+drafted, but it and its packet cannot be `Ready`. If discovery would materially
+rewrite later steps, make it a blocking input instead. When Story Card and Repo
+Context conflict, stop at the earliest affected upstream stage rather than
+silently reinterpreting either.
+
+## Final Quality Gate
+
+Before returning the artifact, verify:
+
+- every read, change, and validation path maps to Repo Context `Existing
+  Evidence`, and every create path maps to a convention-backed `Proposed Paths`
+  entry;
+- every planning-critical external claim maps to a current, applicable
+  primary-source Repo Context `External Evidence` entry;
+- every symbol, command, and proposed-file convention has upstream evidence;
+- step IDs and titles are stable and unique, direct blockers form an acyclic
+  graph with a truthful starting frontier, and steps are coherent outcomes with
+  observable checkpoints, not
+  placeholders such as `refactor`, `handle edge cases`, `add tests`, or
+  `polish`;
+- every acceptance criterion maps to the smallest sufficient set of stable
+  observable seams, with lower or new seams justified;
+- enabling outcomes and wide-refactor sequencing have the required evidence,
+  blocker edges, and independent or final integration validation;
+- `Ready` has no blocking input, and risks have mitigations or contingencies;
+- delivery and recovery match the affected surface instead of automatic
+  migration, flag, backfill, or rollback boilerplate; and
+- executor identity did not introduce a fabricated estimate, numeric limit, or
+  weaker completeness, safety, validation, or recovery policy.
 
 ## Composition Boundaries
 
-- **Pipeline position.** Input comes from `user-story-clarifier` (story card)
-  and `story-repo-scout` (Repo Context). Output is consumed by the executor
-  named in `Target Executor`.
-- **Shared vocabulary.** `Plan Status` (Ready / Needs Inputs / Blocked) joins
-  story `Status` and `Confidence` from the upstream skills. See
-  `story-implementation-orchestrator` for the canonical vocabulary block.
-- **Downstream skills.** When the executor is an agent and the story implies
-  routine repo-owned code changes, hand off to the matching
-  `coding-guidance-<lang>` principle skill (e.g., `coding-guidance-go`,
-  `coding-guidance-python`). Add `project-core-dev` only when repo-specific
-  completion checks still need discovery or reporting. Use
-  `project-config-and-tests`,
-  `project-release-maintainer`, or `project-vendor-boundary` when that project
-  concern is primary; use `project-platform-diagnose` first for unresolved
-  environment-dependent failures. Add relevant systems overlays such as
-  `backend-systems-guidance`, `ui-guidance`, or `ui-design-guidance`. Use
-  `documenter` for docs-only implementation plans. Add `tester-mindset` when
-  validation design, risk coverage, or acceptance-oracle quality is central.
-- **Re-scout, do not guess.** If repo context is weak or stale, return a
-  `Needs Inputs` plan that asks for a re-scout instead of inventing paths.
-- Use `user-story-clarifier` first when the story is unclear.
-- Use `story-repo-scout` first when relevant files are missing.
-- Use `tester-mindset` when the main question is what risk to cover.
-- Use `security` for exploit-focused review.
+- `story-clarifier` owns the Story Card, `story-repo-scout` owns Repo Context,
+  and this skill is the source of truth for the Implementation Plan schema and
+  stage-specific readiness evidence.
+- `story-to-plan-orchestrator` owns stage selection, invalidation, resumption,
+  and preparation-packet assembly. It may validate this artifact but must not
+  redefine its contract.
+- The named executor consumes a ready plan. Select any language, domain,
+  project, testing, or security guidance needed for implementation at handoff;
+  this skill does not maintain that downstream inventory.
+- A request to edit code is implementation, not planning.
 
 ## Examples
 
-- `Create an actionable implementation plan from this story card and repo context.` ->
-  choose a model profile and output `Implementation Plan`.
-- `Plan this ticket for a local qwen coding agent using the relevant files found.` ->
-  use the local-small profile and simple checkpoints.
-- `Make a GPT-optimized plan from this story and repo scout output.` -> use
-  `frontier-gpt` unless the user names a weaker executor.
+- `Create an implementation plan from this Ready Story Card and Repo Context
+  for an executor with no network access.` -> use this skill and record the tool
+  constraint.
+- `Turn this rough ticket into a coding-ready preparation packet.` -> use
+  `story-to-plan-orchestrator`.
 - `Scour the repo and append relevant file paths.` -> use `story-repo-scout`.
+- `Implement this accepted plan.` -> hand off to implementation guidance.

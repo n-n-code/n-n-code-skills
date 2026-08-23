@@ -443,16 +443,23 @@ def require_contains(
         errors.append(f"{path}: missing story-family invariant: {label}")
 
 
-def require_compact_contains(
+def require_section_contains(
     path: Path,
     text: str,
+    start_marker: str,
+    end_marker: Optional[str],
     needle: str,
     label: str,
     errors: List[str],
 ) -> None:
-    compact_text = re.sub(r"\s+", " ", text)
-    compact_needle = re.sub(r"\s+", " ", needle)
-    if compact_needle not in compact_text:
+    start = text.find(start_marker)
+    if start < 0:
+        errors.append(f"{path}: missing story-family invariant: {label}")
+        return
+
+    end = text.find(end_marker, start + len(start_marker)) if end_marker else -1
+    section = text[start:] if end < 0 else text[start:end]
+    if needle not in section:
         errors.append(f"{path}: missing story-family invariant: {label}")
 
 
@@ -467,6 +474,166 @@ def require_absent(
         errors.append(f"{path}: forbidden story-family regression: {label}")
 
 
+def check_packet_example_semantics(path: Path, text: str) -> List[str]:
+    """Check the example's dependency graph and validation mapping."""
+    errors: List[str] = []
+    steps_start = text.find("### Steps")
+    steps_end = text.find("### Dependencies and Parallel Work", steps_start)
+    if steps_start < 0 or steps_end < 0:
+        return errors
+
+    steps: dict[str, Optional[List[str]]] = {}
+    current_step: Optional[str] = None
+    for line in text[steps_start:steps_end].splitlines():
+        step_match = re.match(r"^\d+\. `([A-Za-z][A-Za-z0-9-]*) - ", line)
+        if step_match:
+            current_step = step_match.group(1)
+            if current_step in steps:
+                errors.append(
+                    f"{path}: invalid packet example: duplicate step ID "
+                    f"{current_step}"
+                )
+            steps[current_step] = None
+            continue
+
+        blocker_match = re.match(r"^\s+- Blocked by:\s*(.*?)\s*$", line)
+        if blocker_match and current_step:
+            raw_blockers = blocker_match.group(1).rstrip(".").strip()
+            steps[current_step] = (
+                []
+                if raw_blockers == "None"
+                else [
+                    item.strip().strip("`")
+                    for item in raw_blockers.split(",")
+                    if item.strip()
+                ]
+            )
+
+    if not steps:
+        errors.append(f"{path}: invalid packet example: no plan steps found")
+        return errors
+
+    for step_id, blockers in steps.items():
+        if blockers is None:
+            errors.append(
+                f"{path}: invalid packet example: {step_id} has no Blocked by edge"
+            )
+
+    graph = {
+        step_id: blockers or []
+        for step_id, blockers in steps.items()
+    }
+    known_ids = set(graph)
+    for step_id, blockers in graph.items():
+        for blocker in blockers:
+            if blocker not in known_ids:
+                errors.append(
+                    f"{path}: invalid packet example: {step_id} has unknown "
+                    f"blocker {blocker}"
+                )
+            elif blocker == step_id:
+                errors.append(
+                    f"{path}: invalid packet example: {step_id} blocks itself"
+                )
+
+    state: dict[str, int] = {}
+
+    def visit(step_id: str) -> bool:
+        if state.get(step_id) == 1:
+            return True
+        if state.get(step_id) == 2:
+            return False
+        state[step_id] = 1
+        for blocker in graph[step_id]:
+            if blocker in graph and visit(blocker):
+                return True
+        state[step_id] = 2
+        return False
+
+    if any(visit(step_id) for step_id in graph if state.get(step_id) != 2):
+        errors.append(f"{path}: invalid packet example: blocker graph has a cycle")
+
+    def reaches(source: str, target: str) -> bool:
+        pending = list(graph.get(source, []))
+        seen: Set[str] = set()
+        while pending:
+            candidate = pending.pop()
+            if candidate == target:
+                return True
+            if candidate in seen or candidate not in graph:
+                continue
+            seen.add(candidate)
+            pending.extend(graph[candidate])
+        return False
+
+    for step_id, blockers in graph.items():
+        for blocker in blockers:
+            if any(
+                other != blocker and reaches(other, blocker)
+                for other in blockers
+            ):
+                errors.append(
+                    f"{path}: invalid packet example: {step_id} has redundant "
+                    f"transitive blocker {blocker}"
+                )
+
+    dependency_text = text[steps_end:]
+    frontier_match = re.search(
+        r"(?m)^- Starting frontier:\s*(.*?)\s*$",
+        dependency_text,
+    )
+    if frontier_match:
+        raw_frontier = frontier_match.group(1).rstrip(".").strip()
+        actual_frontier = {
+            item.strip().strip("`")
+            for item in raw_frontier.split(",")
+            if item.strip() and raw_frontier != "None"
+        }
+        expected_frontier = {
+            step_id for step_id, blockers in graph.items() if not blockers
+        }
+        if actual_frontier != expected_frontier:
+            errors.append(
+                f"{path}: invalid packet example: starting frontier "
+                f"{sorted(actual_frontier)} does not match unblocked steps "
+                f"{sorted(expected_frontier)}"
+            )
+
+    validation_start = text.find("### Acceptance Criteria and Validation")
+    validation_end = text.find("### Delivery and Recovery", validation_start)
+    if validation_start >= 0:
+        validation_text = (
+            text[validation_start:]
+            if validation_end < 0
+            else text[validation_start:validation_end]
+        )
+        mapped_criteria: Set[str] = set()
+        for line in validation_text.splitlines():
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            if not cells or not re.fullmatch(r"(?:S\d+-)?AC-\d+", cells[0]):
+                continue
+            mapped_criteria.add(cells[0])
+            if len(cells) < 4 or not cells[2] or cells[2] in {"-", "None"}:
+                errors.append(
+                    f"{path}: invalid packet example: {cells[0]} has a blank "
+                    "validation seam"
+                )
+
+        story_end = text.find("## Repo Context")
+        story_text = text[:story_end] if story_end >= 0 else text
+        story_criteria = set(
+            re.findall(r"(?m)^- ((?:S\d+-)?AC-\d+):", story_text)
+        )
+        missing_criteria = story_criteria - mapped_criteria
+        if missing_criteria:
+            errors.append(
+                f"{path}: invalid packet example: acceptance criteria missing "
+                f"validation rows: {sorted(missing_criteria)}"
+            )
+
+    return errors
+
+
 def check_repo_specific_invariants(
     root: Path,
     sources: Sequence[Path],
@@ -479,19 +646,88 @@ def check_repo_specific_invariants(
         / "references"
         / "inventory-trigger-evals.md"
     )
-    if not trigger_eval.is_file():
-        errors.append(f"missing {trigger_eval}")
+    trigger_eval_text = read_required(trigger_eval, errors)
 
     story_skill_paths = {
-        "clarifier": skills_dir / "user-story-clarifier" / "SKILL.md",
+        "clarifier": skills_dir / "story-clarifier" / "SKILL.md",
         "scout": skills_dir / "story-repo-scout" / "SKILL.md",
         "planner": skills_dir / "story-implementation-planner" / "SKILL.md",
-        "orchestrator": skills_dir / "story-implementation-orchestrator" / "SKILL.md",
+        "orchestrator": skills_dir / "story-to-plan-orchestrator" / "SKILL.md",
     }
     story_texts = {
         name: read_required(path, errors)
         for name, path in story_skill_paths.items()
     }
+    packet_example_path = (
+        skills_dir
+        / "story-to-plan-orchestrator"
+        / "references"
+        / "story-to-plan-packet-example.md"
+    )
+    packet_example_text = read_required(packet_example_path, errors)
+
+    for retired_name in (
+        "user-story-clarifier",
+        "story-implementation-orchestrator",
+    ):
+        retired_path = skills_dir / retired_name
+        if retired_path.exists():
+            errors.append(
+                f"{retired_path}: retired story skill must not coexist with its "
+                "replacement"
+            )
+
+    for needle, label in (
+        ("## Story Clarification", "story clarification trigger cases"),
+        ("Expected `story-clarifier`:", "story clarifier trigger owner"),
+        ("## Story Repo Scouting", "story repo-scout trigger cases"),
+        ("Expected `story-repo-scout`:", "story repo-scout trigger owner"),
+        ("## Story Implementation Planning", "story planning trigger cases"),
+        (
+            "Expected `story-implementation-planner`:",
+            "story planner trigger owner",
+        ),
+        ("## Story-To-Plan Orchestration", "story orchestration trigger cases"),
+        (
+            "Expected `story-to-plan-orchestrator`:",
+            "story orchestrator trigger owner",
+        ),
+        ("### Story-Family Routing Matrix", "story-family state routing cases"),
+    ):
+        require_contains(trigger_eval, trigger_eval_text, needle, label, errors)
+
+    for needle, label in (
+        (
+            "Expected not `story-clarifier` as primary:",
+            "story clarifier adjacent-negative cases",
+        ),
+        (
+            "Expected not `story-repo-scout` as primary:",
+            "story repo-scout adjacent-negative cases",
+        ),
+        (
+            "Expected not `story-implementation-planner` as primary:",
+            "story planner adjacent-negative cases",
+        ),
+        (
+            "Expected not `story-to-plan-orchestrator` as primary:",
+            "story orchestrator adjacent-negative cases",
+        ),
+        ("Collision cases:", "story-family collision cases"),
+        (
+            "Instruction behavior after explicit selection:",
+            "story-family post-selection behavior cases",
+        ),
+    ):
+        require_section_contains(
+            trigger_eval,
+            trigger_eval_text,
+            "## Story Clarification",
+            "## Project Overlays",
+            needle,
+            label,
+            errors,
+        )
 
     for path in sources:
         text = read_required(path, errors)
@@ -503,133 +739,202 @@ def check_repo_specific_invariants(
             errors,
         )
 
+    component_protocol = (
+        "Status: Ready | Needs Input | Blocked",
+        "Reason: None | <concise readiness reason>",
+    )
+    for name in ("clarifier", "scout", "planner"):
+        for needle in component_protocol:
+            require_contains(
+                story_skill_paths[name],
+                story_texts[name],
+                needle,
+                f"{name} preserves the common story-family artifact protocol",
+                errors,
+            )
+
     clarifier_text = story_texts["clarifier"]
-    require_contains(
-        story_skill_paths["clarifier"],
-        clarifier_text,
-        "Status: Split Candidate",
-        "split packets keep top-level Split Candidate status",
-        errors,
+    for needle, label in (
+        ("**Synthesize:**", "clarifier supports source-only synthesis"),
+        ("Artifact Type: Story Card", "clarifier owns the Story Card artifact"),
+        (
+            "Artifact Type: Split Story Set",
+            "clarifier keeps split-set shape separate from readiness",
+        ),
+        ("## Slice Dependencies", "clarifier records slice blocker edges"),
+        ("- External prerequisites: None", "clarifier separates external slice prerequisites"),
+        (
+            "[Not yet specifiable]",
+            "clarifier separates in-scope fog from sharp questions",
+        ),
+        ("Artifact Type: Story Audit", "clarifier labels audit-only output"),
+        ("## Audit Output", "clarifier defines non-rewriting audit behavior"),
+    ):
+        require_contains(
+            story_skill_paths["clarifier"],
+            clarifier_text,
+            needle,
+            label,
+            errors,
+        )
+    story_card_source_token = (
+        "Source: <inline | conversation | path | issue URL | external identifier "
+        "and revision | inherited from parent Split Story Set | None>"
     )
-    require_contains(
-        story_skill_paths["clarifier"],
-        clarifier_text,
-        "- Status: Ready | Needs Clarification | Blocked",
-        "split slices carry their own readiness status",
-        errors,
+    direct_source_token = (
+        "Source: <inline | conversation | path | issue URL | external identifier "
+        "and revision | None>"
     )
-
-    orchestrator_text = story_texts["orchestrator"]
-    require_contains(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "Materialize the selected slice as the active story card before scouting",
-        "selected split slices are materialized before scouting",
-        errors,
-    )
-    require_contains(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "Pass one materialized story card for the active slice",
-        "scouting input is the active materialized slice, not the whole split set",
-        errors,
-    )
-    require_contains(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "\x60First Action\x60 block present when",
-        "orchestrator validates First Action conditionally",
-        errors,
-    )
-    require_compact_contains(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "optional for agent profiles, and absent for\n  \x60human\x60",
-        "human plans omit First Action in orchestrator readiness",
-        errors,
-    )
-    require_contains(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "Default for repo-owned code changes: \x60project-core-dev\x60",
-        "project-core-dev routing is conditional on code changes",
-        errors,
-    )
-    require_contains(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "Workflow overlay: \x60tester-mindset\x60 when",
-        "tester-mindset routing is conditional",
-        errors,
-    )
-    require_absent(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "- Always: \x60project-core-dev\x60",
-        "unconditional project-core-dev routing",
-        errors,
-    )
-    require_absent(
-        story_skill_paths["orchestrator"],
-        orchestrator_text,
-        "- Always: \x60tester-mindset\x60",
-        "unconditional tester-mindset routing",
-        errors,
-    )
-
+    for start_marker, end_marker, needle, label in (
+        (
+            "## Story Card Contract",
+            "## Split Story Set Contract",
+            story_card_source_token,
+            "clarifier requires Story Card source provenance",
+        ),
+        (
+            "## Split Story Set Contract",
+            "## Ready and Ambiguity Rules",
+            direct_source_token,
+            "clarifier requires Split Story Set source provenance",
+        ),
+        (
+            "## Audit Output",
+            "## Composition Boundaries",
+            direct_source_token,
+            "clarifier requires Story Audit source provenance",
+        ),
+    ):
+        require_section_contains(
+            story_skill_paths["clarifier"],
+            clarifier_text,
+            start_marker,
+            end_marker,
+            needle,
+            label,
+            errors,
+        )
     scout_text = story_texts["scout"]
-    require_contains(
-        story_skill_paths["scout"],
-        scout_text,
-        "\x60None identified\x60 when this output will feed",
-        "Do Not Touch can explicitly report no boundary found",
-        errors,
-    )
-    require_compact_contains(
-        story_skill_paths["scout"],
-        scout_text,
-        "Likely Unrelated / Do\nNot Touch\x60 as \x60None identified\x60",
-        "orchestrated packets preserve the None identified convention",
-        errors,
-    )
-
+    for needle, label in (
+        ("Artifact Type: Repo Context", "scout owns the Repo Context artifact"),
+        ("## Existing Evidence", "scout separates inspected existing evidence"),
+        (
+            "## External Evidence",
+            "scout separates planning-critical external primary evidence",
+        ),
+        (
+            "| Evidence ID | Claim | Owning Primary Source and Section | Applicable Version/Date | Planning Consequence |",
+            "scout records stable claim-level external provenance",
+        ),
+        ("## Proposed Paths", "scout grounds files that do not yet exist"),
+        (
+            "| Evidence Type | Source | Observable Seam or Behavior | Prior-Art Basis and Limits |",
+            "scout records validation seams as prior art",
+        ),
+        (
+            "## Authoritative Constraints / Do Not Edit",
+            "scout distinguishes authoritative boundaries from nearby non-targets",
+        ),
+        (
+            "`Direct`:",
+            "scout defines evidence strength independently from story readiness",
+        ),
+    ):
+        require_contains(
+            story_skill_paths["scout"],
+            scout_text,
+            needle,
+            label,
+            errors,
+        )
     planner_text = story_texts["planner"]
-    require_contains(
-        story_skill_paths["planner"],
-        planner_text,
-        "Required for \x60local-small\x60, optional for agent profiles",
-        "planner treats First Action as executor-specific",
-        errors,
+    for needle, label in (
+        (
+            "Artifact Type: Implementation Plan",
+            "planner owns the Implementation Plan artifact",
+        ),
+        ("## Executor Constraints", "planner adapts to evidenced executor constraints"),
+        (
+            "- External primary evidence:",
+            "planner traces decision-bearing external claims",
+        ),
+        ("Proposed Create", "planner supports convention-backed new files"),
+        ("- Blocked by:", "planner records direct blocker edges"),
+        ("- Starting frontier:", "planner derives an executable frontier"),
+        (
+            "| Acceptance Criterion | Planned Outcome | Validation Seam | Validation Evidence |",
+            "planner selects validation seams explicitly",
+        ),
+        ("### Blocking Inputs", "planner separates blockers from manageable risks"),
+    ):
+        require_contains(
+            story_skill_paths["planner"],
+            planner_text,
+            needle,
+            label,
+            errors,
+        )
+    orchestrator_text = story_texts["orchestrator"]
+    for needle, label in (
+        ("## Ownership", "orchestrator assigns one owner per stage artifact"),
+        (
+            "## Invalidation And Resumption",
+            "orchestrator owns dependency invalidation and packet resumption",
+        ),
+        (
+            "Artifact Type: Preparation Packet",
+            "orchestrator labels its assembled packet",
+        ),
+        ("## Pending Stage", "orchestrator preserves non-ready stage state"),
+        (
+            "| `story-clarifier` | Story Card or Split Story Set |",
+            "orchestrator maps the story artifact to its owner",
+        ),
+        (
+            "| `story-repo-scout` | Repo Context |",
+            "orchestrator maps repo context to its owner",
+        ),
+        (
+            "| `story-implementation-planner` | Implementation Plan |",
+            "orchestrator maps the plan artifact to its owner",
+        ),
+    ):
+        require_contains(
+            story_skill_paths["orchestrator"],
+            orchestrator_text,
+            needle,
+            label,
+            errors,
+        )
+    for needle, label in (
+        ("Artifact Type: Preparation Packet", "packet example labels the packet"),
+        ("Artifact Type: Story Card", "packet example includes a story artifact"),
+        ("Artifact Type: Repo Context", "packet example includes repo context"),
+        (
+            "Artifact Type: Implementation Plan",
+            "packet example includes an implementation plan",
+        ),
+        ("Source: conversation", "packet example preserves story provenance"),
+        ("- Starting frontier:", "packet example demonstrates blocker frontier"),
+        (
+            "| Acceptance Criterion | Planned Outcome | Validation Seam | Validation Evidence |",
+            "packet example demonstrates validation-seam mapping",
+        ),
+        (
+            "- External prerequisites:",
+            "packet example records external-prerequisite satisfaction",
+        ),
+    ):
+        require_contains(
+            packet_example_path,
+            packet_example_text,
+            needle,
+            label,
+            errors,
+        )
+    errors.extend(
+        check_packet_example_semantics(packet_example_path, packet_example_text)
     )
-    require_contains(
-        story_skill_paths["planner"],
-        planner_text,
-        "omitted for \x60human\x60",
-        "human plans omit First Action",
-        errors,
-    )
-    require_contains(
-        story_skill_paths["planner"],
-        planner_text,
-        "repo-owned code changes",
-        "planner routes project-core-dev only for repo-owned code changes",
-        errors,
-    )
-    require_contains(
-        story_skill_paths["planner"],
-        planner_text,
-        "Add \x60tester-mindset\x60 when",
-        "planner routes tester-mindset conditionally",
-        errors,
-    )
-    require_absent(
-        story_skill_paths["planner"],
-        planner_text,
-        "must hand off to \x60project-core-dev\x60",
-        "unconditional project-core-dev planner handoff",
-        errors,
-    )
-
     return errors
 
 
