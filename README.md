@@ -86,11 +86,12 @@ Examples:
   add `tester-mindset` when the validation strategy is the main concern
 - agent context setup, long task handoff, compaction, or context-quality
   debugging: `context-engineering`
-- user story, acceptance criteria, or story splitting: `user-story-clarifier`
-- implementation prep from a story card: `user-story-clarifier` ->
-  `story-repo-scout` -> `story-implementation-planner`; use
-  `story-implementation-orchestrator` when the user wants the whole preparation
-  workflow
+- user story, acceptance criteria, discussion synthesis, or story splitting:
+  `story-clarifier`
+- one story-preparation artifact: use its owner — `story-clarifier`,
+  `story-repo-scout`, or `story-implementation-planner`
+- complete story-to-plan handoff, multi-stage preparation, or partial-packet
+  resumption: `story-to-plan-orchestrator`
 - test strategy or validation design: relevant skill set + `tester-mindset`
 
 ## Skill Families
@@ -190,18 +191,19 @@ Defaults:
 - `recursive-thinking` — adversarial review workflow for pressure-testing an existing plan, diagnosis, design, argument, proposal, or recommendation without replacing domain-specific review
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
 - `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
-- `story-implementation-orchestrator` — companion process overlay for running the full story-to-plan pipeline across story clarification, repo scouting, and model-aware implementation planning into a single handoff packet before coding
-- `story-implementation-planner` — workflow for turning a clarified story card plus repo context into an actionable implementation plan optimized for the target model, agent, or human, including first action, validation, and rollback
-- `story-repo-scout` — workflow for using a story card, ticket, or acceptance criteria to find relevant repo files, evidence, documented commands, and do-not-touch boundaries before coding
+- `story-clarifier` — workflow for drafting, synthesizing, rewriting, or splitting story-level requirements into sourced Story Cards or dependency-aware Split Story Sets, or auditing existing story inputs with a separate readiness report, without forcing fake user personas
+- `story-implementation-planner` — workflow for turning a ready active Story Card plus evidence-backed Repo Context into an executor-aware implementation plan with explicit blocker edges, validation seams, and risk-appropriate recovery
+- `story-repo-scout` — workflow for turning a searchable story or ticket into evidence-backed Repo Context, including applicable instructions and decisions, existing files, convention-backed proposed paths, validation prior art, bounded external primary evidence, and authoritative boundaries
+- `story-to-plan-orchestrator` — process overlay and multi-stage entry point for complete handoffs, dependency-frontier slice selection, fact and decision routing, packet validation, resumption, and stale-stage recovery before coding
 - `tester-mindset` — testing mindset workflow for designing meaningful tests, validation strategy, acceptance criteria, edge cases, experiments, and probes
 - `thinking` — decision-framing workflow for exploring an ambiguous problem, comparing serious approaches, and converging on a testable next move
-- `user-story-clarifier` — workflow for drafting, rewriting, splitting, and auditing story-level requirements, user stories, feature definitions, definitions of done, and acceptance criteria into unambiguous story cards for humans and coding agents
 
-Story-to-plan family: use `user-story-clarifier` for clarification or
-story splitting, then `story-repo-scout`, then
-`story-implementation-planner`; add
-`story-implementation-orchestrator` when the user wants the full preparation
-pipeline managed as one workflow.
+Story-to-plan family: each component owns one artifact — `story-clarifier`
+owns the story, `story-repo-scout` owns repository evidence, and
+`story-implementation-planner` owns the plan. Use
+`story-to-plan-orchestrator` as the entry point when the requested result spans
+two or more stages, needs split-slice selection, or requires packet validation
+or resumption. It is not a fourth sequential stage.
 
 Defaults:
 
@@ -214,10 +216,11 @@ Defaults:
 - Use `thinking` when no candidate has won yet and the job is to frame an ambiguous decision, compare plausible approaches, and converge. It may precede or accompany implementation while the decision remains open.
 - Use `recursive-thinking` when a candidate already exists and the user wants a premortem, countercase, assumption challenge, or evidence-based stress test.
 - Use `dream-thinking` only for an explicit dream, sleep, nightmare, or metaphorical-reflection request; use ordinary retrospective or postmortem guidance otherwise, and never treat dream imagery as an evidence basis.
-- Use `story-implementation-orchestrator` when the user wants the complete story-to-plan preparation workflow before code changes.
-- Use `story-implementation-planner` after a story and repo context exist and the next need is an actionable implementation plan for a target executor, with first action, dependencies, rollback, and validation.
-- Use `story-repo-scout` after a story or ticket is clear enough and before implementation when relevant repo files, evidence, validation commands, and do-not-touch boundaries need to be found and appended.
-- Use `user-story-clarifier` when rough tickets, broad epics, story-level requirements, feature definitions, definitions of done, or acceptance criteria need to become implementation-ready story cards.
+- Use `story-clarifier` when rough tickets, broad epics, prior discussion, story-level requirements, definitions of done, or acceptance criteria need to become a sourced Story Card or dependency-aware Split Story Set; synthesis mode consolidates supplied context without interviewing.
+- Route a ready Split Story Set to `story-to-plan-orchestrator` for active-slice selection before repository scouting or planning.
+- Use `story-repo-scout` when a searchable story or ticket needs evidence-backed repository context, applicable language and decisions, validation prior art, proposed-path basis, authoritative boundaries, or a bounded planning-critical external claim checked against its owning primary source.
+- Use `story-implementation-planner` when a ready active Story Card and sufficient Repo Context exist and the requested artifact is an implementation plan for a target executor, including explicit blockers and validation seams.
+- Use `story-to-plan-orchestrator` when the desired output is the complete packet, two or more stages are needed, a split dependency frontier must be selected, or partial artifacts need validation, invalidation, or resumption.
 
 ### System Skills
 

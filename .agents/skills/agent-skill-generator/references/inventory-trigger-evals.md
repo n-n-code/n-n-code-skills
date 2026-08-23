@@ -29,10 +29,10 @@ competitors only when they are exposed to or invoked in the current run.
 - [Python](#python)
 - [C++ and Qt](#cpp-and-qt)
 - [Documentation](#documentation)
-- [User stories](#user-stories)
+- [Story clarification](#story-clarification)
 - [Story repo scouting](#story-repo-scouting)
 - [Story implementation planning](#story-implementation-planning)
-- [Story implementation orchestration](#story-implementation-orchestration)
+- [Story-to-plan orchestration](#story-to-plan-orchestration)
 - [Project overlays](#project-overlays)
 - [Skill authoring and fusion](#skill-authoring-and-fusion)
 - [Context engineering](#context-engineering)
@@ -278,9 +278,9 @@ Instruction-behavior pressure cases for `agents-md-generator`:
 - `Draft a migration from CLAUDE.md to AGENTS.md, but preserve the tool-specific entry point and do not edit files.` -> task `migrate`, output `draft`, preserve the adapter, no writes.
 - `Create an AGENTS.md for this small single-tool repo.` -> task `create`, output `apply`, root target, and a concise handoff limited to applicable evidence.
 
-## User Stories
+## Story Clarification
 
-Expected `user-story-clarifier`:
+Expected `story-clarifier`:
 
 - `Turn this rough feature idea into a user story with acceptance criteria.`
 - `Rewrite this ticket so a coding agent can implement it without guessing.`
@@ -290,12 +290,23 @@ Expected `user-story-clarifier`:
 - `Add a readiness status to this story so the next agent knows whether to scout or ask questions.`
 - `Make this definition of done less ambiguous.`
 - `Audit these acceptance criteria for ambiguity.`
+- `Tighten this task brief without changing its behavior.`
+- `Synthesize the settled decisions in this conversation into a Story Card;
+  do not interview me.`
+- `Split this epic into independently verifiable slices with explicit blocker
+  edges.`
 
-Expected not `user-story-clarifier` as primary:
+Expected not `story-clarifier` as primary:
 
 - `Write a full PRD for this product.` -> use `documenter` or `documenter-coauthoring`.
+- `Summarize this conversation for the next agent.` -> use
+  `context-engineering`; no story artifact was requested.
+- `Synthesize this discussion into an ADR or design proposal.` -> use
+  `documenter`; the requested artifact is a decision document, not a story.
 - `Implement this story in code.` -> use implementation skills.
 - `Design a test strategy for this billing flow.` -> use `tester-mindset`.
+- `Find the code and tests that implement this ready story.` -> use `story-repo-scout`.
+- `Turn this rough ticket into a complete coding-agent handoff.` -> use `story-to-plan-orchestrator`.
 - `Define these glossary terms.` -> use documentation or copy-editing judgment.
 
 ## Story Repo Scouting
@@ -306,16 +317,25 @@ Expected `story-repo-scout`:
 - `Find likely implementation and test files for this ticket before coding.`
 - `Find relevant files and documented validation commands for this story card.`
 - `Check repo docs for terminology conflicts before appending context.`
-- `List relevant files with evidence and do-not-touch boundaries for this story.`
+- `List relevant files with evidence, authoritative constraints, and nearby non-targets kept separate.`
 - `Add repo context to this acceptance-criteria card.`
 - `Given this story, scout the current repo for related features and files.`
+- `This is a greenfield story; find existing conventions that justify proposed new paths.`
+- `Record the scoped AGENTS.md rules and validation commands that apply to this ticket.`
+- `Find the current glossary, applicable ADRs, analogous tests, and relevant
+  existing validation seams for this story.`
+- `Scout this vendor-integration story against the repo and the owning API
+  documentation, including the applicable version.`
 
 Expected not `story-repo-scout` as primary:
 
-- `Turn this rough idea into a user story.` -> use `user-story-clarifier`.
+- `Turn this rough idea into a user story.` -> use `story-clarifier`.
 - `Implement this story in code.` -> use implementation skills.
 - `Review this module architecture broadly.` -> use `thinking` or relevant review skills.
+- `Build a general context packet for a long agent session.` -> use `context-engineering`.
 - `Security-review these files.` -> use `security`.
+- `Research the latest vendor API and write a standalone findings note.` -> use
+  a general research workflow, not the repo-focused story scout.
 
 ## Story Implementation Planning
 
@@ -323,25 +343,31 @@ Expected `story-implementation-planner`:
 
 - `Create an actionable implementation plan from this story card and repo context.`
 - `I have a story and file list; make the implementation plan.`
-- `Make a human implementation plan from this completed story and repo context, no first-action block needed.`
-- `Plan this ticket for a local qwen coding agent using the relevant files found.`
-- `Make a GPT-optimized implementation plan from this story and repo scout output.`
+- `Make a human implementation plan from this completed story and repo context without inventing time estimates.`
+- `Plan this ticket for an agent with a small context window and frequent checkpoints.`
+- `Plan this story for an autonomous coding agent that can inspect several independent files in parallel.`
 - `Create a plan with dependencies, rollback, and concrete validation from this story and repo context.`
-- `Make a first-action handoff for a local qwen model from this story and repo context.`
+- `Make a first-action handoff for a constrained agent from this story and repo context.`
 - `Make a no-placeholder implementation plan for this story.`
-- `Turn this acceptance-criteria card plus relevant files into a coding-agent handoff.`
+- `Turn this Ready Story Card and sufficient Repo Context into an
+  implementation-plan handoff for a coding agent.`
+- `Plan the existing edits and convention-backed new files in this Repo Context.`
+- `Turn this Story Card and Repo Context into vertical outcomes with direct
+  blockers and an explicit starting frontier.`
+- `From this Ready Story Card and Repo Context, plan the evidence-backed wide
+  mechanical refactor with safe expansion, migration batches, and contraction.`
 
 Expected not `story-implementation-planner` as primary:
 
-- `Turn this rough idea into a user story.` -> use `user-story-clarifier`.
+- `Turn this rough idea into a user story.` -> use `story-clarifier`.
 - `Scour the repo and append relevant file paths.` -> use `story-repo-scout`.
-- `I have a rough ticket; clarify it, find files, and plan it.` -> use `story-implementation-orchestrator`.
-- `Run the full story-to-plan pipeline before implementation.` -> use `story-implementation-orchestrator`.
+- `I have a rough ticket; clarify it, find files, and plan it.` -> use `story-to-plan-orchestrator`.
+- `Run the full story-to-plan pipeline before implementation.` -> use `story-to-plan-orchestrator`.
 - `Implement this plan in code.` -> use implementation skills.
 
-## Story Implementation Orchestration
+## Story-To-Plan Orchestration
 
-Expected `story-implementation-orchestrator`:
+Expected `story-to-plan-orchestrator`:
 
 - `Run the full story-to-plan pipeline on this rough feature idea.`
 - `Use the story, repo scout, and planning workflow before implementation.`
@@ -353,14 +379,113 @@ Expected `story-implementation-orchestrator`:
 - `Split this epic, then scout and plan only the first shippable slice.`
 - `Clarify, scout, plan, and reject placeholders before implementation.`
 - `Clarify this story, find relevant files, then make an implementation plan.`
+- `Validate this partial packet, invalidate stale stages, and resume from the earliest owner.`
+- `Resolve the current fact and decision frontier, then scout and plan without
+  asking questions whose prerequisites are still open.`
 
-Expected not `story-implementation-orchestrator` as primary:
+Expected not `story-to-plan-orchestrator` as primary:
 
 - `I have a story and file list; make the implementation plan.` -> use `story-implementation-planner`.
 - `Create an implementation plan from this completed story card and repo context.` -> use `story-implementation-planner`.
 - `Find likely implementation and test files for this ticket before coding.` -> use `story-repo-scout`.
 - `Threat model this story before implementation.` -> use `security`.
 - `Implement this plan in code.` -> use implementation skills.
+
+### Story-Family Routing Matrix
+
+- Rough idea, story artifact requested -> `story-clarifier`.
+- Rough idea, complete implementation-ready handoff requested ->
+  `story-to-plan-orchestrator`.
+- Ready active Story Card, repository evidence requested -> `story-repo-scout`.
+- Ready active Story Card, complete handoff requested with no Repo Context ->
+  `story-to-plan-orchestrator`.
+- Ready active Story Card plus sufficient Repo Context, plan requested ->
+  `story-implementation-planner`.
+- Ready Split Story Set requiring active-slice selection ->
+  `story-to-plan-orchestrator`.
+- Story-specific repo scouting that depends on a bounded external API or
+  specification claim -> `story-repo-scout`; standalone external research is
+  not this family.
+- Partial packet with exactly one named artifact to repair -> that artifact's
+  component owner.
+- Partial packet needing stage selection, consistency validation, or two or
+  more stages -> `story-to-plan-orchestrator`.
+- Implementation requested from a ready plan -> implementation skills, not
+  this family.
+
+Collision cases:
+
+- `Audit whether these acceptance criteria are clear and internally consistent.`
+  -> `story-clarifier`; use `tester-mindset` instead when the main question is
+  risk coverage, oracles, or what evidence is enough.
+- `Find the files and repository instructions relevant to this story.` ->
+  `story-repo-scout`; use `context-engineering` for a general session or
+  handoff context packet.
+- `Prepare this ticket for implementation.` -> ambiguous until the requested
+  artifact is known; a complete handoff selects `story-to-plan-orchestrator`,
+  while one named artifact selects its component owner.
+- `Should we build this feature? Compare the product options before writing a
+  story.` -> `thinking`, not the story family.
+- `Premortem this existing Implementation Plan without rewriting it.` ->
+  `recursive-thinking` for the pressure-test workflow; the planner contract
+  remains the artifact authority.
+- `Find existing validation seams and prior art for this story.` ->
+  `story-repo-scout` when the request is to inspect repository evidence;
+  `tester-mindset` when the request is to design test strategy or judge coverage.
+
+Instruction behavior after explicit selection:
+
+- `Use story-clarifier to audit this story, but do not rewrite it.` -> report
+  findings and readiness without silently emitting a replacement story.
+- `Use story-clarifier to synthesize this discussion without an interview; one
+  material decision is unresolved.` -> emit the sourced artifact as
+  `Needs Input` with the current decision frontier rather than inventing an
+  answer or asking despite the no-interview constraint.
+- `Use story-clarifier; decision B depends on decision A.` -> ask only A in the
+  current frontier, give a non-binding recommendation when supported, and
+  recompute after the answer instead of asking A and B together.
+- `Use story-clarifier; a linked source can answer this Fact and exposes a
+  revision.` -> inspect it and preserve its identifier and revision; ask the
+  user only when they own the fact or required access.
+- `Use story-clarifier; an in-scope area cannot yet be phrased as a sharp
+  question.` -> keep it `[Not yet specifiable]` and non-ready until its
+  prerequisite resolves; do not pre-slice it or move it Out of Scope.
+- `Use story-clarifier; the split graph contains an unknown slice ID or a
+  cycle.` -> keep the Split Story Set non-ready and name the invalid edge.
+- `Use story-repo-scout; no implementation files exist yet.` -> report the
+  search honestly and include convention-backed proposed paths when available,
+  rather than inventing existing evidence or looping the same search.
+- `Use story-repo-scout for an API-dependent story, but network access is
+  unavailable and no applicable primary source is in the repo.` -> return a
+  non-ready Repo Context with the missing claim, source, and smallest evidence
+  action; do not rely on a secondary summary.
+- `Use story-repo-scout; two official sources describe different API
+  versions.` -> preserve both sources and the version conflict, and keep the
+  artifact non-ready when the plan depends on choosing between them.
+- `Use story-implementation-planner, but the Repo Context is insufficient.` ->
+  return `Needs Input` with the missing evidence and upstream owner; do not
+  silently run the complete pipeline.
+- `Use story-implementation-planner; a planned external API decision has no
+  matching External Evidence row.` -> return `Needs Input` and route the claim
+  back to `story-repo-scout` instead of planning from memory.
+- `Use story-implementation-planner; the proposed blocker graph contains a
+  cycle.` -> keep the plan non-ready and name the cycle rather than inventing a
+  starting frontier.
+- `Use story-implementation-planner; one stable observable seam proves the
+  criterion.` -> select that smallest sufficient seam rather than requiring
+  redundant checks at every layer.
+- `Use story-implementation-planner for a wide change that can still land as a
+  green vertical outcome.` -> do not add automatic expand-migrate-contract
+  scaffolding; use it only when the evidence shows vertical delivery cannot
+  remain green.
+- `Use story-to-plan-orchestrator; S1 is blocked but S2 is currently unblocked.`
+  -> derive the current frontier and select S2 by default; if the user names S1,
+  preserve its blockers and do not return a Ready plan or packet.
+- `Use story-to-plan-orchestrator after only the target executor changed.` ->
+  invalidate and rebuild the plan without rerunning clarification or scouting.
+- `Use story-to-plan-orchestrator after the applicable vendor API version
+  changed.` -> revalidate Repo Context and the plan, and return to clarification
+  only when intended behavior or acceptance changed.
 
 ## Project Overlays
 
