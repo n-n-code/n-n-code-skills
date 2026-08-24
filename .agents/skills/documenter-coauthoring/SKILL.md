@@ -1,55 +1,65 @@
 ---
 name: documenter-coauthoring
-description: Companion overlay for multi-round collaborative drafting of large specs, proposals, decision docs, and similar documents. Use when the workflow needs structured context gathering, explicit outline approval, section-by-section iteration, and reader-testing rather than a direct documentation pass.
+description: "Companion overlay to documenter for user-directed, multi-round coauthoring of specs, PRDs, proposals, ADRs, decision docs, and similar technical documents. Use when the user wants to shape or approve structure, set checkpoints, iterate section by section, or preserve decisions across rounds. Document size neither selects nor excludes it. Do not use alone or for autonomous one-pass drafting or review."
 ---
 
 # Documenter Coauthoring
 
-Structured coauthoring workflow for large docs. Pair this with `documenter`
-when the task needs sustained collaboration instead of a direct draft/update.
+Add this to `documenter`; it changes collaboration, not documentation rules.
 
-## Core Workflow
+## Workflow
 
-1. Gather context efficiently:
-   - ask for audience, desired outcome, constraints, deadline, and template
-   - invite a raw context dump; do not force the user to pre-organize it
-   - read linked local files and existing docs before asking avoidable questions
-2. Propose a structure before drafting the full doc when scope is still fuzzy
-   or the document is large.
-3. Draft the sections with the most uncertainty first. Summary sections usually
-   come last.
-4. Refine with surgical edits instead of reprinting the whole document on every
-   iteration.
-5. Before finishing, do a reader test:
-   - check whether a reader without hidden context can follow the decision,
-     procedure, or reference entry
-   - look for missing assumptions, undefined terms, and filler that adds little
-     value
-
-## Decision Rules
-
-- prefer this skill only for substantial docs; small edits should stay with
-  `documenter` alone
-- defer baseline doc-type, hygiene, style, and validation rules to
-  `documenter`; this skill adds collaboration workflow
-- when a template exists, align to it early instead of drafting against a
-  guessed structure
-- ask for approval on the outline when the document shape materially affects the
-  content
-- keep summary sections until late, after the decision and evidence are clear
-- capture user preference from feedback and apply it to later sections
-
-## Exit Criteria
-
-- the full document has a coherent structure
-- section order matches reader needs
-- important assumptions are stated explicitly
-- repeated or low-value text has been removed
-- a fresh reader can follow the document without hidden context
-
-## Examples
-
-- `Coauthor this architecture proposal with me section by section` -> use
-  `documenter` plus this companion, agree on an outline, then iterate.
-- `Update this README command because the flag changed` -> use `documenter`
-  alone; coauthoring would add process without value.
+1. Establish the working state:
+   - read supplied files and existing docs before asking discoverable questions
+   - infer the audience, outcome, template, constraints, and output target
+   - invite an unstructured context dump when useful
+   - ask one batched set of questions only for unknowns that materially affect
+     the next checkpoint
+   - track the accepted outline and sections, decisions, general preferences,
+     assumptions, open questions, delegated authority and its limits, checkpoint
+     cadence, and next action
+   - on resume, or before switching from chat-only draft to applied edits,
+     refresh the canonical artifact, relevant evidence, repository state, and
+     initial diff; mark affected accepted sections stale when material evidence
+     or decisions changed
+2. Agree on structure and user control:
+   - confirm and reuse an established structure; when structure is unresolved,
+     propose an outline with material alternatives, assumptions, and a
+     recommendation
+   - derive checkpoint cadence from the request; if it is unspecified, propose
+     the smallest useful next checkpoint
+   - let the user approve, revise, waive, or delegate checkpoints and decisions
+   - treat delegation as authority to skip covered pauses, not as authority to
+     hide ripple effects, weaken evidence or safety checks, or cause external
+     side effects
+   - pause only at an agreed checkpoint or for a material choice outside
+     delegated authority; do not add gates because the document is large or
+     uncertain
+3. Draft the agreed section or logical tranche:
+   - work in dependency order; prototype a high-uncertainty section first only
+     when it could change the outline
+   - write summaries after the decision and evidence are stable, then place them
+     where readers need them
+   - preserve accepted material and decisions
+   - treat section-specific feedback as local; carry clearly general preferences
+     such as tone, terminology, or audience forward, and ask only when their
+     scope is materially ambiguous
+   - surface ripple effects before changing an accepted decision; when delegated
+     authority covers the change, disclose them without adding a checkpoint and
+     mark affected accepted sections stale until reconciled
+4. Reconcile at each checkpoint:
+   - keep one canonical artifact rather than parallel conflicting drafts
+   - show the current tranche or changed blocks during iteration while keeping
+     the complete artifact coherent at milestones and completion
+   - report what changed, current decisions and assumptions, unresolved material
+     questions, validation state, and the next proposed action or gate
+5. Finish or hand off:
+   - apply the baseline validation rules
+   - before declaring completion, perform a cold-read pass against the named
+     audience and task without relying on conversational context; report it as
+     self-review, not an independent fresh-reader test
+   - declare completion only when the baseline completion criteria and cold-read
+     pass are satisfied; seek approval at an agreed completion checkpoint, or
+     complete autonomously within delegated authority
+   - when the user pauses or requests a handoff, return the working state needed
+     to resume and do not claim the document is complete

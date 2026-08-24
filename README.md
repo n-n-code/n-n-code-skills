@@ -27,7 +27,7 @@ The published repository is intentionally small at the root:
       scripts/      # optional
       assets/       # optional
 scripts/
-  check_skills.py       # cross-platform skill and routing-contract validator
+  check_skills.py       # cross-platform skill and repository-contract validator
   check-skills.sh       # Bash wrapper
   test_check_skills.py  # validator regression tests
 ```
@@ -47,7 +47,9 @@ This repo uses a small role vocabulary to keep overlapping skills understandable
 - **Process overlay** — workflow or enforcement guidance that composes with implementation skills.
 - **System skill** — a build/create/install skill that leaves behind a repo-owned system rather than only guiding day-to-day execution.
 
-When several skills touch the same job, the docs should name the baseline default and the canonical stronger option explicitly.
+When several skills touch the same job, the docs should name the baseline
+default and identify any canonical stronger option or companion workflow
+explicitly.
 
 ## Choosing A Skill Set
 
@@ -81,7 +83,9 @@ Examples:
   `playwright-testing` + `tester-mindset` when generating or reviewing cases
   in an existing harness
 - security review of auth flows: `security` + `security-identity-access`
-- large doc rewrite with collaboration: `documenter` + `documenter-coauthoring`
+- documentation audit or direct authoring/revision: `documenter`
+- explicit staged coauthoring with outline agreement: `documenter` +
+  `documenter-coauthoring`
 - prompt design, rewrite, debugging, or prompt eval planning: `prompt-engineering`;
   add `tester-mindset` when the validation strategy is the main concern
 - agent context setup, long task handoff, compaction, or context-quality
@@ -102,14 +106,23 @@ The repository's published skills are grouped into these families.
 
 - `agent-skill-generator` — design, create, revise, audit, validate, or optimize reusable agent skills and portable `SKILL.md` packages across platforms
 - `agents-md-generator` — create, draft, audit, revise, or migrate root and nested repository `AGENTS.md` files from repo evidence
-- `documenter` — baseline documentation overlay for substantial documentation authoring or restructuring, including README files, specs, ADRs, tutorials, how-to guides, reference docs, API docs, code comments, changelogs, and agent-facing docs other than repository `AGENTS.md`
-- `documenter-coauthoring` — companion overlay for multi-round collaborative drafting of large specs, proposals, decision docs, and similar documents
+- `documenter` — baseline documentation overlay for evidence-backed review,
+  authoring, restructuring, and repo-truth-sensitive correction of durable
+  technical and agent-facing docs other than root or nested repository
+  `AGENTS.md`
+- `documenter-coauthoring` — companion to `documenter` for explicit outline
+  agreement, staged drafting, and cold-read self-review before completion of
+  specs, PRDs, proposals, ADRs, and decision docs
 
 Defaults:
 
-- Start with `documenter` for ordinary documentation work.
+- Start with `documenter` when documentation needs document-type judgment,
+  repository-truth checks, restructuring, or example validation. Review-only
+  requests return findings without editing files.
 - Use `agents-md-generator` as primary for root or nested repository `AGENTS.md` work.
-- Add `documenter-coauthoring` when the task needs explicit iteration, outline approval, or section-by-section collaboration.
+- Add `documenter-coauthoring` only when the user wants staged collaboration,
+  such as outline approval or section-by-section iteration. Document length
+  neither selects nor excludes it.
 
 ### Principle Skills
 
@@ -247,7 +260,9 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 - Prefer repository-grounded instructions over generic advice.
 - Keep the skill taxonomy honest: thinking skills change reasoning mode, overlays add domain or process rules, and generator/system skills should say when they produce repo-local overlays.
 - Use the role vocabulary consistently: baseline, canonical, template, process, and system should mean the same thing everywhere in the repo.
-- Avoid near-duplicate skill families. If several skills cover the same job, document the canonical default and keep specialized variants sharply scoped.
+- Avoid near-duplicate skill families. If several skills cover the same job,
+  document the baseline default and keep canonical, companion, or other
+  specialized variants sharply scoped.
 - Preserve stable folder names once a skill is published or referenced elsewhere.
 - Avoid adding tooling, build, or install steps unless the repository actually needs them.
 
@@ -276,13 +291,16 @@ system:
 bash scripts/check-skills.sh
 ```
 
-Validation is structural:
+The validator checks structure, inventory, links, likely skill references, and
+selected stable repository contracts:
 
-- every skill lives under `.agents/skills/`
-- every skill has a `SKILL.md`
-- examples and references point to files that exist
+- every directory under `.agents/skills/` contains a `SKILL.md` with valid
+  frontmatter and a matching declared name
+- relative Markdown links point to existing local targets
 - likely skill-name references in Markdown point to published local skills
-- documentation claims match the repository contents
+
+It cannot prove arbitrary documentation claims. Review those claims against the
+repository evidence relevant to each change before finishing.
 
 ## License
 

@@ -245,16 +245,30 @@ Expected `coding-guidance-cpp` + `project-vendor-boundary`:
 
 ## Documentation
 
-Expected `documenter`:
+Use [the local documentation-family evals](../../documenter/references/trigger-evals.md)
+for positive, paraphrased, within-family adjacent-negative, and post-selection
+instruction-behavior cases. This central catalog keeps cross-family cases:
 
-- `Rewrite this README section so it matches the current repo behavior.`
-- `Create an ADR for this implementation decision using evidence from the code.`
-- `Write an onboarding guide for people who use coding agents in this repo.`
-
-Expected `documenter` + `documenter-coauthoring`:
-
-- `Coauthor this long design proposal with outline approval before drafting sections.`
-- `Iterate section by section on this product spec with reader-testing.`
+- `Turn this product brief into a full PRD in one pass.` -> use `documenter`,
+  not `story-clarifier`; add `documenter-coauthoring` only when the user asks
+  for staged collaboration.
+- `Rewrite this system prompt so the agent follows its tool contract.` -> use
+  `prompt-engineering`, not the documentation skills.
+- `Create a compact handoff for the next agent from this session.` -> use
+  `context-engineering`, not the documentation skills.
+- `Write docs/agent-onboarding.md as a durable guide for agents joining this
+  repository.` -> use `documenter`, not `context-engineering`.
+- `Add Python public API docstrings that define parameters, errors, side effects,
+  and compatibility promises from the implementation.` -> use
+  `coding-guidance-python` as primary with `documenter`.
+- `Refactor this Python branch and add one inline comment explaining why it
+  copies the list.` -> use `coding-guidance-python` only, not `documenter`.
+- `Polish this release-note paragraph for clarity; package contents, install
+  behavior, and release machinery are unchanged.` -> use `documenter` only,
+  not `project-release-maintainer`.
+- `Configure MkDocs and GitHub Pages without changing documentation content.` ->
+  use the matching implementation or release guidance; add `documenter` only
+  when content structure or prose also changes.
 
 Expected `agents-md-generator`:
 
@@ -267,7 +281,9 @@ Expected `agents-md-generator`:
 Expected not `agents-md-generator` as primary:
 
 - `Rewrite this contributor guide for developers using coding agents.` -> use `documenter`.
-- `Write a tool-specific CLAUDE.md and leave AGENTS.md alone.` -> use `documenter`.
+- `Write a tool-specific CLAUDE.md with durable repository setup and workflow
+  guidance; leave AGENTS.md unchanged.` -> use `documenter`, not
+  `prompt-engineering` or `agents-md-generator` as primary.
 - `Create a reusable skill for generating repository instructions.` -> use `agent-skill-generator`.
 
 Instruction-behavior pressure cases for `agents-md-generator`:
@@ -298,7 +314,8 @@ Expected `story-clarifier`:
 
 Expected not `story-clarifier` as primary:
 
-- `Write a full PRD for this product.` -> use `documenter` or `documenter-coauthoring`.
+- `Write a full PRD for this product in one pass.` -> use `documenter`; add
+  `documenter-coauthoring` only when staged collaboration is requested.
 - `Summarize this conversation for the next agent.` -> use
   `context-engineering`; no story artifact was requested.
 - `Synthesize this discussion into an ADR or design proposal.` -> use
