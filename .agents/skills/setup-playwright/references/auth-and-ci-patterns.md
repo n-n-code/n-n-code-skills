@@ -11,14 +11,15 @@ Use this when many tests need the same signed-in user.
 
 ```ts
 // auth.setup.ts
-import { test as setup } from '@playwright/test';
+import { expect, test as setup } from '@playwright/test';
 
 setup('authenticate', async ({ page }) => {
   await page.goto('/login');
   await page.getByLabel('Email').fill(process.env.TEST_USER_EMAIL!);
   await page.getByLabel('Password').fill(process.env.TEST_USER_PASSWORD!);
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.waitForURL(/dashboard/);
+  await expect(page).toHaveURL(/dashboard/);
+  // Also assert the app's stable post-login marker when URL alone is weak.
   await page.context().storageState({ path: 'playwright/.auth/user.json' });
 });
 ```
@@ -29,8 +30,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 2 : 0,
+  failOnFlakyTests: !!process.env.CI,
+  reporter: process.env.CI
+    ? [['dot'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'on-failure' }]],
   projects: [
-    { name: 'setup', testMatch: /.*\\.setup\\.ts/ },
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
     {
       name: 'chromium',
       dependencies: ['setup'],
@@ -43,9 +49,12 @@ export default defineConfig({
 });
 ```
 
-`storageState` captures cookies, local storage, and IndexedDB, but not
-`sessionStorage`. If the app depends on `sessionStorage`, inject that state with
-`addInitScript` or through a fixture.
+`storageState` captures cookies and local storage by default. If auth tokens
+live in IndexedDB, save with `{ path, indexedDB: true }` on a supporting
+Playwright version. Newer versions can also capture passkey credentials when
+explicitly requested; that makes the file still more sensitive. No
+`storageState` mode captures `sessionStorage`, so restore that state through an
+`addInitScript` or fixture only when the app requires it.
 
 UI Mode does not run the setup project by default. If state expires, re-run the
 auth setup file manually from UI Mode or the CLI and then continue debugging.
@@ -59,12 +68,19 @@ import { request, test as setup } from '@playwright/test';
 
 setup('authenticate', async () => {
   const api = await request.newContext({ baseURL: process.env.BASE_URL });
-  await api.post('/api/test/login', {
-    data: { email: process.env.TEST_USER_EMAIL, password: process.env.TEST_USER_PASSWORD },
-  });
+  try {
+    const response = await api.post('/api/test/login', {
+      data: { email: process.env.TEST_USER_EMAIL, password: process.env.TEST_USER_PASSWORD },
+    });
 
-  await api.storageState({ path: 'playwright/.auth/user.json' });
-  await api.dispose();
+    if (!response.ok()) {
+      throw new Error(`API login failed with status ${response.status()}`);
+    }
+
+    await api.storageState({ path: 'playwright/.auth/user.json' });
+  } finally {
+    await api.dispose();
+  }
 });
 ```
 
@@ -96,15 +112,22 @@ export const test = base.extend<{}, { workerStorageState: string }>({
       storageState: undefined,
     });
 
-    await api.post('/api/test/login', {
-      data: {
-        email: process.env[`TEST_USER_${id}_EMAIL`],
-        password: process.env.TEST_USER_PASSWORD,
-      },
-    });
+    try {
+      const response = await api.post('/api/test/login', {
+        data: {
+          email: process.env[`TEST_USER_${id}_EMAIL`],
+          password: process.env.TEST_USER_PASSWORD,
+        },
+      });
 
-    await api.storageState({ path: authFile });
-    await api.dispose();
+      if (!response.ok()) {
+        throw new Error(`Worker ${id} login failed: ${response.status()}`);
+      }
+
+      await api.storageState({ path: authFile });
+    } finally {
+      await api.dispose();
+    }
     await use(authFile);
   }, { scope: 'worker' }],
 });
@@ -134,7 +157,7 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
@@ -155,7 +178,9 @@ Use a scheduled or manually triggered workflow for Firefox, WebKit, mobile, or
 sharded regression when those costs are too high for every pull request.
 
 For very large suites, `npx playwright test --only-changed=origin/$GITHUB_BASE_REF`
-is a useful pull-request warmup, but it is a heuristic. Follow it with the full
+can be a useful pull-request warmup when the checkout fetches the comparison
+history (for GitHub Actions, use `actions/checkout@v6` with `fetch-depth: 0`)
+and the base ref is available. It is a heuristic; follow it with the full
 configured suite rather than treating it as complete coverage.
 
 ## Sharded CI Reporting

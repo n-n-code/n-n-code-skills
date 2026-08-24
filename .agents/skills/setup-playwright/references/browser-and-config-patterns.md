@@ -263,8 +263,11 @@ part of execution.
 Some Playwright modes are real, but they are not the default web-app E2E
 harness these skills optimize for.
 
-- Component Testing uses `@playwright/experimental-ct-*` packages, `mount`, and
-  a separate component-test scaffold.
+- Playwright 1.62's current Component Testing model uses plain
+  `@playwright/test`, a repo-owned stories/gallery page served by the app's dev
+  server, and the built-in `mount` fixture. Older
+  `@playwright/experimental-ct-*` harnesses require an explicit migration, not
+  a silent config rewrite.
 - Chrome extensions require bundled Chromium plus a persistent context and
   extension launch args.
 - WebView2 automation is Windows-specific host-app automation over CDP, not a

@@ -1,7 +1,9 @@
 # Playwright Browser Boundaries
 
 Load this file when tests cross iframe, popup, download, dialog, browser-API,
-or time-control boundaries.
+or time-control boundaries. The TypeScript snippets use Node Playwright Test;
+translate them through [ecosystem-testing.md](ecosystem-testing.md) when the
+active harness is Python, .NET, or Java.
 
 ## Iframes
 
@@ -57,10 +59,12 @@ await download.saveAs(`tmp/${download.suggestedFilename()}`);
 
 ## Request Fixture And Eventual Consistency
 
-Use the built-in `request` fixture for backend setup or verification that
-should respect config such as `baseURL`, headers, or auth defaults. Use
-`playwright.request.newContext()` only when you need isolated cookies instead
-of the browser-context-linked request client.
+Use the built-in `request` fixture for isolated backend setup or verification;
+it respects configured options such as `baseURL` and `extraHTTPHeaders`, but it
+does not share cookies with the test's browser context. Use `page.request` or
+`context.request` when browser and API calls intentionally share cookie state.
+Create a separate `playwright.request.newContext()` when the test needs another
+explicit API identity or option set, and dispose it afterward.
 
 ```ts
 test('job eventually completes', async ({ page, request }) => {

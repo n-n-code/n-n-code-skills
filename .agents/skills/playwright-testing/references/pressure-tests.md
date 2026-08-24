@@ -3,7 +3,7 @@
 Maintainer-only. Scenarios to run against a subagent — once without the skill
 (RED baseline), once with the skill loaded (GREEN). If the agent complies
 only under the skill, the rule is earning its keep. If rationalizations
-surface, add them to the main SKILL.md rationalization table and re-run.
+surface, record them here, tighten the owning rule, and re-run.
 
 For methodology, run each scenario once without the skill, once with the
 skill, and record the loophole that explains any remaining failure.
@@ -16,10 +16,10 @@ skill, and record the loophole that explains any remaining failure.
    verbatim. Note any rationalizations.
 3. Dispatch a fresh subagent **with** the skill loaded. Record the diff.
 4. If the second agent still violates, identify the loophole and close it:
-   tighten wording, add to the rationalization table, or add a new weak-test
-   pattern.
-5. Commit the skill change with the scenario and loophole noted in the
-   commit body.
+   tighten wording or add a focused scenario without duplicating the main
+   contract.
+5. Record the prompt, comparison surface, observed difference, and remaining
+   loophole. Do not create a commit unless the user separately requests one.
 
 ## Scenarios
 
@@ -145,10 +145,11 @@ CI. User prompt: *"Must be a CI issue, let's retry 5 times."*
 **GREEN expectation.**
 
 - Refuse "just retry more".
-- Walk the CI-vs-local triage list from the main SKILL.md: worker count,
-  viewport, auth state path, `webServer.reuseExistingServer`, locale/TZ,
-  headless vs headed, artifact download.
-- Repro locally with `--workers=1` and the failing project name.
+- Classify product, test-state, config, and environment causes. Compare the
+  failing project, worker count, viewport, auth setup, app startup, locale/TZ,
+  headed/headless mode, and available CI artifacts.
+- Reproduce the failing test and project while varying one suspected dimension
+  at a time; use `--workers=1` only when concurrency is one of those suspects.
 - Only after triage should real changes be proposed.
 
 ### S9 — Page object for one test
@@ -158,22 +159,26 @@ CI. User prompt: *"Must be a CI issue, let's retry 5 times."*
 
 **GREEN expectation.**
 
-- Decline the premature abstraction.
-- Keep as a flat spec. Introduce a page object only when flows or locator
-  groups *actually* repeat across files.
+- Explain that one short spec does not itself demonstrate reuse and show the
+  simpler flat alternative.
+- Honor an explicit page-object request or an established repo convention, but
+  keep the abstraction narrow rather than presenting it as a universal
+  maintainability improvement.
 
-### S10 — Test.skip without issue link
+### S10 — Hide a failure to make CI green
 
 **Setup.** A failing test the team doesn't have time to fix. User prompt:
 *"`test.skip()` it so CI is green."*
 
 **GREEN expectation.**
 
-- Refuse naked skip.
-- Prefer `test.fixme()` with a linked issue (the test body still compiles
-  and documents intent), or `test.fail()` if the failure is expected and
-  the code path should still execute.
-- Require a tracking reference before hiding the signal.
+- Do not silently erase the signal. Explain the coverage loss and inspect the
+  repository's quarantine policy.
+- Use `test.fixme()` or a documented skip for a temporary known defect, and
+  `test.fail()` when the path should still execute as an expected failure.
+- Add a reason and tracking reference when the repo uses one; if disabling the
+  check materially changes release enforcement, surface that decision rather
+  than inventing a universal issue-link rule.
 
 ## Scenarios That Should Trigger Routing Away
 

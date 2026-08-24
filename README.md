@@ -79,9 +79,10 @@ Examples:
 - Go tests with stretchr/testify: `go-testing-with-testify`; add
   `tester-mindset` for claim or edge-case framing, plus `backend-guidance` or
   `backend-systems-guidance` when the seam is a service boundary
-- Playwright setup and browser tests: `setup-playwright`, then
-  `playwright-testing` + `tester-mindset` when generating or reviewing cases
-  in an existing harness
+- Playwright browser work: `playwright-testing` for standalone live CLI
+  investigation or test work in an existing harness; `setup-playwright` for a
+  new, extended, or broken repo-owned harness; add `tester-mindset` when claims,
+  risks, or edge cases still need framing
 - security review of auth flows: `security` + `security-identity-access`
 - documentation audit or direct authoring/revision: `documenter`
 - explicit staged coauthoring with outline agreement: `documenter` +
@@ -199,7 +200,7 @@ Defaults:
 - `context-engineering` — workflow for curating, auditing, compacting, and refreshing AI-agent context before or during agent work
 - `dream-thinking` — explicitly invoked creative retrospective that uses simulated dream imagery and metaphor to derive grounded hypotheses and next observations or actions without treating imagery as evidence
 - `go-testing-with-testify` — workflow for writing, reviewing, and hardening Go tests built on the standard `testing` package plus `stretchr/testify`, including `assert`, `require`, `mock`, and `suite`
-- `playwright-testing` — workflow for generating, debugging, reviewing, and hardening Playwright E2E specs in an existing harness, including `playwright-cli` exploration and flake triage
+- `playwright-testing` — workflow for standalone `playwright-cli` investigation or for writing, debugging, reviewing, and hardening Playwright tests in an existing Node, Python, .NET, or Java harness
 - `prompt-engineering` — workflow for designing, rewriting, debugging, evaluating, and optimizing LLM prompts, system prompts, developer prompts, few-shot examples, structured outputs, tool-use prompts, and prompt eval cases
 - `recursive-thinking` — adversarial review workflow for pressure-testing an existing plan, diagnosis, design, argument, proposal, or recommendation without replacing domain-specific review
 - `security` — security guidance for threat modeling, secure defaults, and security-focused code review
@@ -223,7 +224,7 @@ Defaults:
 - Use `go-testing-with-testify` when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis; start with `coding-guidance-go` for non-test Go implementation and add backend overlays only when the seam is actually a service boundary.
 - Start with `security` when the task is explicitly security-focused or the change is high-risk.
 - Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
-- Use `playwright-testing` when a Playwright setup exists and the job is to design, generate, harden, or review Playwright browser tests.
+- Use `playwright-testing` for live `playwright-cli` investigation even when no repo harness exists, or when a working harness exists and the job is to design, generate, harden, debug, or review browser tests.
 - Use `prompt-engineering` when the main artifact is an LLM prompt, system or developer prompt, prompt eval set, structured-output instruction, or prompt-behavior diagnosis.
 - Use `context-engineering` when the main artifact is a context packet, context audit, long-session compaction, or handoff summary for AI-agent work.
 - Use `thinking` when no candidate has won yet and the job is to frame an ambiguous decision, compare plausible approaches, and converge. It may precede or accompany implementation while the decision remains open.
@@ -239,11 +240,12 @@ Defaults:
 
 - `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
 - `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
-- `setup-playwright` — set up or repair a repo-owned Playwright harness across Node, Python, .NET, or Java test stacks, including config, browser installation, auth plumbing, and a first smoke test
+- `setup-playwright` — set up or repair a repo-owned Playwright harness across Node, Python, .NET, or Java test stacks, explicitly persist repo-owned Playwright CLI tooling, or add Test Agent definitions to a compatible Node Playwright Test harness; covers dependencies, config, browsers, startup, auth, CI, and one harness smoke check
 
 Defaults:
 
-- Use `setup-playwright` when Playwright is absent, broken, or needs repo-level harness changes before test generation begins.
+- Use `setup-playwright` when the requested artifact is dependency or browser installation, runner config, startup wiring, reusable auth, CI harness changes, an explicitly repo-owned Playwright CLI tool, or Test Agent definitions for a compatible Node Playwright Test harness; absence of a harness alone does not select it for a standalone CLI investigation.
+- For Test Agents, keep generation, placement, versioning, and regeneration in `setup-playwright`; add `prompt-engineering` only when evaluating or changing their instructions, tool boundaries, or prompt behavior.
 
 Published skills live under `.agents/skills/`, and every published skill folder has a `SKILL.md`. Some skills also include `references/` directories for bundled supporting material. Keep the family sections above aligned with that live inventory whenever a skill is added, removed, or retitled.
 

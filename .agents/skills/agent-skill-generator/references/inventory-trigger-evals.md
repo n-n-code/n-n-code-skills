@@ -98,18 +98,67 @@ Instruction behavior after explicit selection:
 Expected `setup-playwright`:
 
 - `Set up Playwright in this Python repo.`
+- `Set up async pytest-playwright fixtures in this Python repo without adding Node tooling.`
+- `Add a Chromium Playwright harness to this existing .NET NUnit project.`
+- `Add Playwright to this Java JUnit Maven module without creating package.json.`
 - `Repair browser install, webServer, and CI reporting after a monorepo package move.`
 - `Add reusable auth setup so tests stop logging in through the UI every time.`
+- `Configure Playwright's stories/gallery component testing model in this React app.`
+- `Add Playwright Test Agents to this existing Node Playwright Test harness and review the generated files.`
 
 Expected `playwright-testing`:
 
 - `Debug this flaky Playwright spec and explain why it passes only on retry.`
-- `Use Playwright CLI to explore checkout and write a regression test.`
+- `Use Playwright CLI to explore checkout and add a regression test to the existing harness.`
 - `Review these existing specs for brittle locators and weak assertions.`
+- `Use Playwright CLI to inspect this running page; there is no harness and do not modify the repo.`
+- `Fix this flaky pytest-playwright test without creating Node config.`
+- `Fix this unawaited expect call in an existing async pytest-playwright test.`
+- `Fix this flaky popup test in the existing .NET NUnit Playwright harness without changing config.`
+- `Review BrowserContext isolation in these Playwright Java JUnit tests.`
 
 Expected `tester-mindset` first:
 
 - `Figure out what checkout edge cases we should test before writing browser specs.`
+
+Collision and composition checks:
+
+- `Install browser binaries and repair the Playwright webServer startup in CI.`
+  -> `setup-playwright`; the requested artifact and repair are already known.
+- `Diagnose why Playwright browser startup fails only in this container; do not
+  change config until the cause is established.` ->
+  `project-platform-diagnose` while the environment cause is uncertain, then
+  `setup-playwright` only if the evidence calls for a repo-owned harness repair.
+- `Explore login with Playwright CLI, then add a first regression test to this
+  repo that has no harness.` -> `playwright-testing` owns exploration;
+  `setup-playwright` owns the new harness; return to `playwright-testing` for
+  the authored spec.
+- `Security-review these existing Playwright tenant-boundary tests.` ->
+  `security` + `security-identity-access` lead the security work;
+  `playwright-testing` supplies browser-test mechanics.
+- `Add @playwright/cli as a reproducible developer tool, without adding tests.`
+  -> `setup-playwright`; preserve the explicit repo-owned tool decision, but do
+  not confuse it with the test runner or a production dependency; verify
+  before/after dependency coexistence without aligning a stable runner to an
+  alpha CLI dependency.
+- `Generate Playwright Test Agent definitions in this Python repo, which has no
+  Node Playwright Test harness or seed test.` -> `setup-playwright` owns the
+  prerequisite decision. The missing compatible harness blocks generation; the
+  missing seed alone would not. Do not introduce a Node sidecar without
+  authority.
+- `Generate Playwright Test Agents for this working Node Playwright Test harness;
+  it has no seed test yet.` -> `setup-playwright`; verify current default-seed
+  behavior and validate the generated default, or use an explicit seed when
+  repo-specific bootstrap behavior requires one.
+- `Generate Playwright Test Agents, then improve their instructions and MCP tool
+  boundaries.` -> `setup-playwright` owns generation and placement;
+  `prompt-engineering` owns the requested behavioral prompt review. Do not add
+  `agent-skill-generator` because these are not reusable `SKILL.md` packages.
+- `Both the local Playwright skills and Playwright's installed playwright-cli
+  skill are available; inspect checkout and harden its existing regression
+  test.` -> `playwright-testing` owns the claim, safety, repo decisions, and
+  test artifact; the upstream skill may supply current command mechanics, with
+  runtime help authoritative.
 
 ## Go
 

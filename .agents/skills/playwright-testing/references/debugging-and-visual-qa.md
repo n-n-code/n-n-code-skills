@@ -4,6 +4,10 @@ Load this file when the main skill needs concrete debugging commands, trace
 inspection patterns, or screenshot guidance after the investigation has moved
 from CLI exploration into runner-side debugging.
 
+Commands and snippets below target Node Playwright Test. Use the active
+runner's equivalents from [ecosystem-testing.md](ecosystem-testing.md) in
+Python, .NET, or Java harnesses.
+
 For CLI-first exploration and paused-test attachment, load
 [playwright-cli-investigation.md](playwright-cli-investigation.md).
 
@@ -29,6 +33,21 @@ state leakage, stale auth, or route mocks intercepted by service workers.
 Prefer traces over raw video when diagnosing CI failures. Keep `trace:
 'on-first-retry'` in normal config, and use `--trace on` locally only when you
 need an every-run trace while debugging.
+
+On Playwright 1.59 or newer, the agent-readable trace CLI can inspect a trace
+without opening the GUI. Confirm the installed command surface first:
+
+```console
+npx playwright trace --help
+npx playwright trace open test-results/<result>/trace.zip
+npx playwright trace actions --grep="expect"
+npx playwright trace action <action-number>
+npx playwright trace snapshot <action-number> --name after
+npx playwright trace close
+```
+
+Use action numbers and paths returned by the opened trace; do not assume an
+artifact layout from another project or Playwright version.
 
 ## Codegen And Locator Picking
 
