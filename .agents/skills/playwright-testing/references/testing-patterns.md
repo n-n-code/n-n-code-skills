@@ -1,7 +1,9 @@
 # Playwright Testing Patterns
 
 Load this file when the main skill needs concrete structure for reusable test
-code.
+code. The snippets are Node Playwright Test examples; for Python, .NET, or
+Java, preserve the runner and translate the concept through
+[ecosystem-testing.md](ecosystem-testing.md).
 
 ## Page Objects
 
@@ -91,9 +93,11 @@ If login UI is itself the claim under test, bypass `storageState` for that
 spec (`test.use({ storageState: { cookies: [], origins: [] } })`) and drive
 the UI explicitly rather than fighting the reused state.
 
-`storageState` covers cookies, local storage, and IndexedDB, but not
-`sessionStorage`. If the app depends on `sessionStorage`, inject it with
-`addInitScript` or a fixture that seeds it per test.
+`storageState` captures cookies and local storage by default. IndexedDB is
+included only when the saving call opts into `{ indexedDB: true }` on a
+supporting Playwright version. It does not capture `sessionStorage`; if the app
+depends on that state, restore it deliberately with `addInitScript` or a
+fixture that seeds it per test.
 
 ## Locator Refinement
 

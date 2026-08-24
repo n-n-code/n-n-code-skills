@@ -43,10 +43,19 @@ Use when the repo is already Node-based or there is no stronger stack signal.
 
 ## Python
 
-The recommended E2E runner is the official Playwright Pytest plugin.
+Choose the official synchronous or asynchronous Playwright Pytest integration
+to match the repository's fixture and API style.
 
 - Install `pytest-playwright` and Playwright with the repo's Python package
   manager.
+- For async fixtures, also install `pytest-playwright-asyncio`, require
+  `pytest-asyncio>=0.26.0`, and set
+  `asyncio_default_test_loop_scope = session` in the repo's existing pytest
+  configuration. Use the async plugin's awaitable `page`, `context`, and other
+  documented fixtures. Mark async tests with
+  `@pytest.mark.asyncio(loop_scope="session")` unless the repo deliberately uses
+  `asyncio_mode = auto`; preserve `playwright.async_api` and do not silently mix
+  sync and async fixture APIs.
 - Install browsers with `playwright install` or
   `playwright install --with-deps chromium` for narrower CI scope.
 - Preserve pytest-native config in `pytest.ini`, `pyproject.toml`, or existing
@@ -96,6 +105,9 @@ project structure.
   repos just because the Node docs are easier to remember.
 - Do not claim `webServer`, setup projects, or `test.use()` exist outside the
   Node Playwright Test runner unless the repo is actually on that runner.
+- Treat Playwright Test Agents as a Node Playwright Test harness extension. Do
+  not add a Node sidecar to a Python, .NET, or Java repo merely to generate
+  planner, generator, or healer definitions.
 - Keep browser installation commands aligned with the active ecosystem's CLI.
 - Keep auth state, traces, screenshots, and reports out of git unless the repo
   has an explicit artifact policy.

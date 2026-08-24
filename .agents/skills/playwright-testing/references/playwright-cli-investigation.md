@@ -1,98 +1,134 @@
 # Playwright CLI Investigation
 
-Load this file when the main skill needs agent-side browser exploration through
-`playwright-cli`, not just ordinary Playwright test reruns.
+Load this file for agent-side browser exploration of a running app, including
+the valid case where the repository has no Playwright test harness.
+
+## Discover The Installed Surface
+
+The CLI changes faster than this skill. Before a non-trivial session, inspect
+the executable you will actually use:
+
+```console
+playwright-cli --version
+playwright-cli --help
+```
+
+When the global command is unavailable, an installed Playwright version that
+bundles the CLI may expose it through:
+
+```console
+npx --no-install playwright --version
+npx --no-install playwright cli --help
+```
+
+Do not install a repo dependency merely to investigate a page. If no suitable
+command exists, report the missing capability or ask before changing the
+environment. Validate unfamiliar subcommands with `--help`; the upstream
+installable skill and website can lag the runtime.
+
+The examples below use the standalone command. Replace `playwright-cli` with
+the verified no-install package-manager equivalent only when the installed
+version supports it.
 
 ## Snapshot Discipline
 
-Use snapshots before interactions so element refs stay stable. Refs are scoped
-to the current snapshot and become invalid after page changes, so re-snapshot
-after navigation or state transitions.
+Use snapshots before interactions. Element refs belong to the current snapshot,
+so re-snapshot after navigation or material state changes.
 
-```bash
+```console
 playwright-cli open http://127.0.0.1:3000 --headed
-playwright-cli snapshot
 playwright-cli snapshot --depth=4
-playwright-cli snapshot "#main"
+playwright-cli find "Sign in"
 playwright-cli click e12
 playwright-cli fill e21 "user@example.com"
 playwright-cli press Enter
-playwright-cli eval "() => document.title"
-playwright-cli screenshot
-playwright-cli close
+playwright-cli snapshot "#main"
+playwright-cli generate-locator e21 --raw
 ```
 
 Guidelines:
 
-- Prefer refs from snapshots over ad hoc CSS selectors during exploration.
-- Scope snapshots to a section or lower depth on noisy pages to keep output
-  small and the next command deterministic.
-- Use `--raw` only when you intentionally want command output without page info.
-- `fill <ref> <text> --submit` is a fast way to complete simple form probes.
+- Prefer snapshot refs during exploration; translate the resulting locator into
+  the target test language only after checking its semantics.
+- Scope noisy pages with a selector, ref, `--depth`, or `find` rather than
+  repeatedly dumping the full tree.
+- Use `--raw` for intentionally minimal output and `--json` only when the
+  installed command documents structured output.
+- Treat generated code and locators as observations, not trusted final tests.
 
-## Sessions, Tabs, And Saved State
+## Sessions And Saved State
 
-Use CLI session features when one investigation needs multiple isolated roles,
-staging-versus-production comparison, or a preserved signed-in state.
+Use named sessions for distinct roles or comparisons:
 
-```bash
+```console
+playwright-cli -s=admin open http://127.0.0.1:3000
+playwright-cli -s=user open http://127.0.0.1:3000
+playwright-cli -s=admin snapshot
+playwright-cli -s=user snapshot
+playwright-cli -s=admin close
+playwright-cli -s=user close
+```
+
+Use persistent profiles or `state-save` / `state-load` only when repetition
+justifies leaving browser state on disk.
+
+```console
 playwright-cli state-save auth.json
 playwright-cli state-load auth.json
-playwright-cli tab-list
-playwright-cli tab-new https://example.com
-playwright-cli tab-select 1
-playwright-cli -s=admin open http://127.0.0.1:3000 --persistent
-playwright-cli -s=user open http://127.0.0.1:3000 --persistent
-playwright-cli show
 ```
 
-Guidelines:
+Saved state can contain cookies and tokens. Keep it out of the repository and
+logs, use a task-specific path, and remove it through a targeted cleanup when
+finished. Prefer the default in-memory profile. Do not use broad `close-all`,
+`kill-all`, or data deletion when another task's session may exist.
 
-- Use named sessions for concurrent admin/user or before/after comparisons.
-- Use `state-save` after login when you expect to repeat the same exploration.
-- Reach for `show` only when the live dashboard materially helps inspection;
-  otherwise keep the workflow CLI-first and token-light.
+## Console, Requests, And Tracing
 
-## Console, Network, And Trace Triage
+Inspect the smallest evidence surface first:
 
-Use CLI tracing when interactive exploration itself is the failing scenario and
-you want a real Playwright trace afterward.
-
-```bash
+```console
+playwright-cli console error
+playwright-cli requests
+playwright-cli request 5
+playwright-cli request-headers 5
+playwright-cli response-headers 5
 playwright-cli tracing-start
 playwright-cli goto http://127.0.0.1:3000/checkout
 playwright-cli click e15
-playwright-cli console error
-playwright-cli network
 playwright-cli tracing-stop
-npx playwright show-trace .playwright-cli/trace.zip
 ```
 
-Prefer `console error` or `console warning` over dumping the full buffer first.
-Use `eval` for quick DOM or computed-style reads and `run-code` only when the
-inspection truly needs broader Playwright API access.
+Use the trace path printed by the command rather than assuming a fixed
+directory. Inspect request or response bodies only when needed; they may contain
+credentials or personal data. Use arbitrary-code execution only when a
+supported command, snapshot, request record, or `eval` cannot answer the
+question.
 
-## Attach To Paused Tests
+## Attach To A Paused Node Test
 
-Use CLI attachment when a flaky Playwright test is easier to inspect live than
-through artifacts alone.
+Current Node Playwright Test versions can expose an agent-readable debugging
+session:
 
-```bash
+```console
 npx playwright test tests/e2e/login.spec.ts --debug=cli
 playwright-cli attach <session-name-printed-by-the-runner>
-playwright-cli snapshot
-playwright-cli console error
-playwright-cli network
-playwright-cli tracing-start
-playwright-cli resume
-playwright-cli step-over
-playwright-cli pause-at tests/e2e/login.spec.ts:42
+playwright-cli -s=<session-name> pause-at tests/e2e/login.spec.ts:42
+playwright-cli -s=<session-name> resume
+playwright-cli -s=<session-name> step-over
 ```
 
-Guidelines:
+Keep the runner alive while attached. Stop the background runner when the
+session ends. Attachment is a debugging aid: confirm any proposed locator or
+test edit through the real targeted test afterward.
 
-- Attach only after the test runner prints the paused session name.
-- Use `snapshot`, `console`, `network`, or `eval` before resuming when the test
-  is currently in the interesting state.
-- If you collect a CLI trace during paused-test debugging, open it before
-  weakening assertions or adding sleeps.
+## Investigation Guardrails
+
+- Confirm the target environment and mutation allowance before submitting
+  forms, changing data, sending messages, or exercising destructive controls.
+- Prefer test or staging accounts. Do not reuse a personal browser profile
+  unless explicitly required and authorized.
+- Separate observed page state from inference about backend state.
+- A live app is evidence of current behavior, not automatically the intended
+  specification. Reconcile it with the named claim and repository contracts.
+- Close only the sessions created for the task and report any persistent
+  profiles, state files, screenshots, traces, or videos left behind.

@@ -1,344 +1,216 @@
 ---
 name: setup-playwright
-description: Use when adding, extending, or repairing a repo-owned Playwright E2E harness across Node `@playwright/test`, Playwright Pytest, or .NET/Java test frameworks — including browser installation, harness config, auth reuse plumbing, package placement, or CI smoke/sharding setup. Not for ordinary spec debugging once the harness already works; route that to `playwright-testing`.
+description: Use when adding, extending, or repairing a repo-owned Playwright test harness across Node Playwright Test, Playwright Pytest, or .NET/Java test frameworks. Also use when explicitly persisting `@playwright/cli` developer tooling, or adding or regenerating Playwright Test Agent definitions for a compatible Node Playwright Test harness. Not for live CLI exploration or ordinary spec work in a working harness; use `playwright-testing`.
 ---
 
 # Setup Playwright
 
-Build the smallest reliable Playwright harness that fits the repository already
-in front of you.
+Build the smallest reliable repo-owned Playwright setup that fits the
+repository's language, package boundaries, test runner, developer-tool, and CI
+conventions.
 
-This is a system skill: it leaves behind repo-owned test setup, config, and a
-starter check. Day-to-day spec authoring belongs to `playwright-testing`.
-Preserve the repo's existing Playwright ecosystem shape instead of forcing
-Node `@playwright/test` into Python, .NET, or Java repos that already have a
-clear runner choice.
+This is a system skill: it leaves behind a repo-owned harness or an explicitly
+requested Playwright developer-tool artifact. Day-to-day test authoring and
+live browser investigation belong to `playwright-testing`.
 
-## Runner Choice
+## Ownership Boundary
 
-Use the repo's strongest local signal:
+Use this skill when the main artifact is one or more of:
 
-- Node / TypeScript / JavaScript repo with no stronger signal:
-  `@playwright/test`
-- Python repo with pytest usage: Playwright Pytest
-- .NET repo: existing MSTest, NUnit, or xUnit project plus Playwright's
-  .NET install flow
-- Java repo: existing JUnit or TestNG module plus Maven or Gradle Playwright
-  wiring
+- Playwright dependencies or browser binaries
+- runner config, package placement, or monorepo wiring
+- app startup through `webServer` or an ecosystem-native equivalent
+- browser, device, environment, retry, reporter, or artifact configuration
+- reusable-auth setup and ignored state files
+- a minimal smoke check that proves the harness works
+- CI install, smoke, sharding, or report-merge plumbing
+- an explicitly requested repo-owned `@playwright/cli` developer dependency or
+  script
+- host-targeted Playwright Test Agent definitions for a compatible Node
+  Playwright Test harness
 
-## When To Use
+Use `playwright-testing` when the harness works and the task is a spec, test
+review, flake diagnosis, locator change, mock decision, visual check, or
+standalone `playwright-cli` investigation. If an environment-dependent install,
+startup, container, or CI failure has no established cause, start with
+`project-platform-diagnose` and return here once the repair is known.
 
-- no working Playwright harness exists in the target package or test project
-- an existing config is broken, incomplete, or moved packages
-- adding reusable auth or storage-state wiring for login reuse — even if
-  specs already exist (config-shape changes belong here)
-- adding `webServer`, browser install, browser projects, `storageState`,
-  sharding, or CI reporter setup
-- placing Playwright correctly in a monorepo or alongside existing unit tests
+## Choose The Existing Ecosystem
 
-## Not For
+Follow the strongest repository signal:
 
-- writing, reviewing, or hardening specs once the harness works — route to
-  `playwright-testing`
-- debugging flaky specs, brittle locators, or test behavior — route to
-  `playwright-testing`
-- product exploration with `playwright-cli`, UI Mode, or `codegen` — route
-  to `playwright-testing`
+- Node/TypeScript/JavaScript: `@playwright/test` unless another runner is
+  already intentional.
+- Python with pytest: the official Playwright Pytest plugin and pytest-native
+  fixtures/config.
+- .NET: the repo's MSTest, NUnit, xUnit, or xUnit v3 project and Playwright .NET
+  integration.
+- Java: the repo's JUnit or TestNG module with its Maven or Gradle build.
 
-## Routing Flowchart
+Do not create a Node sidecar in a Python, .NET, or Java repo merely because its
+examples are more familiar. Load
+[references/ecosystem-patterns.md](references/ecosystem-patterns.md) before
+editing a non-Node harness.
 
-```dot
-digraph route {
-    "Working Playwright harness exists?" [shape=diamond];
-    "Main artifact is config,\nbrowser install, or auth plumbing?" [shape=diamond];
-    "setup-playwright" [shape=box];
-    "playwright-testing" [shape=box];
+If multiple ecosystems are equally plausible and package ownership cannot be
+derived from the repo, ask before adding dependencies.
 
-    "Working Playwright harness exists?" -> "setup-playwright" [label="no"];
-    "Working Playwright harness exists?" -> "Main artifact is config,\nbrowser install, or auth plumbing?" [label="yes"];
-    "Main artifact is config,\nbrowser install, or auth plumbing?" -> "setup-playwright" [label="yes"];
-    "Main artifact is config,\nbrowser install, or auth plumbing?" -> "playwright-testing" [label="no"];
-}
+## Repo-Owned CLI Tooling
+
+Use this lane only when the user explicitly wants Playwright CLI tooling
+persisted in the repository. Agent-side investigation alone belongs to
+`playwright-testing` and does not justify a dependency.
+
+1. Inspect package ownership, the installed command surface, and whether the
+   repo's existing Playwright version already exposes `npx playwright cli`.
+2. Record the existing runner and CLI package versions, dependency resolution,
+   lockfile state, and browser-command ownership before changing dependencies.
+3. If standalone `@playwright/cli` is still wanted, add it only as developer
+   tooling under the repo's version and lockfile policy.
+4. Compare dependency resolution afterward and verify both the existing runner
+   and the persisted CLI command. Do not upgrade or align a stable
+   `@playwright/test` harness to an alpha Playwright dependency pulled by the
+   CLI. If the package manager cannot keep the surfaces compatible, report the
+   conflict instead of forcing installation.
+5. Report the before/after versions, lockfile impact, commands verified, and
+   any browser-download or update commitment introduced.
+
+## Playwright Test Agent Extension
+
+Treat Playwright Test Agents as a Node Playwright Test harness extension, not
+as standalone generic agent tooling.
+
+1. Inspect the worktree and existing agent definitions, then require a
+   compatible Node Playwright Test harness and an explicit target host or
+   `--loop` value supported by the installed `init-agents` command. Identify an
+   existing seed when the repo has one and check the installed version's
+   default-seed behavior when it does not.
+2. If the harness or target host is missing, do not generate unusable
+   definitions. Use the Harness Workflow only when the request authorizes that
+   additional setup; otherwise report the missing prerequisite. A missing seed
+   alone is not a blocker: the current planner can create a default. Prefer an
+   explicit seed when custom fixtures, hooks, project dependencies, or startup
+   make that bootstrap contract material. Do not create a Node sidecar in a
+   Python, .NET, or Java repo solely to enable Test Agents.
+3. Generate only the requested host definitions using current runtime help.
+   Review the complete diff and preserve the documented regeneration path
+   rather than casually hand-editing generated files.
+4. Validate agent-file discovery and the existing or generated seed's
+   compatibility with the active config, fixtures, project dependencies,
+   hooks, and startup contract. Do not claim operational success when required
+   app access, accounts, or secrets were unavailable.
+5. `setup-playwright` owns generation, placement, version compatibility, and
+   regeneration. Add `prompt-engineering` only when the user asks to evaluate
+   or change agent instructions, tool boundaries, or prompt behavior, not for
+   routine generation or structural diff review. Do not add
+   `agent-skill-generator` merely because the artifacts are called agents; they
+   are not reusable `SKILL.md` packages.
+
+If a CLI or Test Agent request also changes the test harness, use the Harness
+Workflow for that portion.
+
+## Harness Workflow
+
+1. **Inspect before installing.** Read repository instructions, package and
+   lock files, test projects, existing Playwright artifacts, scripts, ignore
+   rules, app startup commands, ports, and CI workflows. Check the installed
+   version before relying on current flags or config fields.
+2. **Define the harness contract.** Name the owning package, runner, target URL,
+   startup owner, browser scope, auth strategy, output paths, local command, and
+   CI command. Distinguish a broken harness from an environment-only failure.
+3. **Make the smallest coherent change.** Use the repo's package manager and
+   pinning policy. Install only required browsers. Preserve existing config and
+   scripts; do not run a scaffold over a non-trivial harness blindly.
+4. **Configure for local and CI use.** Set base URL/startup, projects or runner
+   equivalents, timeouts, retries, workers, reporters, and artifacts only when
+   the repository needs them. Prefer project dependencies over Node
+   `globalSetup` when setup should be visible and traceable in the runner.
+5. **Wire auth deliberately.** Use UI login, API login, or per-worker accounts
+   according to the claim and mutation model. Verify authentication succeeded
+   before saving state. Ignore saved state and treat it as a credential.
+6. **Add one meaningful smoke check.** Prove that startup, navigation, locator,
+   assertion, browser binary, and output path cooperate. Keep broader product
+   coverage for `playwright-testing`.
+7. **Validate in layers.** Verify config/listing first, run one smoke target,
+   repeat if the repair involved state or startup, then run the smallest
+   relevant CI-shaped command. Inspect generated output rather than assuming
+   command success proves correct placement.
+8. **Report exact evidence.** State changed files, commands and results,
+   browsers not installed or run, CI not executed, secrets required, and any
+   remaining environment assumptions.
+
+## Setup Rules
+
+- Preserve package-manager and lockfile ownership. Do not mix npm, pnpm, yarn,
+  Python managers, NuGet conventions, Maven, or Gradle without repo evidence.
+- Keep Playwright package and browser binaries aligned. Install the smallest
+  browser set that proves the stated matrix; broader defaults must be an
+  explicit choice.
+- Prefer one clear config owner per package. Reuse existing test and artifact
+  directories unless relocation is part of the request.
+- Keep local server reuse local; CI should start from a controlled build and
+  process. Use a readiness URL and a startup timeout that reflects app boot,
+  not an inflated global test timeout.
+- Default CI concurrency conservatively when shared state is not proven safe.
+  Add parallelism or sharding only with an isolation model and report merging.
+- Configure traces, screenshots, or video for actionable failure evidence,
+  while controlling retention and excluding secrets.
+- Use a Node setup project for reusable auth when applicable. In other
+  ecosystems, preserve native fixtures/helpers instead of inventing
+  `auth.setup.ts`, project dependencies, or `test.use()`.
+- Saved browser state may contain cookies, tokens, IndexedDB data, and—in newer
+  versions when requested—credential material. Keep it ignored and out of
+  logs/artifacts unless explicitly sanitized.
+- `storageState` does not persist `sessionStorage`; wire a deliberate restore
+  only when the application requires it.
+- Test generated config against the installed version. Features such as
+  isolated retry strategies, credential-state capture, component-test models,
+  and bundled CLI commands are version-sensitive.
+
+## Tooling Boundaries
+
+- `playwright-cli` and Playwright's installable CLI skill are agent-side
+  exploration aids, not automatically repo dependencies. Do not add a local
+  third Playwright skill or a production dependency merely to run an agent
+  investigation.
+- Component testing, browser extensions, WebView2, and raw Playwright library
+  automation use different lifecycle/config models. Treat them as specialized
+  setups rather than silently applying the default web E2E template.
+
+## Harness Validation Evidence
+
+Choose commands from the active ecosystem and existing scripts. Typical Node
+layers are:
+
+```console
+npx playwright --version
+npx playwright test --list
+npx playwright test <smoke-target> --project=<project>
 ```
 
-## Adjacent Skills
+For Python, .NET, and Java, use the native runner and browser-install commands
+from [references/ecosystem-patterns.md](references/ecosystem-patterns.md).
+Validate command availability against the installed version rather than
+copying a current-doc flag into an older harness.
 
-- **project-config-and-tests** — when the work changes configuration
-  precedence, defaults, path helpers, or deterministic tests at those seams.
-- **coding-guidance-python**, **coding-guidance-cpp**, **coding-guidance-bash**,
-  or another principle skill when setup needs non-trivial code in that
-  language.
-- **ui-guidance** or **ui-design-guidance** — when the starter smoke test
-  must validate UI behavior, accessibility, responsiveness, or visible
-  layout.
-- **playwright-testing** — once the harness exists and the job becomes test
-  design, visual QA, or flake review.
+Resource execution and test execution are separate evidence: a valid config
+does not prove browsers are installed, and a passing smoke does not prove every
+browser, shard, or CI environment. Repo-owned CLI and Test Agent validation are
+defined in their lanes above; do not substitute unrelated harness commands.
 
 ## Reference Map
 
 - [references/ecosystem-patterns.md](references/ecosystem-patterns.md) —
-  choose the correct Playwright harness shape for Node, Python, .NET, or
-  Java; preserve the repo's runner and install commands.
-- [references/auth-and-ci-patterns.md](references/auth-and-ci-patterns.md) —
-  Node Playwright Test patterns for `auth.setup.ts` + setup-project wiring,
-  API login, one account per worker, CI posture, sharded reports.
+  package, runner, install, and auth boundaries across Node, Python, .NET, and
+  Java.
 - [references/browser-and-config-patterns.md](references/browser-and-config-patterns.md)
-  — Node Playwright Test defaults for config scope, projects/dependencies,
-  browser and channel selection, emulation, timeouts, reporters, `webServer`.
+  — Node config scope, projects, browsers, reporters, timeouts, `webServer`,
+  and specialized modes.
+- [references/auth-and-ci-patterns.md](references/auth-and-ci-patterns.md) —
+  Node setup-project auth, API login, worker accounts, CI, and sharded reports.
+- [references/pressure-tests.md](references/pressure-tests.md) — shortcut
+  rationalizations and expected responses; load only when those pressures are
+  present or when maintaining the skill.
 
-Reference naming note:
-
-- `auth-and-ci-patterns.md` and `browser-and-config-patterns.md` keep their
-  historical names, but they are intentionally Node Playwright Test-only.
-- Keep truly cross-ecosystem guidance in
-  `references/ecosystem-patterns.md` rather than widening the Node helpers
-  until they become ambiguous.
-
-## Core Workflow
-
-1. **Inspect the repo first.** Read `package.json`, `pyproject.toml`,
-   `.csproj`, `pom.xml`, `build.gradle`, lockfiles, workspace config,
-   existing test folders, Playwright config, CI files, ignore files, app
-   docs, route files, and any auth or test-id signals. Identify the package
-   manager, app root, likely test language, start command, base URL, auth
-   flow, configured `testIdAttribute`, browser or device expectations, and
-   whether this is a monorepo or a migration from another E2E tool.
-2. **Resolve the five setup inputs from repo truth.** Ask the user only for
-   what the repo does not already answer:
-   - **Target URL:** local base URL for `webServer`, or the external URL
-     the harness will hit.
-   - **Auth model:** none, fixture-based login, or runner-native reusable
-     auth plus ignored `storageState`.
-   - **Test data:** ephemeral per-test, shared seed, backend reset hook, or
-     deliberately mocked external boundary.
-   - **Browser scope:** Chromium-only to start, or a broader matrix.
-   - **CI posture:** local only, smoke on pull requests, or broader
-     regression cadence.
-3. **Choose the package boundary and setup path.** If Playwright already
-   exists, extend or repair instead of re-scaffolding. In monorepos,
-   preserve the correct package boundary; ask before adding dependencies
-   when multiple packages are equally plausible. Preserve the repo's
-   existing language and runner. Use the repo's native Playwright stack:
-   `@playwright/test` for Node, Playwright Pytest for Python, Playwright's
-   base classes and `playwright.ps1` flow for .NET, and the repo's chosen
-   Java test framework with Playwright dependencies and CLI wiring for
-   Java. If no stronger signal exists, default to Node Playwright Test for
-   repo-owned E2E. Do not switch to the raw `playwright` library unless
-   the user explicitly wants library automation outside the test runner.
-4. **Place files conservatively.** Follow existing test layout. Otherwise
-   use the ecosystem's normal layout: Node commonly uses `tests/`, `e2e/`,
-   or `tests/e2e/`; Python follows the repo's `tests/` and pytest config
-   shape; .NET and Java should stay inside the existing test project or
-   module instead of inventing a parallel Node-style tree.
-5. **Configure the runner in the repo's ecosystem.** For Node, add the
-   smallest durable `playwright.config.*` that fits: `testDir`,
-   `use.baseURL`, CI-safe `forbidOnly`, `retries: process.env.CI ? 2 : 0`,
-   `workers: process.env.CI ? 1 : undefined`, reporter defaults that fit
-   agent and CI use, `trace: 'on-first-retry'`,
-   `screenshot: 'only-on-failure'`, and `webServer` when the app has a
-   stable start command. Preserve or define `testIdAttribute` when the
-   repo uses an explicit test-id contract. For Python, preserve pytest
-   config and CLI defaults instead of fabricating `playwright.config.ts`.
-   For .NET, preserve the existing test framework and use runsettings or
-   launch options rather than Node config files. For Java, preserve the
-   repo's test framework and build-tool wiring rather than introducing a
-   Node-style runner. Enable `fullyParallel` only when the suite is truly
-   isolation-safe. When many tests need the same authenticated user, use
-   ignored `storageState` or the closest ecosystem-native equivalent.
-6. **Add supporting structure only when repetition justifies it.** Create
-   fixtures, page objects, or setup helpers when flows or setup repeat.
-   Prefer fixtures over broad `beforeEach`. Use route mocking only for
-   external or intentionally injected boundaries, and block service
-   workers when they would swallow `page.route()`. In Node Playwright Test,
-   use projects for meaningful browser, device, environment, or
-   setup-dependency differences and `test.use()` for narrower per-file or
-   per-`describe` overrides such as locale, timezone, permissions, color
-   scheme, or viewport. In other ecosystems, use the runner's equivalent
-   local override mechanism instead of inventing Node abstractions.
-7. **Preserve repo conventions and CI posture.** Add scripts only in the
-   style the repo already uses. Keep Playwright as a separate E2E
-   entrypoint unless the repo already treats it as default. Default CI
-   posture is a smoke gate on pull requests; a broader matrix only when
-   the repo or user needs that evidence.
-8. **Add one starter smoke test.** Cover a stable, low-cost product path:
-   app loads, a landmark or heading is visible, and one core navigation
-   or interaction works. Use web-first assertions and user-facing
-   locators.
-9. **Validate narrowly.** Run the preflight below, install required
-   browsers when needed, then run the smallest meaningful runner command
-   for the changed setup. Start with one file, one module, or one browser
-   target and the narrowest useful output for that ecosystem. `--list`
-   proves discovery only; run at least one real test when the environment
-   allows it.
-10. **Report the contract.** State the workspace root or package
-    boundary, package manager, config path, test directory, scripts
-    added, validation command, and any setup assumptions the next agent
-    or developer must know.
-
-## Validation Preflight
-
-Before the first Playwright-backed test invocation:
-
-- **Bind host and port:** confirm `127.0.0.1` (unless the environment
-  requires another bind) and verify the port is free. Do not let
-  `webServer` race a manually started dev server on the same port.
-- **Sandbox escalation:** if a bind fails with `EPERM` or `EACCES`,
-  escalate rather than retry-loop.
-- **Build-lock hygiene:** clear stale build locks such as `.next/lock`
-  only after confirming no active owner remains.
-- **Artifact paths:** confirm the ecosystem's artifact directories
-  (for example `test-results/` or `playwright-report/` in Node setups) and
-  any auth-state path are writable and ignored when appropriate.
-- **Browser install path:** confirm the needed browser binaries are
-  available, then install only what the repo's scope actually requires.
-  Re-run browser install after Playwright version upgrades.
-
-## Decision Rules
-
-**Boundary and scope**
-
-- Do not overwrite existing Playwright config, tests, snapshots, or
-  scripts.
-- Keep E2E thin. Set up the harness to protect critical journeys, not to
-  replace lower-level testing.
-- Ask before choosing a package boundary when a monorepo has multiple
-  plausible app packages and no clear target.
-- These skills target Playwright-backed E2E harnesses. Component Testing,
-  Chrome extension testing, and WebView2 automation need specialized
-  setup; do not silently fold them into the default web-app harness.
-- Do not scaffold Playwright Test Agents with
-  `npx playwright init-agents` unless the user explicitly wants repo-owned
-  planner/generator/healer definitions.
-- Do not fabricate `playwright.config.ts`, `auth.setup.ts`, or Node package
-  scripts inside Python, .NET, or Java repos just to imitate the Node docs.
-
-**Package manager and ecosystem**
-
-- Prefer the repo's existing package manager and lockfile. Do not
-  introduce a second package manager.
-- Treat Node Playwright Test, Playwright Pytest, Playwright .NET base
-  classes, and Java test-framework integrations as first-class. Use Node
-  `@playwright/test` only when the repo is already Node-based or no
-  stronger stack signal exists.
-
-**Install hygiene**
-
-- Keep Playwright and its browser binaries in sync. After updating the
-  package, rerun the Playwright install command for the browsers you
-  actually need.
-- Do not add `@playwright/cli` as a repo dependency just to investigate
-  the app. Keep `playwright-cli` as agent tooling unless the user
-  explicitly asks for reusable repo-owned browser automation.
-
-**Config shape**
-
-- In Node Playwright Test, prefer `webServer` in config over telling users
-  to start the app manually, unless the repo's start process is
-  intentionally external.
-- In Node Playwright Test, prefer project dependencies over `globalSetup` /
-  `globalTeardown`. Use global hooks only for genuinely non-fixture
-  bootstrap or environment-variable handoff outside the normal runner
-  model.
-- In Node Playwright Test, use `test.use()` or
-  `test.describe(() => test.use(...))` for narrow locale, timezone,
-  permissions, color-scheme, or viewport overrides instead of adding
-  another whole project.
-- Enable `fullyParallel` only when tests are genuinely order-independent;
-  it amplifies shared-state bugs.
-- Configure Chromium-only validation first when speed or dependency cost
-  is the constraint. Default to bundled Chromium; opt into branded Chrome
-  or Edge channels only when stable-channel parity, codec behavior, or a
-  browser-policy environment actually requires it.
-- If the suite is TypeScript, remember Playwright transpiles TS but does
-  not type-check it. Preserve or add a separate `tsc --noEmit` step when
-  the repo expects type safety.
-
-**Auth plumbing**
-
-- In Node Playwright Test, use a setup project plus ignored `storageState`
-  when reusable login is needed. In other ecosystems, keep the same intent
-  but wire it through the runner's fixtures, helpers, or base classes.
-- If the app stores required auth state in `sessionStorage`, inject it with
-  `addInitScript` or the closest ecosystem-native equivalent.
-- UI Mode does not run setup projects by default in Node Playwright Test.
-  Document how auth state is refreshed manually when it expires.
-
-**Artifacts and hygiene**
-
-- Keep authentication state, traces, videos, screenshots, and generated
-  reports out of git unless the repo has a deliberate artifact policy.
-- Do not add visual-regression baselines by default. Add them only when
-  rendering is itself a maintained contract.
-- Do not add fixed sleeps, broad CSS selectors, or assertion-free
-  starter tests. The starter must use web-first assertions.
-- Do not invent CI, deployment, or release claims. Add CI workflow
-  changes only when the task explicitly includes CI or the repo already
-  has a clear CI pattern to extend.
-
-## Rationalization Table
-
-Common setup shortcuts and expected pushback live in
-[references/pressure-tests.md](references/pressure-tests.md). Load that
-reference when reviewing a proposed harness shortcut or revising the skill's
-trigger and setup rules.
-
-## Setup Checklist
-
-- package manager, workspace root, and target package boundary are
-  identified
-- the five setup inputs (URL, auth, data, browsers, CI) are resolved
-- Playwright dependency and browser install path fit the repo
-- runner config has an explicit test location, base URL or startup
-  contract, retry policy, and artifact or reporting shape
-- CI worker count and trace policy are explicit
-- `fullyParallel`, if enabled, is justified by actual test isolation
-- selector or test-id contract is explicit when the repo uses one
-- auth, if any, uses a runner-native reusable pattern
-- broad-vs-local override scope is chosen deliberately for the active
-  runner
-- if CI sharding is in scope, reporter and merge strategy are explicit
-- if the runner transpiles but does not type-check TypeScript, separate
-  typecheck behavior is explicit
-- commands, scripts, or build-tool wiring match existing naming
-  conventions
-- first test uses role, label, text, alt text, or test id locators
-- generated artifacts and auth state are ignored or already covered
-- validation ran, or the blocker is stated with the next exact command
-
-## Examples
-
-- `Set up Playwright tests in this fresh Next.js repo.` → inspect package
-  scripts, add Playwright Test with the repo's package manager, configure
-  `webServer` on `127.0.0.1:<port>`, create a starter smoke test, run it
-  in Chromium with `--reporter=line`.
-- `Set up Playwright browser tests in this Python repo.` → preserve pytest,
-  add Playwright Pytest and browser install commands, keep config in pytest
-  files or fixtures instead of inventing `playwright.config.ts`, validate
-  with a narrow `pytest` run.
-- `Add an E2E harness to this app without disturbing unit tests.` → keep
-  the existing unit-test layout intact, add Playwright at the repo's
-  native test boundary, keep its commands separate from unit-test entry
-  points, and validate only the new harness.
-- `Add Playwright coverage to this .NET test project.` → preserve MSTest,
-  NUnit, or xUnit, wire browser installation through `playwright.ps1`,
-  keep storage-state paths and runsettings in the test project, validate
-  with `dotnet test`.
-- `Add Playwright coverage to this Java Maven module.` → preserve JUnit or
-  TestNG, wire browser installation and Playwright dependencies through
-  Maven or Gradle instead of Node scripts, keep auth setup in Java helpers,
-  and validate with the module's existing test command.
-- `Fix this broken playwright.config.ts after a package move.` → repair
-  paths, base URL, scripts, and project config without re-scaffolding or
-  replacing existing specs.
-- `Add login reuse so tests do not log in through the UI every time.` →
-  add the runner's reusable auth mechanism with ignored `storageState`,
-  document how the state is refreshed, and keep the login UI only in the
-  tests where login itself is the claim. In Node this commonly means a
-  `setup` project; in other ecosystems use fixtures, helpers, or base
-  classes. Handled here because it changes harness shape even when specs
-  already exist.
-
-## Maintainer Notes
-
-For doc refreshes, trigger audits, and pressure-test scenarios, see
+For maintainer provenance and routing fixtures, use
 [references/coverage-and-validation.md](references/coverage-and-validation.md).
