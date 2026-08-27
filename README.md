@@ -106,6 +106,7 @@ The repository's published skills are grouped into these families.
 ### Skill Authoring And Documentation
 
 - `agent-skill-generator` — design, create, revise, audit, validate, or optimize reusable agent skills and portable `SKILL.md` packages across platforms
+- `fuse-skills` — fuse two or more bounded local, remote, or inline skill sources into one new or explicitly named existing package, with capability, trigger, resource, and source-action accounting
 - `agents-md-generator` — create, draft, audit, revise, or migrate root and nested repository `AGENTS.md` files from repo evidence
 - `documenter` — baseline documentation overlay for evidence-backed review,
   authoring, restructuring, and repo-truth-sensitive correction of durable
@@ -120,6 +121,11 @@ Defaults:
 - Start with `documenter` when documentation needs document-type judgment,
   repository-truth checks, restructuring, or example validation. Review-only
   requests return findings without editing files.
+- Use `fuse-skills` when two or more bounded sources must become one resulting
+  skill package. Use `agent-skill-generator` to create a skill from one problem
+  or workflow, or to revise, audit, validate, or optimize a package without
+  integrating another skill source. Ordinary composition and cross-skill cleanup
+  that retains separate packages are not fusion.
 - Use `agents-md-generator` as primary for root or nested repository `AGENTS.md` work.
 - Add `documenter-coauthoring` only when the user wants staged collaboration,
   such as outline approval or section-by-section iteration. Document length
@@ -239,7 +245,6 @@ Defaults:
 ### System Skills
 
 - `development-contract-system` — build a portable change-contract workflow with tracked feature records and lifecycle helpers
-- `fuse-skills` — combine multiple skills into one fused skill without duplicated guidance or lost capability
 - `setup-playwright` — set up or repair a repo-owned Playwright harness across Node, Python, .NET, or Java test stacks, explicitly persist repo-owned Playwright CLI tooling, or add Test Agent definitions to a compatible Node Playwright Test harness; covers dependencies, config, browsers, startup, auth, CI, and one harness smoke check
 
 Defaults:
