@@ -673,7 +673,7 @@ Instruction behavior after explicit selection:
 Expected `agent-skill-generator`:
 
 - `Design a reusable skill for triaging flaky integration tests, but do not edit files.`
-- `Create a reusable skill from this repeated debugging workflow.`
+- `Create a portable reusable skill from this repeated debugging workflow.`
 - `Review this reusable agent skill for portability and unclear triggers.`
 - `Audit this skill for trigger precision and token bloat.`
 - `Validate this skill against positive and negative prompts.`
@@ -697,13 +697,38 @@ routing policy determines the generic winner. In the exposed context,
 portability language should select `agent-skill-generator`, while a request for
 host-specific scaffolding or metadata should select the host-native creator.
 
-Expected `fuse-skills`:
+Expected `fuse-skills` (positive obvious and paraphrased):
 
 - `Fuse these two local UI skills into one deduplicated skill.`
+- `Fold these three inline skill drafts into the existing release-guidance skill.`
 - `Merge the Go skills from this named remote package into our local Go guidance.`
 
-Expected neither `agent-skill-generator` nor `fuse-skills` as primary:
+Expected not `fuse-skills` (adjacent collisions; generic creation or one-package
+updates still follow the host-native collision policy above):
 
+- `Improve this existing skill by adding a new workflow; no other skill is being folded into it.`
+  -> `agent-skill-generator` when portable authoring, validation, or optimization
+  is material; otherwise apply the active host's creator policy.
+- `Deduplicate repeated guidance across these four skills, but keep each as a separate package.`
+  -> `agent-skill-generator`; optimize the packages without integrating their
+  sources into one resulting skill.
+- `Create an orchestrator skill that keeps delegating to these three existing skills.`
+  -> generic one-package creation; apply the active host's creator policy.
+
+Fusion collision and composition cases:
+
+- `Fuse these two Codex skills into one package and preserve their supporting resources.`
+  -> `fuse-skills` is primary even when a host-native skill creator is exposed;
+  integrating multiple skill sources is the defining job.
+- `Merge the guidance from these two skills for this task, but leave both packages unchanged.`
+  -> ordinary runtime composition, not `fuse-skills`; no resulting package is
+  requested.
+
+Expected neither `agent-skill-generator` nor `fuse-skills` as primary (negative
+and composition cases):
+
+- `Which two existing skills should I load together for this task?` -> ordinary
+  runtime composition.
 - `Create an AGENTS.md for this repository.` -> use `agents-md-generator`.
 - `Package this finished skill for a specific host marketplace.` -> use that
   host's active packaging or plugin workflow.
