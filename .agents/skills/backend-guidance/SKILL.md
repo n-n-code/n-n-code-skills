@@ -30,8 +30,10 @@ Routing examples:
   this skill
 - new endpoint with authz, repository, transaction, retry, or observability
   changes -> use `backend-systems-guidance`
-- security audit of an endpoint or tenant boundary -> use `security` first,
-  then add the backend overlay only for implementation structure
+- security audit of an endpoint or tenant membership/authorization boundary ->
+  use `security` first; add `security-identity-access` when identity, session,
+  or tenant authorization is central, and add the backend overlay only for
+  implementation structure
 
 ## When to use
 

@@ -69,8 +69,12 @@ digraph route {
 - **service boundaries:** `backend-guidance` (baseline) or
   `backend-systems-guidance` (non-trivial boundaries, repositories, queues)
   for what to test at which seam
-- **security-sensitive tests:** `security` and, for auth/session/tenant work,
-  `security-identity-access`
+- **security-led test work:** add `security` only when exploit analysis, threat
+  modeling, or secure-default judgment is part of the job; add
+  `security-identity-access` with it for authentication, sessions, recovery,
+  federation or account linking, identity callbacks, invitations, or tenant
+  authorization. For routine testify implementation of an already-defined
+  security requirement, keep this skill primary.
 - **config and deterministic fixtures:** `project-config-and-tests` for
   config contracts, path helpers, and deterministic data
 - **documentation of testing conventions:** `documenter` for repo-level

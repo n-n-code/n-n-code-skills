@@ -71,6 +71,8 @@ Expected to trigger `go-testing-with-testify` plus another skill:
 - `Review these Go repository tests for real-boundary versus mock mistakes.` ->
   add `backend-systems-guidance`
 - `Security-review these Go auth tests built with testify.` -> add `security`
+  and `security-identity-access`; `security` leads, the identity companion adds
+  its boundary model, and this skill owns testify mechanics
 
 Expected not to trigger `go-testing-with-testify` as the primary skill:
 

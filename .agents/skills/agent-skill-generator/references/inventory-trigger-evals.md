@@ -56,7 +56,9 @@ Expected `backend-systems-guidance`:
 Expected neither as primary:
 
 - `Refactor this HTTP client helper used by a CLI.`
-- `Run a security audit of this tenant boundary.` -> use `security` first.
+- `Run a security audit of this tenant membership and authorization boundary.`
+  -> use `security` first and add `security-identity-access` for the
+  tenant-authorization model.
 
 Instruction behavior after explicit selection:
 
@@ -133,9 +135,10 @@ Collision and composition checks:
   repo that has no harness.` -> `playwright-testing` owns exploration;
   `setup-playwright` owns the new harness; return to `playwright-testing` for
   the authored spec.
-- `Security-review these existing Playwright tenant-boundary tests.` ->
-  `security` + `security-identity-access` lead the security work;
-  `playwright-testing` supplies browser-test mechanics.
+- `Security-review these existing Playwright tenant-authorization tests.` ->
+  `security` leads the security work; `security-identity-access` adds the
+  tenant-authorization model; `playwright-testing` supplies browser-test
+  mechanics.
 - `Add @playwright/cli as a reproducible developer tool, without adding tests.`
   -> `setup-playwright`; preserve the explicit repo-owned tool decision, but do
   not confuse it with the test runner or a production dependency; verify
@@ -775,20 +778,92 @@ Expected `development-contract-repo-overlay-template`:
 
 ## Security And Identity
 
-Expected `security`:
+Expected `security` (positive obvious and paraphrased):
 
 - `Security-review this upload parser for exploit paths.`
 - `Threat model this service boundary and rank concrete abuse paths.`
+- `Could an untrusted archive escape its extraction directory? Trace the
+  reachable path and state what would prove or disprove impact.`
+- `Harden this archive-import boundary against traversal while preserving valid
+  imports.` -> `security` leads the security judgment; matching implementation
+  guidance supplies language and framework mechanics.
 
 Expected `security` + `security-identity-access`:
 
 - `Security-review this password reset and session revocation flow.`
 - `Check this organization invitation flow for tenant-boundary bypasses.`
+- `Could a member use an invitation for one organization to read another
+  organization's data? Trace the server-side enforcement path.`
+- `Audit OAuth account linking, callback trust, and session rotation for account
+  takeover paths.`
+- `Threat model WebAuthn recovery, trusted devices, and backup codes.`
 
-Expected not `security` as primary:
+Expected `security` without `security-identity-access`:
 
-- `Add a routine login button style change.`
-- `Implement an ordinary endpoint in a repo that happens to contain auth code.`
+- `Audit this external image fetcher for SSRF and internal-network access.`
+- `Security-review this payment-webhook callback signature and replay handling.`
+- `Audit this shared cache for cross-tenant key collisions; no identity,
+  membership, session, or authorization decision is involved.`
+
+Expected neither security skill:
+
+- `Add a routine login button style change.` -> use UI guidance.
+- `Add a protected HTTP endpoint using the repo's existing authentication
+  middleware and authorization policy; no security review is requested.` ->
+  use matching implementation guidance plus `backend-systems-guidance`.
+- `Write testify table tests for this already-defined permission matrix.` -> use
+  `go-testing-with-testify`; do not add security merely because permissions are
+  involved.
+- `List password-reset test cases and oracles; do not assess exploitability.` ->
+  use `tester-mindset`.
+- `Discuss generic RBAC role names without tying them to a real identity,
+  session, or tenant boundary.` -> use the relevant design workflow.
+- `Add another OAuth provider using the repository's existing adapter and
+  callback policy; no security review or hardening is requested.` -> use
+  matching implementation guidance.
+
+Security collision and composition cases:
+
+- `Threat-model this protected endpoint, then implement the accepted fix.` ->
+  `security` owns the threat model and security judgment; matching language and
+  backend guidance own implementation structure.
+- `Security-review this testify authorization suite for cross-tenant bypasses.`
+  -> `security` leads; `security-identity-access` adds the tenant-authorization
+  model; `go-testing-with-testify` supplies testify mechanics.
+- `Review a tool-using agent prompt for indirect injection that bypasses
+  tenant-scoped tool authorization and exfiltrates another tenant's data.` ->
+  `security` leads the exploit and trust-boundary review; add
+  `security-identity-access` for tenant authorization and `prompt-engineering`
+  for prompt behavior.
+- `Red-team this migration plan; there is no exploit, identity, secret, or trust
+  boundary question.` -> use `recursive-thinking`, not either security skill.
+
+Security instruction behavior after explicit selection:
+
+- `Use security to review this parser, but do not edit files.` -> inspect the
+  reachable data and control flow, report evidence-backed findings, and do not
+  remediate or require findings to be fixed.
+- `Use security to threat-model this path, but deployment details are missing.`
+  -> bound the model, label assumptions and missing evidence, and do not turn
+  scenarios into confirmed vulnerabilities.
+- `Use security; no exploit path is confirmed.` -> distinguish needs-validation
+  items and coverage gaps from confirmed findings; do not claim the system is
+  secure.
+- `Use security; the framework normally protects this API.` -> verify the
+  resolved version, effective configuration, middleware order, and exact sink
+  context when the conclusion depends on that protection.
+- `Use security to fix the confirmed vulnerability.` -> enter secure
+  implementation only for the authorized scope, compose matching implementation
+  guidance, and validate both the closest abuse case and intended behavior.
+- `Use security-identity-access to review this recovery flow.` -> retain
+  `security` as primary, then apply the companion's identity state, transition,
+  and invalidation model.
+- `Use security-identity-access to review backup-code and TOTP storage.` ->
+  retain `security` as primary and do not give one interchangeable
+  hashing-or-encryption rule to materials with different verifier semantics.
+
+These cases are static routing and instruction-behavior predictions. They are
+not observed host-activation results.
 
 ## Thinking Workflows
 
