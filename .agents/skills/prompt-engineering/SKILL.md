@@ -70,8 +70,9 @@ the prompt's operating context.
   when those details affect the prompt.
 - Add a testing workflow when the main job is test strategy, evidence quality,
   grading design, or acceptance criteria rather than prompt wording.
-- Add a security workflow when prompt injection, hidden instruction leakage,
-  unsafe tool use, data exposure, or trust boundaries dominate the risk.
+- Use `security` first when prompt injection, hidden-instruction leakage,
+  unsafe tool use, data exposure, or trust boundaries dominate the risk;
+  retain this skill for prompt-behavior mechanics.
 - **Ownership rule with `context-engineering`:** picking *which* facts, files,
   or examples to load is `context-engineering`; deciding *how to word* the
   prompt, schema, or example is this skill. When work spans both, draft the

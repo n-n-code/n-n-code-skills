@@ -41,7 +41,8 @@ This repo uses a small role vocabulary to keep overlapping skills understandable
 - **Principle skill** — portable, unconditional engineering guidance for a language or discipline.
 - **Baseline overlay** — the thin default overlay for routine work in a domain.
 - **Canonical overlay** — the stronger overlay for the same domain when the task is more demanding; it should subsume the baseline's core expectations rather than drift into a separate job.
-- **Companion overlay** — a narrowly scoped overlay that adds an optional workflow on top of a baseline overlay without replacing it.
+- **Companion overlay** — a narrowly scoped overlay that extends a named base
+  skill without replacing its workflow or ownership.
 - **Project overlay** — cross-language guidance for a repository concern such as completion evidence, configuration, platform diagnosis, release maintenance, or vendored source boundaries.
 - **Template overlay** — a pattern for repo-local adaptation rather than the default skill to load directly in this repo.
 - **Process overlay** — workflow or enforcement guidance that composes with implementation skills.
@@ -209,8 +210,13 @@ Defaults:
 - `playwright-testing` — workflow for standalone `playwright-cli` investigation or for writing, debugging, reviewing, and hardening Playwright tests in an existing Node, Python, .NET, or Java harness
 - `prompt-engineering` — workflow for designing, rewriting, debugging, evaluating, and optimizing LLM prompts, system prompts, developer prompts, few-shot examples, structured outputs, tool-use prompts, and prompt eval cases
 - `recursive-thinking` — adversarial review workflow for pressure-testing an existing plan, diagnosis, design, argument, proposal, or recommendation without replacing domain-specific review
-- `security` — security guidance for threat modeling, secure defaults, and security-focused code review
-- `security-identity-access` — companion overlay for auth, session, identity recovery, and tenant-boundary work when paired with `security`
+- `security` — primary workflow for repo-grounded threat modeling,
+  exploit-focused review, and secure implementation when security properties
+  are the primary objective
+- `security-identity-access` — companion used with `security` when that
+  security work centers on authentication, sessions, recovery, federation,
+  invitations, identity-provider or recovery callback trust, or tenant
+  authorization
 - `story-clarifier` — workflow for drafting, synthesizing, rewriting, or splitting story-level requirements into sourced Story Cards or dependency-aware Split Story Sets, or auditing existing story inputs with a separate readiness report, without forcing fake user personas
 - `story-implementation-planner` — workflow for turning a ready active Story Card plus evidence-backed Repo Context into an executor-aware implementation plan with explicit blocker edges, validation seams, and risk-appropriate recovery
 - `story-repo-scout` — workflow for turning a searchable story or ticket into evidence-backed Repo Context, including applicable instructions and decisions, existing files, convention-backed proposed paths, validation prior art, bounded external primary evidence, and authoritative boundaries
@@ -228,8 +234,13 @@ or resumption. It is not a fourth sequential stage.
 Defaults:
 
 - Use `go-testing-with-testify` when the main artifact is testify-based Go test code, test review, or Go test flake diagnosis; start with `coding-guidance-go` for non-test Go implementation and add backend overlays only when the seam is actually a service boundary.
-- Start with `security` when the task is explicitly security-focused or the change is high-risk.
-- Add `security-identity-access` for auth, session, recovery, invitation, callback-origin, or tenant-boundary work.
+- Start with `security` when the user explicitly requests security work, or
+  when security properties are the primary concern in a high-risk change. Do
+  not add it merely because code contains APIs, auth, or secrets.
+- Add `security-identity-access` only alongside `security` when the security
+  task centers on authentication, sessions, recovery, federation, invitations,
+  identity-provider or recovery callback trust, or tenant authorization.
+  Routine login, signup, endpoint, or generic RBAC work does not select it.
 - Use `playwright-testing` for live `playwright-cli` investigation even when no repo harness exists, or when a working harness exists and the job is to design, generate, harden, debug, or review browser tests.
 - Use `prompt-engineering` when the main artifact is an LLM prompt, system or developer prompt, prompt eval set, structured-output instruction, or prompt-behavior diagnosis.
 - Use `context-engineering` when the main artifact is a context packet, context audit, long-session compaction, or handoff summary for AI-agent work.

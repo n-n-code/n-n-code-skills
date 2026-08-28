@@ -29,8 +29,10 @@ Routing examples:
   language -> use this skill
 - redesign a page, introduce a new visual direction, or perform a UX-heavy
   release review -> use `ui-design-guidance`
-- product-security or permission-sensitive UI flows -> add `security` when the
-  main risk is trust, identity, or authorization rather than presentation
+- product-security or permission-sensitive UI flows -> use `security` first
+  when the main risk is trust, identity, or authorization rather than
+  presentation; add `security-identity-access` when the security scope centers
+  on identity, sessions, recovery, or tenant authorization
 
 ## When to use
 

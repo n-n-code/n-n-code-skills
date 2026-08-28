@@ -52,8 +52,10 @@ Test harness rather than a generic sidecar.
   still the main unknown. It is optional for routine authored checks.
 - Add `ui-guidance` or `ui-design-guidance` when visual quality,
   accessibility, interaction, or responsive behavior is itself under review.
-- Add `security` and `security-identity-access` when the job is explicitly a
-  security review of auth, session, recovery, permission, or tenant boundaries.
+- Use `security` first when the job is explicitly a security review. Add
+  `security-identity-access` only when the scope centers on authentication,
+  sessions, recovery, federation or account linking, invitations, or tenant
+  authorization.
 
 ## Core Workflow
 

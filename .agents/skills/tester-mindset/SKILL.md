@@ -272,4 +272,5 @@ What passing still would not prove, and the next consequence to invite if needed
 - "Review these tests for slop." -> reject tautologies, no-production-call tests,
   truthiness-only assertions, mock-the-SUT patterns, and tests that cannot fail usefully.
 - "What tests should cover this password reset flow?" -> compose with
-  `security` when exploit paths and identity boundaries are the main risk.
+  `security` and `security-identity-access` when exploit paths and identity
+  boundaries are the main risk.

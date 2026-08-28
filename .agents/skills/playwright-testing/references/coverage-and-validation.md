@@ -121,7 +121,9 @@ Expected to trigger `playwright-testing`:
 
 Expected to trigger `playwright-testing` plus another skill:
 
-- `Security-review these Playwright auth tests.` -> add `security`
+- `Security-review these Playwright auth tests.` -> add `security` and
+  `security-identity-access`; `security` leads, the identity companion adds its
+  boundary model, and this skill owns browser-test mechanics
 - `Figure out edge cases before writing Playwright coverage for checkout.` ->
   add `tester-mindset`
 - `Validate the visible accessibility regressions on this page with Playwright.` ->
