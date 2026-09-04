@@ -278,12 +278,13 @@ harness these skills optimize for.
 
 ## Browser Install And Update Hygiene
 
-Keep the package version and browser binaries aligned.
+Keep the package version and browser binaries aligned. Select any package
+upgrade explicitly under the repo's version and lockfile policy; a browser
+repair is not permission to install the latest runner. Inspect the existing
+local version before the narrow browser install:
 
 ```bash
-npm install -D @playwright/test@latest
-npx playwright install
-npx playwright --version
+npx --no-install playwright --version
 ```
 
 Install only the browsers you actually need when the suite scope is narrower:

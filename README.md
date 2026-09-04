@@ -9,11 +9,14 @@ This repository keeps reusable agent skills in a simple folder-based layout unde
 The published repository is intentionally small at the root:
 
 - `README.md` and `AGENTS.md` document the repo and its working rules
+- `.gitattributes` keeps shell scripts and examples on LF line endings
 - `.agents/skills/` contains the published skills
 - `scripts/check_skills.py` runs cross-platform validation for skill structure,
   inventory, links, and stable routing contracts
 - `scripts/check-skills.sh` is the Bash wrapper for the same validator
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
+- `scripts/test_skill_resources.py` tests the release scaffold and optionally
+  checks real CTest behavior and metadata against PyYAML
 - `LICENSE` covers the repository contents
 
 ## Repository Layout
@@ -30,9 +33,28 @@ scripts/
   check_skills.py       # cross-platform skill and repository-contract validator
   check-skills.sh       # Bash wrapper
   test_check_skills.py  # validator regression tests
+  test_skill_resources.py # resource checks and optional independent runtimes
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
+
+The portable core uses `name` followed by `description` in frontmatter and a
+non-empty instruction body. Names are 1–64 lowercase ASCII letters/digits with
+single interior hyphens and must match their folders. Descriptions are 1–1024
+characters. This repo deliberately supports single-line strings: plain text,
+YAML single quotes, or JSON-style double quotes. Quote scalar-like text or
+literal `: ` and ` #` sequences; collections, tags, anchors, inline comments,
+and multiline YAML are outside this local authoring contract. Host-specific
+metadata remains separate and is added only for a demonstrated target need.
+
+Literal metadata source must use the
+[YAML printable character range](https://yaml.org/spec/1.2.2/#51-character-set),
+including inside quotes. Tabs are permitted within quoted scalar text, while a colon followed
+by a space or tab requires quoting. Quoted escape sequences remain supported.
+
+Portable means a host-neutral semantic core, not verified installation in every
+agent. Preserve supported language and dependency versions; use current primary
+documentation for material version-dependent behavior.
 
 ## Skill Roles
 
@@ -287,7 +309,8 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 
 ## Editing Guidelines
 
-- Keep skill descriptions concise and operational.
+- Keep skill descriptions concise and operational, with the job and decisive
+  trigger terms first.
 - Prefer repository-grounded instructions over generic advice.
 - Keep the skill taxonomy honest: thinking skills change reasoning mode, overlays add domain or process rules, and generator/system skills should say when they produce repo-local overlays.
 - Use the role vocabulary consistently: baseline, canonical, template, process, and system should mean the same thing everywhere in the repo.
@@ -296,6 +319,15 @@ Published skills live under `.agents/skills/`, and every published skill folder 
   specialized variants sharply scoped.
 - Preserve stable folder names once a skill is published or referenced elsewhere.
 - Avoid adding tooling, build, or install steps unless the repository actually needs them.
+- Justify substantive revisions with a defect, ambiguous decision, unsupported
+  claim, unnecessary obligation, or useful gap. Preserve intended outputs and
+  safeguards; explain meaningful relocations and removals. Correct skills may
+  remain unchanged after review.
+- Keep essential rules available to independently usable skills. Remove redundant
+  explanation without introducing undeclared cross-package dependencies.
+- Preserve regression cases before changing behavior. Compare the same inputs
+  afterward and explain any corrected expectation. Keep static predictions,
+  observed host behavior, and executed resource checks distinct.
 
 ## Validation
 
@@ -315,6 +347,21 @@ run the focused validator tests:
 python scripts/test_check_skills.py
 ```
 
+When the metadata parser, executable skill resources, or their tests change, run:
+
+```console
+python scripts/test_skill_resources.py
+```
+
+The resource tests use disposable fixtures and discover Bash from PATH or a
+standard Git for Windows installation. Set `SKILL_TEST_BASH` for another Bash
+executable; on Windows these tests use Git Bash/Cygwin path conversion, not WSL.
+Real CMake/CTest 3.20+ and PyYAML comparisons run when available, with explicit
+skips otherwise. `SKILL_TEST_CMAKE` and `SKILL_TEST_CTEST` can identify installed
+executables outside PATH. The command does not install dependencies or run a
+production build; stubbed process checks and real-tool evidence are reported
+separately.
+
 When `scripts/check-skills.sh` changes, run its wrapper on a Bash-capable
 system:
 
@@ -326,7 +373,8 @@ The validator checks structure, inventory, links, likely skill references, and
 selected stable repository contracts:
 
 - every directory under `.agents/skills/` contains a `SKILL.md` with valid
-  frontmatter and a matching declared name
+  string frontmatter, supported names and lengths, a matching declared name,
+  and non-empty instructions
 - relative Markdown links point to existing local targets
 - likely skill-name references in Markdown point to published local skills
 

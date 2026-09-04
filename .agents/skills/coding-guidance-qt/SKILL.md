@@ -71,11 +71,10 @@ no single failure mode dominates yet.
 4. Implement with one clear application bootstrap, small widget responsibilities,
    modern typed `connect` usage, minimal GUI-thread work, and narrow seams
    between widgets and domain logic.
-5. Add or update deterministic tests close to the changed behavior. Default:
-   Qt Test for widget, signal-slot, and model behavior; GoogleTest for pure
-   non-Qt domain logic. Do not mix both in the same seam without a reason. If
-   the repo already uses Qt Test, use `QSignalSpy`-style assertions for signal
-   contracts.
+5. Add meaningful deterministic checks for the changed behavior using the repo's
+   existing test framework. Qt Test and `QSignalSpy` fit Qt signal and model
+   contracts; preserve the existing framework for plain C++ logic. Do not add
+   or migrate a framework merely to follow a portable preference.
 6. Run the narrowest relevant formatter, build, test, and affected-platform
    smoke path the repo supports. If the change touches Qt5/Qt6 compatibility,
    validate each supported build variant.
@@ -155,12 +154,16 @@ remediation.
 - Prefer Qt containers, strings, and utilities where the repo already uses
   them; do not introduce needless conversions at every boundary
 - Follow the repo's Qt version and idioms before introducing newer Qt APIs
-- Keep compiler, clazy, and Qt-specific warnings at zero in repo-owned code
+- Introduce no new compiler, clazy, or Qt-specific warnings; keep existing debt
+  outside the change separate from regressions
 
 ### Ownership, eventing, and threads
 
 - Parent a QObject only when the parent truly owns it for the same lifetime.
-  Avoid parented stack objects and mixed manual-plus-parent ownership.
+  A stack child is valid when its lifetime ends before its parent, as when the
+  parent is constructed first in the same scope. Reject destruction orders
+  that let a parent delete a still-live stack child. Do not add a second owning
+  smart pointer to an object already owned by a QObject parent.
 - Use `QPointer` or a clearer ownership seam when a non-owning QObject reference
   can be invalidated by queued work or callbacks.
 - Tie lambda connections to a context object unless every capture demonstrably

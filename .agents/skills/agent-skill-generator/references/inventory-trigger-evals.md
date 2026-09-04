@@ -84,7 +84,7 @@ Expected `ui-design-guidance`:
 Expected neither as primary:
 
 - `Change a backend API response with no UI surface.`
-- `Fix a terminal ncurses screen unless the repo treats it as product UI.`
+- `Fix a terminal ncurses screen.`
 
 Instruction behavior after explicit selection:
 
@@ -207,7 +207,19 @@ Expected `go-testing-with-testify`:
 
 - `Write testify table-driven tests for this Go parser.`
 - `Review this testify mock setup and fix weak assertions.`
-- `Debug this flaky Go test that fails with -race.`
+- `Debug this flaky testify test that fails with -race.`
+
+Expected `coding-guidance-go`:
+
+- `Fix this standard-library Go test without adding testify.`
+
+Instruction behavior after explicit selection:
+
+- `Review this testify validator test; its contract promises only error presence.
+  Do not edit files.` -> accept a sufficient error-presence oracle and report
+  findings without remediation.
+- `Change one assertion in a deterministic testify test.` -> run the targeted
+  test; do not require repeated race runs without a corresponding risk.
 
 Expected `tester-mindset` first:
 
@@ -760,6 +772,19 @@ Expected not `context-engineering` as primary:
 - `Add OpenAI Agents SDK session memory to this Python service.` -> use implementation and OpenAI docs guidance first.
 
 ## Development Contract
+
+Instruction behavior after explicit selection:
+
+- `Review this contract policy and record coverage; do not modify files.` ->
+  `development-contract-process` assesses obligations without creating records
+  or repairing policy; safe checks and their limits remain explicit.
+- `Draft a thin overlay for this existing contract system in chat.` ->
+  `development-contract-repo-overlay-template` returns only the draft and its
+  concrete bindings; no product implementation or record creation follows.
+- `Build the contract system for a repo whose agents do not have the portable
+  process skill.` -> `development-contract-system` leaves usable repo docs and
+  a self-sufficient thin overlay if needed; synthetic fixtures do not count as
+  live completed work or satisfy changed-path coverage.
 
 Expected `development-contract-system`:
 

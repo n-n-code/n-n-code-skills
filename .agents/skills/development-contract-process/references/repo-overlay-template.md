@@ -12,16 +12,22 @@ Use this as the shape of the repo-local overlay that sits on top of `development
 
 ## Recommended structure
 
-- Start by telling the agent to read the repo policy file, then apply `development-contract-process`.
+- Start by naming the repo policy file. Apply `development-contract-process`
+  when the target host has it; otherwise include a concise operator flow so the
+  overlay does not depend on an unavailable skill.
 - Keep repo-specific instructions thin and operational.
 - Treat the policy file as the source of truth for contract mechanics.
 - Prefer changing policy data first, then docs, instead of duplicating literals in several places.
 
 ## Example overlay flow
 
+These are implementation steps. Reviews inspect and report their satisfaction;
+they do not create records or repair the repository. Existing implementation
+authorization covers routine record maintenance within scope.
+
 1. Read the touched files.
 2. Read the repo policy file.
-3. Apply `development-contract-process`.
+3. Apply the available process skill or the overlay's concise operator flow.
 4. If the change is substantive under policy, update a non-template record in the repo's plan directory.
 5. Use the lifecycle helper when changing record state.
 6. Run the smallest proving validation profile and then the checker command.

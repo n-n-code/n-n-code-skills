@@ -68,10 +68,15 @@ boundaries, or transport error mapping.
 
 ## Timers
 
-- Stop tickers and timers when the owner is done.
+- Stop tickers and timers when the lifecycle requires cancellation. Under Go
+  1.23+ timer semantics, unreferenced timers/tickers can be collected without
+  `Stop`; do not prescribe it solely to prevent the older retention behavior.
 - Prefer context deadlines for request-scoped timeouts; use timers when the
   timer is local control flow rather than caller-owned cancellation.
-- Be explicit about drain behavior when reusing timers in loops.
+- Check the effective timer semantics before resetting or draining. Go 1.23+
+  synchronous timer channels prevent stale values after `Stop`/`Reset`; do not
+  blindly apply a blocking drain intended for older semantics. Check the
+  [time package contract](https://pkg.go.dev/time#NewTimer) for the target runtime.
 
 ## Service Boundaries
 
@@ -94,8 +99,9 @@ boundaries, or transport error mapping.
   repo convention, prefer `log/slog`.
 - Use static log messages with structured key-value attributes. Dynamic data
   belongs in fields, not in `fmt.Sprintf` message strings.
-- Use consistent low-cardinality field names such as `request_id`, `user_id`,
-  `operation`, `attempt`, `duration`, and `err`.
+- Use consistent field names such as `request_id`, `operation`, `attempt`,
+  `duration`, and `err`. Request/user identifiers have high-cardinality values;
+  do not copy them into metric labels intended to have bounded cardinality.
 - Include an `"err"` attribute on error logs. Log or return an error once; do
   not log and re-return the same error at every layer.
 - Never log secrets, credentials, tokens, full request or response bodies, PII,

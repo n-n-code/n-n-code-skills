@@ -5,8 +5,9 @@ checklist beyond the critical defaults in `SKILL.md`.
 
 ## Construction, ownership, and lifetime
 
-- Treat raw pointers and references as non-owning; never transfer ownership by
-  raw pointer or reference.
+- Treat raw pointers and references as non-owning by default. Preserve explicit
+  ownership-transfer contracts at C or legacy boundaries, pair allocation with
+  the correct release operation, and adopt owning results into RAII wrappers.
 - Avoid `new` and `delete`; bind resource lifetime to object lifetime with RAII.
 - Prefer `std::unique_ptr` by default; use `std::shared_ptr` only for real shared
   lifetime and `std::weak_ptr` to break cycles.

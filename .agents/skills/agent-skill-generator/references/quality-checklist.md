@@ -8,6 +8,8 @@ Use this after the skill works. Preserve behavior while improving trigger qualit
 - Are users, target platforms, inputs, outputs, and success criteria clear?
 - Are non-goals and adjacent skills distinguishable before the body loads?
 - Are temporary authoring decisions kept out of runtime instructions?
+- Does each substantive revision address an evidenced problem or useful gap?
+  Are intended outputs and safeguards preserved, and relocations or losses explicit?
 
 ## Trigger quality
 
@@ -24,6 +26,8 @@ Use this after the skill works. Preserve behavior while improving trigger qualit
 - Does the skill inspect local context before asking discoverable questions?
 - Are defaults, decision points, side-effect boundaries, and completion criteria explicit?
 - Does the skill avoid forcing read-only modes through mutating steps?
+- Does it reuse existing authorization instead of demanding repeated approval
+  for the same action, while keeping consequential side effects scoped?
 
 ## Packaging and portability
 
@@ -32,6 +36,7 @@ Use this after the skill works. Preserve behavior while improving trigger qualit
 - Are named target hosts, minimum package contract, required adapters, and host-specific evidence explicit?
 - Are repo-bound or host-enhanced assumptions named and isolated?
 - Does each bundled file directly support runtime behavior?
+- Does removing repetition preserve independent use and declared dependencies?
 - Are references linked from `SKILL.md` with clear read conditions?
 - Are scripts reserved for deterministic, fragile, or repeated execution?
 - Are assets output resources rather than documentation in disguise?
@@ -52,6 +57,8 @@ Use this after the skill works. Preserve behavior while improving trigger qualit
 - Were obvious, paraphrased, adjacent-negative, and collision requests considered as applicable?
 - Are surface, method, context, and comparison recorded independently?
 - Does each case preserve the exact request or fixture needed to reproduce it?
+- Were baseline cases fixed before the revision, with changed expectations
+  explained rather than silently adjusted to make the result pass?
 - Are failures classified and residual risk stated?
 
 ## Context cost

@@ -145,8 +145,9 @@ remediation.
   imports changed.
 - Handle every error deliberately. Do not discard errors with `_` unless the
   call cannot fail meaningfully or a comment explains why it is safe to ignore.
-- Return the `error` interface from exported functions, not concrete error
-  pointer types that can become non-nil interfaces.
+- Return `error` for an operation's failure result and avoid typed-nil errors.
+  A constructor whose purpose is to create an error value may return a concrete
+  type; distinguish that API from an operation reporting success or failure.
 - Wrap errors with context callers do not already have. Preserve
   machine-checkable causes with `%w` when callers should use `errors.Is` or
   `errors.As`; avoid leaking internals across process, API, or trust
@@ -156,9 +157,9 @@ remediation.
   parameters.
 - Always call cancel functions returned by `context.WithCancel`,
   `WithTimeout`, or `WithDeadline` when the current scope owns them.
-- Close response bodies, files, rows, tickers, timers, and other resources on
-  every path. Check close errors when the close operation can affect persisted
-  data.
+- Close response bodies, files, and rows on every owned path; stop timers and
+  tickers when cancellation or shutdown requires it. Follow the target Go
+  version's timer semantics. Check close errors that can affect persisted data.
 - Do not launch goroutines without a clear owner, cancellation path, error
   propagation path, and testable shutdown behavior.
 - Protect shared mutable state with a clear synchronization rule. Do not copy

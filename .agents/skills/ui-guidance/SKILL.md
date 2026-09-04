@@ -41,9 +41,9 @@ embedded panels, or rendering layers.
 
 ## Not for
 
-Terminal UIs (ncurses, TUI frameworks) unless the repo explicitly treats them as
-UI with design standards. Pure data visualization or plotting libraries are also
-out of scope.
+Terminal UIs belong to their framework's guidance, including
+`coding-guidance-go-tui` for Bubble Tea. Pure data visualization or plotting
+without product-interface work is also out of scope.
 
 ## Rules
 

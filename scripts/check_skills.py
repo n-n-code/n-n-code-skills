@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate the repository skill inventory and documentation contracts."""
 
+import json
 import re
 import subprocess
 import sys
@@ -10,9 +11,11 @@ from pathlib import Path
 from typing import List, Optional, Sequence, Set, Tuple, Union
 
 REQUIRED_REPO_FILES = (
+    ".gitattributes",
     "scripts/check_skills.py",
     "scripts/check-skills.sh",
     "scripts/test_check_skills.py",
+    "scripts/test_skill_resources.py",
 )
 ROOT_INVENTORY_TOKENS = {
     ".agents": ".agents/skills/",
@@ -24,6 +27,11 @@ ROOT_INVENTORY_TOKENS = {
 IGNORED_TOP_LEVEL_ENTRIES = {".git", ".pytest_cache", "__pycache__"}
 # Command names intentionally used in routing prose, not published skill names.
 NON_SKILL_ROUTING_TERMS = {"playwright-cli", "state-save"}
+# Keep literal metadata source printable; escaped characters in quoted scalars
+# are handled by their string decoder. This is an authoring subset, not YAML.
+NON_PRINTABLE_SOURCE = re.compile(
+    r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x84\x86-\x9f\ud800-\udfff\ufffe\uffff]"
+)
 SKILL_REF_PATTERN = re.compile(r"^[a-z][a-z0-9]+(?:-[a-z0-9]+)+$")
 MARKDOWN_CANDIDATE_PATTERN = re.compile(
     r"\x60([^\x60\n]+)\x60|\*\*([^*\n]+)\*\*"
@@ -72,6 +80,50 @@ class ValidationResult:
     skill_count: int
 
 
+def parse_frontmatter_value(value: str) -> str:
+    """Read the repo's single-line string subset, not arbitrary YAML."""
+    if NON_PRINTABLE_SOURCE.search(value):
+        raise ValueError("value contains a raw non-printable character; use a quoted escape")
+    value = value.strip()
+    if not value:
+        raise ValueError("value must not be empty")
+    if value.startswith("'"):
+        if not re.fullmatch(r"'(?:[^']|'')*'", value):
+            raise ValueError("value has an unterminated quote or invalid single quote")
+        decoded = value[1:-1].replace("''", "'")
+    elif value.startswith('"'):
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError as exc:
+            raise ValueError("value must use valid JSON-style double quotes") from exc
+    else:
+        if re.search(r":[ \t]", value):
+            raise ValueError("value containing ': ' must be quoted (including colon-tab separators)")
+        if re.search(r"\s+#", value):
+            raise ValueError("value containing an inline '#' comment must be quoted")
+        non_string = (
+            value[0] in "[]{}&*!|>@`%#"
+            or re.match(r"^[-?:](?:\s|$)", value)
+            or value.lower() in {"true", "false", "yes", "no", "on", "off", "null", "~"}
+            or re.fullmatch(r"[+-]?(?:[0-9][0-9_]*(?:\.[0-9_]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", value)
+            or re.fullmatch(r"[+-]?0[xob][0-9a-fA-F_]+", value)
+            or re.fullmatch(r"[+-]?[0-9][0-9_]*(?::[0-5]?[0-9])+(?:\.[0-9_]*)?", value)
+            or value.lower().lstrip("+-") in {".inf", ".nan"}
+            or re.fullmatch(
+                r"\d{4}-\d{1,2}-\d{1,2}"
+                r"(?:[Tt \t]+\d{1,2}:\d{2}:\d{2}(?:\.\d*)?"
+                r"(?:[ \t]*(?:[Zz]|[+-]\d{1,2}(?::\d{2})?))?)?",
+                value,
+            )
+        )
+        if non_string:
+            raise ValueError("value must be a single-line string; quote scalar-like text")
+        decoded = value
+    if not decoded.strip():
+        raise ValueError("value must not be empty")
+    return decoded
+
+
 def check_frontmatter_lines(
     skill_file: Union[Path, str],
     frontmatter_lines: Sequence[str],
@@ -82,6 +134,9 @@ def check_frontmatter_lines(
     keys: List[str] = []
 
     for line_no, line in enumerate(frontmatter_lines, start_line):
+        if NON_PRINTABLE_SOURCE.search(line):
+            errors.append(f"{skill_file}:{line_no}: raw non-printable frontmatter character")
+            continue
         if not line.strip():
             continue
 
@@ -99,25 +154,23 @@ def check_frontmatter_lines(
         if key not in {"name", "description"}:
             continue
 
-        value = value.strip()
-        quoted = (
-            len(value) >= 2
-            and value[0] == value[-1]
-            and value[0] in {"'", '"'}
-        )
-        if not value:
+        try:
+            value = parse_frontmatter_value(value)
+        except ValueError as exc:
             errors.append(
-                f"{skill_file}:{line_no}: frontmatter {key} value must not be empty"
+                f"{skill_file}:{line_no}: frontmatter {key} {exc}"
             )
-        if ": " in value and not quoted:
+            continue
+        if key == "name" and (
+            len(value) > 64 or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", value)
+        ):
             errors.append(
-                f"{skill_file}:{line_no}: frontmatter {key} value containing "
-                "': ' must be quoted"
+                f"{skill_file}:{line_no}: name must be 1-64 lowercase ASCII "
+                "letters/digits with single interior hyphens"
             )
-        if value[:1] in {"'", '"'} and not quoted:
+        if key == "description" and len(value) > 1024:
             errors.append(
-                f"{skill_file}:{line_no}: frontmatter {key} value has an "
-                "unterminated quote"
+                f"{skill_file}:{line_no}: description must be 1-1024 characters"
             )
 
     if keys != ["name", "description"]:
@@ -161,7 +214,9 @@ def check_skill_packages(
             continue
 
         try:
-            lines = skill_file.read_text(encoding="utf-8").splitlines()
+            # read_text normalizes CRLF/CR; split only LF so invalid controls
+            # such as vertical tab are not silently consumed as line breaks.
+            lines = skill_file.read_text(encoding="utf-8").split("\n")
         except (OSError, UnicodeError) as exc:
             errors.append(f"{skill_file}: could not read UTF-8 text: {exc}")
             continue
@@ -183,12 +238,17 @@ def check_skill_packages(
             (line for line in lines[1:end] if line.startswith("name:")),
             "",
         )
-        declared_name = name_line.split(":", 1)[1].strip() if ":" in name_line else ""
-        if declared_name != skill_dir.name:
+        try:
+            declared_name = parse_frontmatter_value(name_line.split(":", 1)[1])
+        except (ValueError, IndexError):
+            declared_name = None  # The frontmatter check reports the malformed value.
+        if declared_name is not None and declared_name != skill_dir.name:
             errors.append(
                 f"{skill_file}: frontmatter name {declared_name!r} does not "
                 f"match folder {skill_dir.name!r}"
             )
+        if not "\n".join(lines[end + 1:]).strip():
+            errors.append(f"{skill_file}: missing skill instructions after frontmatter")
 
     return skill_dirs, skill_names, errors
 

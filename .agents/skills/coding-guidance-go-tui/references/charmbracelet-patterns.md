@@ -42,7 +42,7 @@ repo.
   upgrade.
 - In Lip Gloss v2, colors use `image/color.Color`; `AdaptiveColor` is replaced
   by `LightDark` or a compatibility package. Preserve v1 color APIs in v1 code.
-- Charm v2 APIs still move across minor and release-candidate versions. When an
+- Charm APIs differ across versions. When an
   example fails, APIs look mixed, or memory conflicts with the repo, verify the
   local module first with `go list -m`, `go doc`, and compile feedback; use
   `pkg.go.dev` as external confirmation, not as a reason to rewrite a stable

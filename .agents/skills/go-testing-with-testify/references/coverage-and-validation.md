@@ -17,6 +17,14 @@ Maintainer-only audit reference for future doc refreshes and trigger checks.
   `pkg.go.dev/github.com/stretchr/testify/suite`
 - Go standard testing behavior:
   `pkg.go.dev/testing`
+- Go virtual-time concurrency testing:
+  [testing/synctest](https://pkg.go.dev/testing/synctest) and the
+  [Go 1.25 introduction](https://go.dev/blog/testing-time)
+
+The 2026-09-04 revision corrects test-goroutine assertions, cleanup, narrow
+oracles, and proportional flake checks. Primary-source review and repository
+checks do not establish compiled execution of the illustrative Go examples or
+observed skill activation. Record those separately when performed.
 
 ### Where that guidance currently lands
 
@@ -60,7 +68,7 @@ Expected to trigger `go-testing-with-testify`:
 
 - `Write tests for this Go service method using testify.`
 - `Review these *_test.go changes for weak testify assertions.`
-- `Fix this flaky Go test that only fails under -race.`
+- `Fix this flaky testify test that only fails under -race.`
 - `Should this Go test use a fake or testify/mock?`
 - `Convert these Go tests to table-driven subtests with assert/require.`
 
@@ -80,8 +88,9 @@ Expected not to trigger `go-testing-with-testify` as the primary skill:
   work, not this skill's main job
 - `Write Ginkgo tests for this package.` -> different test stack
 - `Explain this production Go code with no tests involved.` -> use
-  `backend-guidance`, `backend-systems-guidance`, or another repo
-  implementation skill instead
+  `coding-guidance-go`; compose a backend overlay only for a backend boundary
+- `Fix a standard-library Go test with no testify dependency.` -> use
+  `coding-guidance-go`; do not introduce testify just to select this skill
 
 Boundary check:
 

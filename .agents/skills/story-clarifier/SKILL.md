@@ -41,7 +41,9 @@ planning.
 4. Resolve contradictions and replace vague language with observable behavior.
    Label only safe, reversible inferences as assumptions. Classify every
    material unknown using the format below.
-5. For modes other than **Synthesize**, build the question frontier from sharp
+5. In **Audit**, report questions as findings rather than starting an interview
+   unless the user requested one. For other modes except **Synthesize**, build
+   the question frontier from sharp
    decisions whose prerequisites are settled. Ask at most three independent
    frontier questions per batch, do not ask a downstream question alongside
    its unresolved prerequisite, and recompute the frontier after each answer.

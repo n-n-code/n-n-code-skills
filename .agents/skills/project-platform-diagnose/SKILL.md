@@ -28,8 +28,11 @@ isolated.
 
 ## Diagnostic Workflow
 
-1. Reproduce the exact command and capture its exit status and relevant output.
-   Separate build or install failures from startup and runtime failures.
+1. Inspect the failing command's side effects before rerunning it. Reproduce it
+   within existing authority, using an isolated or check-only variant when
+   needed, and capture exit status and relevant output. A failed install,
+   migration, or deployment is not automatically safe to repeat. Separate build
+   or install failures from startup and runtime failures.
 2. Record only relevant non-secret facts: OS, architecture, runtime and tool
    versions, shell or terminal mode, local versus CI or container, filesystem
    and permission assumptions, and required services. Never dump the full
@@ -44,7 +47,8 @@ isolated.
    platform, config defect, and app regression before recommending a fix.
 6. Report whether the issue reproduced, the discriminating evidence, remaining
    unknowns, and the next smallest probe. Implement a code, config, setup, or
-   release fix only when requested and with the matching skill.
+   release fix when the request includes repair, using the matching skill and
+   existing authorization; otherwise report the diagnosis.
 
 Do not make permanent machine changes, install system dependencies, or start
 external services or GUI applications merely to test a hypothesis without the

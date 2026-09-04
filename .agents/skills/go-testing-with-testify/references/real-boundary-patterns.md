@@ -10,7 +10,8 @@ instead.
 - package calling HTTP -> `httptest.NewServer`
 - repository or SQL code -> the lightest real DB harness the repo already trusts
 - filesystem code -> `t.TempDir()`
-- time-sensitive code -> inject a clock or timestamp, do not sleep
+- time-sensitive code -> inject time or use compatible `testing/synctest`
+  behavior on Go 1.25+; avoid wall-clock sleeps as readiness guesses
 - async completion -> wait on a channel, `WaitGroup`, or context signal before
   falling back to `Eventually`
 
@@ -26,18 +27,30 @@ cheapest honest boundary.
 
 ```go
 func TestFetchUser(t *testing.T) {
+    type requestInfo struct { method, path string }
+    requests := make(chan requestInfo, 1)
     srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        require.Equal(t, http.MethodGet, r.Method)
-        require.Equal(t, "/users/u1", r.URL.Path)
+        select {
+        case requests <- requestInfo{r.Method, r.URL.Path}:
+        default:
+        }
         w.Header().Set("Content-Type", "application/json")
         _, _ = io.WriteString(w, `{"id":"u1","name":"alice"}`)
     }))
     t.Cleanup(srv.Close)
 
     client := NewClient(srv.URL, srv.Client())
-
-    got, err := client.FetchUser(context.Background(), "u1")
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    t.Cleanup(cancel)
+    got, err := client.FetchUser(ctx, "u1")
     require.NoError(t, err)
+    select {
+    case request := <-requests:
+        assert.Equal(t, http.MethodGet, request.method)
+        assert.Equal(t, "/users/u1", request.path)
+    case <-ctx.Done():
+        t.Fatal("client returned without an observed request")
+    }
     assert.Equal(t, "u1", got.ID)
     assert.Equal(t, "alice", got.Name)
 }
@@ -121,7 +134,10 @@ func TestIssueTokenUsesInjectedTime(t *testing.T) {
 ```
 
 If the code only becomes testable after injecting a clock or timestamp, that is
-design feedback, not a reason to add `time.Sleep`.
+design feedback. Make a production seam change only within authorized scope.
+For Go 1.25+ in-process concurrent code, `testing/synctest` offers virtual time
+and quiescence without replacing every time call. Check its supported blocking
+operations; real network I/O is not made deterministic by entering a bubble.
 
 ## Async Boundaries
 
@@ -129,14 +145,32 @@ Prefer explicit completion signals over polling:
 
 ```go
 func TestWorkerPublishesEvent(t *testing.T) {
-    done := make(chan struct{})
-    sink := newFakeSink(func(Event) { close(done) })
+    published := make(chan struct{}, 1)
+    sink := newFakeSink(func(Event) {
+        select {
+        case published <- struct{}{}:
+        default:
+        }
+    })
 
     worker := NewWorker(sink)
-    go worker.Run(context.Background())
+    ctx, cancel := context.WithCancel(context.Background())
+    exited := make(chan struct{})
+    go func() {
+        defer close(exited)
+        worker.Run(ctx) // This illustrative worker must return on cancellation.
+    }()
+    t.Cleanup(func() {
+        cancel()
+        select {
+        case <-exited:
+        case <-time.After(2 * time.Second):
+            t.Error("worker did not stop after cancellation")
+        }
+    })
 
     select {
-    case <-done:
+    case <-published:
     case <-time.After(2 * time.Second):
         t.Fatal("worker did not publish within timeout")
     }

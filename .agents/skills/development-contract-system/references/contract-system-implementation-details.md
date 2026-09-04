@@ -92,7 +92,7 @@ Create a repo-owned checker script, typically
 
 The checker should:
 
-- load the policy file
+- read the policy file; document trusted-code execution if shell policy is sourced
 - detect changed files from an explicit env var override, a git diff range when
   available, or local modified/untracked files otherwise
 - decide whether a substantive repo-owned change occurred
@@ -108,13 +108,18 @@ The checker should:
 - validate that the parent lifecycle directory matches the `Lifecycle` state
 - require `Superseded by` when the state is `superseded`
 
+Handle changed-path input without whitespace splitting, including renamed and
+deleted files. A record update must cover the actual substantive change; an
+unrelated record or synthetic example cannot satisfy coverage. Validate the
+replacement target of a superseded record and reject broken or cyclic links.
+
 Prefer a lightweight shell checker with `awk` if the repo already uses shell for
 workflow enforcement. If the repo is strongly standardized on another scripting
 language, it is acceptable to implement the checker in that language instead.
 
 ## Lifecycle examples
 
-Seed the system with at least one valid example record in each lifecycle folder:
+Keep clearly labeled, valid test fixtures for each lifecycle state:
 
 - one `planned`
 - one `active`
@@ -123,10 +128,10 @@ Seed the system with at least one valid example record in each lifecycle folder:
 
 The `superseded` example must point to a real replacement record.
 
-These examples make the workflow browseable immediately and help humans
-understand the intended shape without reading the template first. If the repo
-already has real records ready to migrate, real records are better than
-synthetic examples.
+Keep synthetic examples outside the live record inventory and exclude them from
+changed-path coverage. Demonstrate the workflow in docs or fixtures without
+claiming that invented work was performed or independently verified. Migrate
+real records when available, preserving their actual status and evidence.
 
 ## Lifecycle helper
 
@@ -145,6 +150,12 @@ It should:
 - update the `Lifecycle` `State`
 - update `Superseded by`
 - move the file into the correct lifecycle directory
+
+Resolve source and destination under the configured record tree, including
+symlink behavior. Reject collisions and unsafe paths before mutation. Stage the
+updated content and transition so a failure cannot silently lose the original
+or leave folder/state disagreement; restore only helper-owned changes. Validate
+the replacement record before superseding and preserve unrelated edits.
 
 Good default transition usage:
 
@@ -171,6 +182,8 @@ Checker tests should cover:
 - mismatched lifecycle folder and `State` fails
 - substantive change without record update fails
 - policy override with a different plan directory still works
+- renamed/deleted paths and filenames containing spaces are handled correctly
+- an unrelated record or example fixture cannot satisfy changed-path coverage
 
 Lifecycle helper tests should cover:
 
@@ -179,6 +192,9 @@ Lifecycle helper tests should cover:
 - moving `active -> superseded` with replacement
 - rejecting `superseded` without replacement
 - checker still passes after helper-driven transitions
+- destination collision and paths outside the record tree leave inputs intact
+- write/move failure preserves or restores a consistent original record
+- invalid or cyclic replacement links are rejected
 
 Prefer shell tests when the checker/helper are shell scripts.
 

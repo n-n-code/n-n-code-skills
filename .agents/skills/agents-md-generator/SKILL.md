@@ -13,7 +13,7 @@ Create high-signal, repository-grounded instructions with a host-neutral semanti
 - The default target is the root `AGENTS.md`. Create or revise a nested target only when the user names or approves that path and selects `apply`.
 - Repository inspection is read-only. Validation commands may write caches or artifacts, install dependencies, use the network, or trigger external systems. Assess them first, run the smallest safe check, and get authorization before consequential validation.
 - Before editing, inspect the target file and any existing worktree diff. Preserve unrelated and pre-existing changes.
-- Never delete or overwrite source instruction files such as `CLAUDE.md` without explicit confirmation. Report any validation artifacts that cannot be safely cleaned up.
+- Never delete or overwrite source instruction files such as `CLAUDE.md` without explicit authorization covering those files. Reuse authorization already granted for the same action. Report any validation artifacts that cannot be safely cleaned up.
 
 ## Core workflow
 

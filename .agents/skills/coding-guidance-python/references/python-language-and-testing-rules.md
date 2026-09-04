@@ -15,8 +15,8 @@ test structure, shared data, module boundaries, or architecture.
   one-liners that hide control flow.
 - Avoid boolean flag parameters when separate functions or a small config type
   would make behavior clearer.
-- Keep warnings, lint findings, and type-checker regressions at zero in
-  repository-owned code.
+- Introduce no new warnings, lint findings, or type-checker regressions; report
+  existing unrelated debt without turning a narrow change into a cleanup.
 
 ## Typing and interfaces
 
@@ -33,8 +33,9 @@ test structure, shared data, module boundaries, or architecture.
 - When parameters form one concept or call sites cannot communicate their
   meaning, prefer a named type, config object, or split responsibility.
 - Make mutation visible in names and interfaces.
-- Use strict type checking where supported. In a non-strict codebase, tighten
-  changed modules instead of broadening exemptions.
+- Follow configured type-checking strictness. Tighten a boundary when it catches
+  a material defect; do not change module-wide policy solely because tooling
+  supports a stricter mode or broadly suppress new errors.
 
 ## Tests and verification
 

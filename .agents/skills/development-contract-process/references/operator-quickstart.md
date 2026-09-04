@@ -2,6 +2,10 @@
 
 Use this when the repo already has a contract system and you are applying it during normal work.
 
+For review-only work, inspect these obligations and return findings. Do not
+create records, implement repairs, or run mutating commands. For implementation,
+existing authorization covers required ordinary record maintenance.
+
 ## Minimal path
 
 1. Read the touched files.
@@ -19,4 +23,6 @@ Use this when the repo already has a contract system and you are applying it dur
 - Prefer one maintained record per substantive change slice instead of scattering notes.
 - Let the policy file define plan paths, lanes, required headings, and validation profiles.
 - Keep the contract record factual. It should show what changed, who implemented it, who verified it, what was run, and what remains uncertain.
-- If repo docs and policy disagree, fix the mismatch rather than guessing which one is current.
+- If repo docs and policy disagree, identify the owning source and evidence.
+  Correct the mismatch within authorized implementation scope; report it during
+  review or when a material policy decision remains unresolved.

@@ -94,7 +94,9 @@ remediation.
 Keep the critical portable defaults in view:
 
 - Make ownership explicit. Prefer values and RAII, use `std::unique_ptr` for
-  sole ownership, and treat raw pointers and references as non-owning.
+  sole ownership, and treat raw pointers and references as non-owning unless an
+  explicit legacy or C API transfers ownership; adopt such results into the
+  matching RAII owner promptly.
 - Establish invariants during construction and prefer rule-of-zero types.
 - Do not let references, views, iterators, pointers, or other borrowed state
   outlive their owners, especially across callbacks, coroutines, or threads.
