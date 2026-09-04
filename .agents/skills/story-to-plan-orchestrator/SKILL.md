@@ -12,6 +12,11 @@ invalidation, resumption, and packet assembly.
 This is a process overlay and multi-stage entry point. The component skills
 remain independently usable.
 
+For a review-only request, assess packet coherence and readiness and return
+findings without rebuilding artifacts. Resume or repair stages when requested.
+Return artifacts in the conversation unless file output was requested; pipeline
+preparation does not authorize product implementation or external publication.
+
 ## When To Use
 
 - produce a complete Story Card, Repo Context, and Implementation Plan handoff

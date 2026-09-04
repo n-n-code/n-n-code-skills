@@ -10,7 +10,8 @@ explicit `Links checked:` date for the linked official docs used by that
 section. Before citing provider-specific behavior:
 
 - re-verify against the current official source linked under Source Synthesis
-- treat any entry older than ~6 months as stale unless re-checked this session
+- treat the date as provenance, not a freshness guarantee; verify a material
+  model or API claim whenever its version or applicability may have changed
 
 ## Source Synthesis
 
@@ -82,8 +83,8 @@ Guidance:
   depends on it.
 - Name allowed uncertainty. Tell the model when to ask for clarification, make a
   labeled assumption, refuse, or return a partial result.
-- If examples conflict with instructions, expect examples to win in practice;
-  remove or rewrite the conflicting example.
+- If examples conflict with instructions, remove the ambiguity and evaluate the
+  affected behavior; no universal rule says which signal a model will follow.
 
 ## Pattern Selector
 
@@ -127,8 +128,9 @@ Links checked: 2026-05-05 against the linked official OpenAI docs.
   model, structured-output mode, tool behavior, prompt caching, or model upgrade.
 - For cache-aware prompts, keep stable instructions and large reusable context
   in a stable prefix, and put per-request data later.
-- For GPT-5-family prompt work, prefer model-specific official guidance when
-  upgrading existing prompts or changing reasoning and verbosity behavior.
+- Use guidance for the actual requested model and API when upgrading prompts or
+  changing reasoning and verbosity behavior. Older model guides are historical
+  references, not a default target for an unspecified model.
 - When using structured outputs or tool calls, keep prompt instructions aligned
   with the API schema or tool definition instead of duplicating conflicting
   requirements.

@@ -9,6 +9,10 @@ This is a composable project overlay. Add matching implementation guidance when
 source, build, or automation code changes. Compose with `documenter` when the
 main artifact is durable release, install, or contributor documentation.
 
+For review or planning, inspect and report without changing package contents,
+manifests, notices, or release state. Apply the workflow as edit instructions
+only when the user asks for those changes.
+
 ## When to use
 
 The change affects the shipped or published contract: package contents, install

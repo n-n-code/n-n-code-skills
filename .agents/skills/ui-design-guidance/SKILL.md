@@ -31,7 +31,7 @@ describes the intended product direction, not permission to edit files.
 
 ## Not for
 
-- terminal UIs unless the repo explicitly treats them as product UI
+- terminal UIs; use the matching terminal-framework guidance
 - pure data visualization or plotting libraries without product-interface work
 - backend-only changes with no UI surface
 

@@ -14,6 +14,113 @@ import check_skills  # noqa: E402
 
 
 class CheckSkillsTests(unittest.TestCase):
+    def test_frontmatter_rejects_raw_nonprintable_metadata(self) -> None:
+        for char in ("\x00", "\x01", "\x0b", "\x0c", "\x1f", "\x7f", "\x80", "\x9f", "\ud800", "\ufffe", "\uffff"):
+            for value in (f"alpha{char}beta", f"'alpha{char}beta'", f'"alpha{char}beta"'):
+                with self.subTest(value=ascii(value)):
+                    _, errors = check_skills.check_frontmatter_lines(
+                        "example/SKILL.md", ["name: example", f"description: {value}"]
+                    )
+                    self.assertTrue(errors, ascii(value))
+
+    def test_frontmatter_rejects_colon_tab_separator(self) -> None:
+        _, errors = check_skills.check_frontmatter_lines(
+            "example/SKILL.md", ["name: example", "description: alpha:\tbeta"]
+        )
+        self.assertTrue(errors)
+
+    def test_package_preserves_invalid_controls_for_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            skill = root / ".agents" / "skills" / "example"
+            skill.mkdir(parents=True)
+            for char in ("\x0b", "\x0c", "\x1c", "\x1d", "\x1e"):
+                with self.subTest(character=ascii(char)):
+                    (skill / "SKILL.md").write_text(
+                        f"---\nname: example\ndescription: Useful guidance.{char}\n---\nInspect input.\n",
+                        encoding="utf-8",
+                    )
+                    _, _, errors = check_skills.check_skill_packages(root)
+                    self.assertTrue(errors)
+
+    def test_frontmatter_preserves_legal_unicode_and_quoted_tabs(self) -> None:
+        for value in ("Review café, 日本語, and 🧪 examples.", "'alpha:\tbeta'", r'"alpha:\tbeta"'):
+            with self.subTest(value=value):
+                _, errors = check_skills.check_frontmatter_lines(
+                    "example/SKILL.md", ["name: example", f"description: {value}"]
+                )
+                self.assertEqual(errors, [])
+
+    def test_frontmatter_enforces_name_and_description_limits(self) -> None:
+        for name, description, valid in (
+            ("a" * 64, "x" * 1024, True),
+            ("a" * 65, "Useful guidance.", False),
+            ("valid-skill", "x" * 1025, False),
+            ("Bad-Skill", "Useful guidance.", False),
+            ("bad--skill", "Useful guidance.", False),
+            ("-bad", "Useful guidance.", False),
+            ("bad-", "Useful guidance.", False),
+            ("bad_name", "Useful guidance.", False),
+        ):
+            with self.subTest(name=name, description_length=len(description)):
+                _, errors = check_skills.check_frontmatter_lines(
+                    "example/SKILL.md",
+                    [f"name: {name}", f"description: {description}"],
+                )
+                self.assertEqual(not errors, valid, errors)
+
+    def test_frontmatter_requires_string_scalars(self) -> None:
+        for value in (
+            "[one, two]", "{key: value}", "true", "null", "~", "42",
+            "2026-09-04", "1:20", ".inf", "0x10", "# comment", "- list",
+            "Text # hidden comment", "|", ">", "*alias", "&anchor text",
+            "'unterminated", '"bad\\q"', "''", '"   "',
+        ):
+            with self.subTest(value=value):
+                _, errors = check_skills.check_frontmatter_lines(
+                    "example/SKILL.md", ["name: example", f"description: {value}"]
+                )
+                self.assertTrue(errors, value)
+
+    def test_frontmatter_accepts_quoted_strings_and_literal_punctuation(self) -> None:
+        for value in (
+            '"Use this: preserve the contract."',
+            "'Review the user''s code.'",
+            '"true"',
+            "Review C# and C++ code with `tool-name`.",
+            "2026-09-04 compatibility guidance.",
+            "1:20 is an example duration.",
+        ):
+            with self.subTest(value=value):
+                _, errors = check_skills.check_frontmatter_lines(
+                    "example/SKILL.md", ["name: example", f"description: {value}"]
+                )
+                self.assertEqual(errors, [])
+
+    def test_package_matches_decoded_quoted_name(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            skill_dir = root / ".agents" / "skills" / "example"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                '---\nname: "example"\ndescription: Useful guidance.\n---\n'
+                '\nInspect the input and report the result.\n', encoding="utf-8"
+            )
+            _, _, errors = check_skills.check_skill_packages(root)
+        self.assertEqual(errors, [])
+
+    def test_package_rejects_empty_instructions(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            skill_dir = root / ".agents" / "skills" / "example"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                '---\nname: example\ndescription: Useful guidance.\n---\n\n',
+                encoding="utf-8",
+            )
+            _, _, errors = check_skills.check_skill_packages(root)
+        self.assertTrue(any("instructions" in error for error in errors), errors)
+
     def test_frontmatter_rejects_unquoted_colon_and_empty_description(self) -> None:
         _, errors = check_skills.check_frontmatter_lines(
             "example/SKILL.md",

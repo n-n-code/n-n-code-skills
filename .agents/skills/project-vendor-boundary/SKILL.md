@@ -8,6 +8,10 @@ description: Project overlay for checked-in or submodule-managed third-party sou
 This is a composable project overlay. Add matching implementation guidance when
 the work requires language-specific code judgment.
 
+For review, inspect provenance, local patches, and integration behavior without
+updating, fetching, or replacing the vendor tree. During implementation, preserve
+pre-existing local changes and apply only the requested integration or update.
+
 ## When to use
 
 The change involves checked-in third-party source, a subtree or submodule, a

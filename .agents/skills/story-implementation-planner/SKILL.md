@@ -62,6 +62,9 @@ Use the statuses operationally:
 Risks are uncertainties the ready plan can manage. Blocking inputs prevent the
 plan from being ready; never combine them in one list.
 
+Return the plan in the conversation unless a file output was requested. A plan
+request does not authorize implementation or mutating verification commands.
+
 ## Core Workflow
 
 1. Read the complete active Story Card and Repo Context. Confirm that the story
@@ -248,6 +251,13 @@ rewrite later steps, make it a blocking input instead. When Story Card and Repo
 Context conflict, stop at the earliest affected upstream stage rather than
 silently reinterpreting either.
 
+For validation, start from the documented observable seam that can detect the
+criterion's failure. Reuse an existing test when it protects the same contract;
+add lower-level checks only for meaningful uncovered branches or diagnostics.
+Introduce a new seam only with an evidence-backed need and an explicit file
+disposition. Do not substitute mocked internals for a required integration
+contract or repeat checks that cannot add relevant evidence.
+
 ## Final Quality Gate
 
 Before returning the artifact, verify:
@@ -259,7 +269,7 @@ Before returning the artifact, verify:
   primary-source Repo Context `External Evidence` entry;
 - every symbol, command, and proposed-file convention has upstream evidence;
 - step IDs and titles are stable and unique, direct blockers form an acyclic
-  graph with a truthful starting frontier, and steps are coherent outcomes with
+graph with a truthful starting frontier, and steps are coherent outcomes with
   observable checkpoints, not
   placeholders such as `refactor`, `handle edge cases`, `add tests`, or
   `polish`;

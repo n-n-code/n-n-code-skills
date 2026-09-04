@@ -24,9 +24,9 @@ Rule of thumb per line:
   as independent checks — you want both failures visible, not the first one
   hiding the second.
 
-Do not default to `require` for every line. A suite of `require` calls in a
-table-driven test short-circuits on the first failing row's first failing
-assertion, so you get one failure report instead of the map of real damage.
+Choose deliberately: `require` stops the current test or subtest. Sibling
+`t.Run` cases still execute. A flat loop without subtests stops with its parent,
+so subtests can preserve independent failure reports.
 
 ## Equality Assertions
 
@@ -43,29 +43,29 @@ Use the most specific one that matches the claim.
 | `assert.Contains(t, haystack, needle)` | Substring, map key, or slice membership. |
 | `assert.JSONEq(t, expectedJSON, actualJSON)` | JSON strings are structurally equal. |
 | `assert.YAMLEq` | YAML strings are structurally equal. |
-| `assert.InDelta(t, expected, actual, delta)` | Floats. Never `Equal` on floats. |
+| `assert.InDelta(t, expected, actual, delta)` | Approximate numeric results with a justified absolute tolerance. Exact equality is valid for exact contracts. |
 | `assert.InEpsilon(t, expected, actual, epsilon)` | Relative float comparison. |
 | `assert.Len(t, collection, n)` | Length check without caring about contents. |
 | `assert.Empty` / `assert.NotEmpty` | Zero-value / non-zero-value check. |
 
 ### Struct equality — assert only what the test claims
 
-Comparing whole structs with `assert.Equal` is convenient and brittle. A
-harmless new field cascades into every unrelated test failing.
+Compare the whole struct when the full value is promised. Use selected fields
+when the test covers only those fields. Include generated and defaulted fields
+when they are part of the claim; the fixture need not have set them directly.
 
 ```go
-// Brittle: any new field breaks unrelated tests.
+// Appropriate when the entire value is the contract.
 assert.Equal(t, want, got)
 
-// Better: assert on the fields the test claims.
+// Appropriate when only these fields belong to the claim.
 assert.Equal(t, "alice", got.Name)
 assert.Equal(t, 30, got.Age)
 assert.True(t, got.CreatedAt.After(before))
 ```
 
-When the test *does* claim "entire struct matches", isolate the fields that
-are deterministic (e.g., zero out `CreatedAt` or inject a clock) so the
-struct match is honest.
+Make promised fields deterministic where useful (for example, inject time).
+Do not zero out a meaningful field merely to make a comparison pass.
 
 ## Error Assertions
 
@@ -79,8 +79,8 @@ assert.ErrorAs(t, err, &validationErr)
 - `ErrorIs` = sentinel equivalence via `errors.Is`.
 - `ErrorAs` = typed unwrap via `errors.As`, binds to a typed variable.
 - `assert.NoError(t, err)` and `require.NoError(t, err)` for the happy path.
-- `assert.Error(t, err)` is a weak oracle on its own; always pair with
-  `ErrorIs` / `ErrorAs` or a specific message when message is the contract.
+- `assert.Error(t, err)` is sufficient when failure presence is the contract.
+  Add `ErrorIs`, `ErrorAs`, or message checks only for the promised semantics.
 
 ### String-match errors — the narrow allowed use
 
@@ -104,13 +104,14 @@ assert.PanicsWithError(t, "parse: bad", func() { mustParse("bad") })
 assert.NotPanics(t, func() { safeParse("ok") })
 ```
 
-Only use panic assertions for code that documents panic as its contract
-(typically `Must*` helpers). Otherwise, convert to an error return.
+Use panic assertions for a documented panic contract, or a regression asserting
+that supported input does not panic. Changing production error behavior is a
+separate compatibility decision, not an automatic consequence of test review.
 
 ## Async / Readiness Assertions
 
-Eventual consistency is the only place sleeps sneak into tests. Replace
-them.
+Use bounded eventual assertions when eventual state is the contract. Prefer
+explicit completion signals or supported virtual-time testing when available.
 
 ```go
 require.Eventually(t,
@@ -124,10 +125,11 @@ require.Eventually(t,
 )
 ```
 
-- Budget: set it at 2–5× the p99 you expect. Too tight and you re-create
-  the flake; too loose and every CI run pays for it.
-- Tick: small enough that the total budget isn't dominated by the last
-  wait. 10ms is a common floor.
+- Budget: choose it from the operation's expected behavior and test environment;
+  the numbers below are illustrative, not a universal timing policy.
+- Tick: balance responsiveness and work per poll. Bound the callback's own I/O
+  and synchronize shared state; the assertion timeout cannot cancel arbitrary
+  work inside the callback.
 - Message: name the invariant, not the poll. "status did not reach Ready"
   beats "eventually was false".
 

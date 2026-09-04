@@ -37,6 +37,12 @@ A surface does not imply method or context: resource execution can occur in a ge
 
 ## Build the prompt set
 
+Before a substantive revision, preserve the relevant baseline requests, raw
+artifacts, expected behavior, and material constraints. Reuse them afterward.
+Correct a defective expectation explicitly; do not quietly redefine success to
+match the new skill or a more permissive validator. Keep useful holdout cases
+separate from examples used to design the change.
+
 For activation, start with realistic requests that do not name, inject, or otherwise preselect the skill:
 
 - `positive-obvious`: direct request using likely trigger language;
@@ -61,11 +67,19 @@ For observed runs:
 - for activation, pass a realistic request without the target skill name or selection instruction;
 - for instruction behavior, pass the skill plus realistic inputs, not the intended answer or suspected defect;
 - provide raw artifacts rather than prior conclusions;
+- confirm that decision-bearing fixtures were actually exposed before grading
+  the corresponding behavior; a missing-fixture case is inconclusive, not a
+  pass or a reason to change the skill;
 - isolate runs from previous outputs and temporary artifacts;
+- compare observable decisions and outputs, not preferred wording; unchanged
+  legitimate cases matter alongside the newly corrected failure;
 - avoid hidden access to the proposed fix;
 - ask before tests that could be slow, costly, destructive, or externally mutating.
 
 If observation is unavailable, use static prediction and state that limitation.
+When the host exposes no routing trace, distinguish an agent's reported skill
+selection from independently observed discovery or file-reading events. Record
+any corrected probe and rerun it in a fresh context without prior conclusions.
 
 ## Record results
 

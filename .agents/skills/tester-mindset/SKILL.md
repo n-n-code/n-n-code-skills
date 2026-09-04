@@ -5,12 +5,17 @@ description: Testing mindset skill for context-driven test strategy, exploratory
 
 # Tester Mindset
 
-A test is a small, deliberate meeting with consequence, arranged so truth can
-arrive before ruin does.
+Design evidence that can reveal a meaningful failure in the claim being tested.
+Use this as an orthogonal workflow alongside the relevant domain guidance.
 
-Use this as an orthogonal workflow skill. Compose it with implementation,
-review, security, product, or documentation skills when the main job is to make
-confidence earn its keep.
+For planning or review, return a strategy or findings without editing code or
+changing external state. For exploratory work, run only authorized, bounded
+probes. Existing implementation authority covers relevant test changes; do not
+turn design feedback into an unrelated production refactor.
+
+Load [exploration and oracle prompts](references/exploration-and-oracles.md)
+when a context map, risk category, test-idea tour, or alternative perspective
+would expose a missing case. Do not exhaust those catalogs for routine work.
 
 ## When To Use
 
@@ -44,9 +49,8 @@ confidence earn its keep.
    investigation: learning, modeling, exploring, questioning, and interpreting.
    Automate checks, but do not pretend automation replaces judgment.
 4. **Invite consequence.**
-   Ask what result would disappoint, disprove, embarrass, or force a change in
-   behavior. If no outcome can change the conclusion, this is a ritual, not a
-   test.
+   Name an observation that would disprove the claim or change the next action.
+   If no outcome could change the conclusion, revise the probe.
 5. **Choose a survivable scale.**
    Make the test strong enough to teach and small enough to survive. Prefer
    cheap probes first, then increase fidelity where risk, irreversibility, or
@@ -76,45 +80,6 @@ confidence earn its keep.
    integration test, exploratory session, benchmark, canary, monitoring, user
    trial, chaos probe, manual smoke, or review.
 
-## Context Map
-
-Use this quick scan before recommending tests:
-
-- **Mission:** What are we trying to learn or protect?
-- **Stakeholders:** Who matters, and what does quality mean to them?
-- **Risk:** How likely is failure, how costly is it, and how visible is it?
-- **Constraints:** Time, budget, access, tools, environments, compliance, and skills.
-- **Product factors:** Structure, Function, Data, Interfaces, Platform, Operations, Time.
-- **Evidence so far:** Existing checks, exploratory notes, production telemetry,
-  bug history, user reports.
-- **Unknowns:** What would still surprise us if this passed?
-
-## Consequence Types
-
-Use these categories to make vague confidence concrete:
-
-- **correctness:** wrong output, broken contract, data loss, or invalid state
-- **safety:** user harm, irreversible action, unsafe default, or bad recovery
-- **performance:** latency, throughput, memory, battery, cost, or degradation
-- **usability:** confusion, failed task, inaccessible path, or poor feedback
-- **security:** unauthorized access, data exposure, tampering, or abuse path
-- **trust:** misleading result, broken promise, weak audit trail, or bad handoff
-- **maintenance:** brittle change, unclear ownership, migration pain, or drift
-
-## Test Idea Heuristics
-
-Use heuristics as fallible lenses, not scripts to exhaust:
-
-- **Boundaries:** zero, one, many, min/max, just below/above, empty, null, huge, duplicate.
-- **Data:** Unicode, RTL text, whitespace, special characters, malformed payloads, stale data.
-- **State:** skipped steps, back button, retry, undo/redo, double submit, timeout, expired session.
-- **Interfaces:** APIs, DBs, queues, auth providers, file systems, browsers, devices, humans.
-- **Operations:** install, deploy, migrate, recover, observe, rollback, support, maintain.
-- **Time:** concurrency, ordering, scheduling, DST, leap days, long-running
-  sessions, race conditions.
-- **Tours:** money path, bad-neighborhood, historical, landmark, data-flow,
-  all-nighter, garbage tour.
-
 ## Exploratory Sessions
 
 Use a charter when scripted checks are too narrow or unknowns matter.
@@ -136,17 +101,6 @@ Session discipline:
 - Convert reproducible exploratory findings into automated regression checks
   when the behavior is stable and the oracle is clear.
 
-## Perspective Rotation
-
-When the test strategy is contentious, high-risk, or stuck, rotate perspectives:
-
-- **Facts:** What evidence, metrics, coverage, incidents, and constraints do we know?
-- **Feelings:** What makes the team uneasy or confident, without forcing justification?
-- **Risks:** What could go wrong, where are the gaps, and what assumptions could fail?
-- **Strengths:** What is already working and can be leveraged?
-- **Ideas:** What alternative probes, tools, charters, or checks could reveal more?
-- **Process:** What action, owner, stop condition, and next review point follow?
-
 ## Weak Test Detector
 
 Reject tests that cannot meaningfully fail for the right reason.
@@ -161,14 +115,15 @@ Before writing or approving test code:
 - Use Arrange, Act, Assert for executable tests.
 - Self-verify: would this fail if the production behavior were genuinely broken?
 
-Forbidden patterns:
+Reject these when they cannot detect a defect in the stated contract:
 
 - tautological assertions such as `expect(true).toBe(true)`
 - self-referential assertions such as `expect(x).toBe(x)`
-- truthiness-only assertions where specific values matter
-- empty tests, commented-out assertions, or tests with no production call
-- mocking the system under test instead of only external boundaries
-- schema-success-only assertions that do not verify parsed or computed data
+- truthiness-only assertions when presence is insufficient for the contract
+- empty checks, disabled assertions, or checks that neither exercise real
+  behavior nor inspect an authentic artifact
+- replacing the behavior being proved with a mock
+- format-only checks when the claim also promises computed or persisted values
 - literal roundtrips that only prove the test built its own fixture
 
 ## Heuristics And Checklists
@@ -181,7 +136,7 @@ Forbidden patterns:
 - Prefer forcing functions over reminders when a critical check can be automated.
 - Revisit heuristics and checklists when the environment changes.
 
-## Evidence Ladder
+## Evidence Choices
 
 - Use unit checks for stable pure behavior and fast feedback.
 - Use integration checks for collaboration contracts and real boundaries.
@@ -193,8 +148,8 @@ Forbidden patterns:
 ## Decision Rules
 
 - Test claims and contracts before testing implementation details.
-- Treat hard-to-test behavior as design feedback; refactor coupling before
-  mocking everything.
+- Treat hard-to-test behavior as design feedback. Recommend a clearer seam;
+  refactor it only when production changes are within the requested scope.
 - Name executable tests as behavior specifications, not implementation details.
 - Prefer pressure with fidelity: too little pressure teaches nothing, the wrong
   pressure teaches the wrong lesson.
@@ -209,8 +164,7 @@ Forbidden patterns:
   maintenance burden.
 - Avoid proof theater: tests designed to preserve confidence rather than risk it.
 - Prefer clarity over coverage; coverage says what ran, not what was understood.
-- Do not hide uncertainty behind procedure. The danger is a closed room calling
-  itself evidence.
+- Preserve uncertainty and contrary observations in the report.
 
 ## Stopping Rule
 
@@ -220,20 +174,10 @@ add. If material risk remains but more pre-release testing is inefficient, shift
 to monitoring, staged rollout, rollback planning, or explicit acceptance of
 risk.
 
-## Useful Questions
-
-- What consequence is this test actually inviting?
-- Is the scale large enough to teach, but small enough to survive?
-- What kind of reality is excluded from the room?
-- Who or what is allowed to disagree?
-- Which oracle says this is a problem, and how could that oracle mislead us?
-- What would this passing result still not prove?
-- Is this testing, checking, or proof theater?
-- What should we automate, and what still needs human investigation?
-
 ## Output Shape
 
-For a testing recommendation, keep the structure compact:
+For a testing recommendation, use only the sections that help assess the claim.
+A narrow recommendation can fit in a paragraph:
 
 ```markdown
 ## Context

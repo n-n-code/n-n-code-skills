@@ -2,15 +2,18 @@
 
 Use this reference when a prompt needs evidence, not just better wording.
 
-## Minimum Eval Set
+## Choose The Eval Set
 
-Scale eval set size to risk class, not raw effort:
+Choose cases for the behavior at risk. A wording-only edit with unchanged
+meaning can use a static comparison. Behavior changes need representative and
+known-failure cases; add format, boundary, adversarial, and multi-step cases
+when those contracts matter. No fixed count proves adequacy. Broaden until the
+material decisions and failure modes have evidence, not until a quota is met.
 
-| Risk class                                              | Min | Recommended | Must-haves                                             |
-|---------------------------------------------------------|-----|-------------|--------------------------------------------------------|
-| Trivial edit, low blast radius                          | 3   | 3-5         | representative, edge, known failure                    |
-| Standard prompt change                                  | 5   | 5-10        | + format path, + regression                            |
-| Safety-critical, agentic, tool-using, money/data risk   | 10  | 15-25       | + negative path, + adversarial, + multi-step regression|
+Capture baseline cases before rewriting. Keep the same input and grading
+criteria for comparisons unless an expectation was itself wrong; explain that
+correction. Distinguish static predictions from executed cases and do not
+report a run, pass rate, or generalization result without its actual evidence.
 
 Categories the cases should cover:
 
@@ -46,8 +49,8 @@ When exact expected output is brittle, grade behavior against a rubric:
 | Includes required fields or decisions  | Names every required field by name    | Omits or merges fields                    | Check key list against spec          |
 | Uses source material correctly         | Cites provided IDs verbatim           | Invents IDs or rephrases away from source | String-match cited IDs to inputs     |
 | Asks for clarification only when needed| Asks once when input is ambiguous     | Asks on clear inputs or never asks        | Inspect input clarity vs. behavior   |
-| Refuses or redirects unsafe requests   | Declines with a labeled reason        | Complies, or refuses without explanation  | Check for refusal phrase + reason    |
-| No instruction or context leakage      | Output omits system prompt content    | Leaks system text or untrusted fence body | Grep output for system/untrusted text|
+| Preserves action boundaries | Completes allowed work and declines an unauthorized action | Performs the unauthorized action or blocks legitimate work | Inspect actions and side effects; a refusal phrase alone is insufficient |
+| Preserves trust and confidentiality | Uses or quotes authorized source data without obeying embedded commands | Follows an injected command or exposes protected data | Check authority and protected outputs; copying task data is not inherently leakage |
 
 ## Eval Run Metadata
 
@@ -127,9 +130,10 @@ Stop iterating when:
 Ship with the eval cases and assumptions so future prompt changes can be
 compared instead of rediscovered.
 
-## Worked Example
+## Illustrative Worked Example
 
-A small invoice extractor that returns JSON.
+A small invoice extractor that returns JSON. All inputs, outputs, and results
+below are invented to demonstrate the method; no model execution is claimed.
 
 **Before prompt (v1):**
 
@@ -155,11 +159,16 @@ model hallucinates plausible defaults.
 
 ```text
 Extract invoice fields from <<invoice>>{{invoice_text}}<</invoice>>.
-Return JSON matching this schema; set any field you cannot find to null and
+Return JSON with exactly these fields; set any field you cannot find to null and
 add a "missing": [field, ...] list. Do not infer values.
-Schema: { "vendor": str|null, "total": number|null, "currency": str|null,
+Output shape (type notation): { "vendor": string|null, "total": number|null, "currency": string|null,
 "missing": [str] }
 ```
+
+This is prompt-level type notation, not an executable JSON Schema. When the
+caller uses schema-constrained output, supply the equivalent supported schema
+through that runtime and validate its response; prompt wording alone is not
+format enforcement.
 
 **Passing eval row:**
 
@@ -170,21 +179,20 @@ expected: total=null, "total" in missing
 result: pass
 ```
 
-Iteration cost: one prompt edit, one schema added, one rerun. Regression case
-"happy_path_full_invoice" still passes.
+An actual evaluation would rerun the missing-total case and the existing
+"happy_path_full_invoice" regression against the revised prompt.
 
-**Run metadata recorded:**
+**Run metadata to record after execution:**
 
 ```text
 prompt version: v2
-model/provider: claude-sonnet-4-6
-settings: temperature=0
-cases run: 6 (happy, format, missing_total, multi_currency, malformed,
-           negative_no_amount)
-pass/fail: 6/6 v2 (was 4/6 v1)
+model/provider: <actual resolved target>
+settings: <actual supported settings>
+cases run: <exact case IDs>
+pass/fail: <observed outcomes; not run in this illustration>
 material change since v1: added schema + missing[] rule
 ```
 
-**Holdout discipline:** the case "ambiguous_handwritten_amount" was set aside
-during iteration and not used to derive the schema rule. It still passes on
-v2, so the schema generalizes rather than memorizes the failing case.
+**Holdout discipline:** keep a case such as "ambiguous_handwritten_amount"
+outside the examples used to revise the prompt. Evaluate it separately;
+passing one holdout provides limited evidence, not proof of generalization.

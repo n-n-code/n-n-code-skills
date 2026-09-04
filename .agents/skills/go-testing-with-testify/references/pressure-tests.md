@@ -1,19 +1,21 @@
 # Go Testing With Testify Pressure Tests
 
-Maintainer-only. Scenarios to run against a subagent — once without the skill
-(RED baseline), once with the skill loaded (GREEN). If the agent only makes
-the right call with the skill loaded, the rule is earning its keep.
-
-For methodology, run each scenario once without the skill, once with the
-skill, and record the loophole that explains any remaining failure.
+Maintainer-only scenarios. Use static review or an isolated observed run as
+appropriate, and label which evidence was obtained. Explicitly loading this
+skill tests instruction behavior, not automatic activation. A with/without or
+before/after comparison is useful when measuring added value; neither outcome
+is presumed to fail or pass. One comparison does not establish reliability.
 
 ## How To Run
 
-1. Pick a scenario below and draft a realistic prompt from it.
-2. Run the prompt without the skill and record the recommendation.
-3. Run it again with the skill and compare the diff.
-4. If the green pass still misses, tighten the main skill or a reference file.
-5. Add any new rationalization to the SKILL.md table.
+1. Preserve the exact scenario, input artifact, and expected behavior before editing.
+2. Review it statically, or run it in an available authorized isolated context.
+3. For comparisons, keep inputs and grading criteria fixed; explain a corrected expectation.
+4. Record method, context, outcome, and residual uncertainty separately.
+5. Correct the owning rule or example only for a demonstrated gap; keep new
+   scenarios here rather than growing the entrypoint with a rationalization table.
+
+The legacy GREEN labels below name expected behavior, not recorded passing runs.
 
 ## Scenarios
 
@@ -24,7 +26,7 @@ stops. User prompt: *"Looks good to me, the function ran without error."*
 
 **GREEN expectation.**
 
-- Reject the schema-only test.
+- Explain that no error alone does not establish the promised user creation.
 - Ask what behavior is claimed beyond "it didn't error".
 - Add assertions on the created value, stored record, or emitted side effect.
 
@@ -92,8 +94,9 @@ User prompt: *"Embed `mock.Mock` and stub the method so the test passes."*
 
 **GREEN expectation.**
 
-- Push back on direct third-party mocks.
-- Wrap the SDK behind an owned interface, then fake or mock that seam.
+- Inspect the SDK's supported testing seam and the repo's existing adapter.
+- Use a fake or mock at that seam when appropriate; propose a wrapper only when
+  it clarifies a real dependency contract within the authorized scope.
 - If the boundary is cheap to exercise for real, recommend the real boundary
   instead.
 
@@ -105,7 +108,8 @@ User prompt: *"Embed `mock.Mock` and stub the method so the test passes."*
 **GREEN expectation.**
 
 - Treat pass-on-retry as flake, not a clean pass.
-- Reproduce with `-race -count=100` and, when relevant, `-shuffle=on`.
+- Repeat the affected test with a justified budget; add `-race` for suspected
+  races and `-shuffle=on` when order dependence is plausible.
 - Diagnose apparatus issues before changing assertions.
 
 ### S9 — Naked skip
@@ -116,7 +120,8 @@ User prompt: *"Embed `mock.Mock` and stub the method so the test passes."*
 **GREEN expectation.**
 
 - Refuse a naked skip.
-- Require a linked issue and expiry.
+- Follow the repo's quarantine policy with a reason, owner, tracking reference,
+  and revisit condition.
 - Prefer fixing the race or quarantining with explicit ownership.
 
 ### S10 — Mock when `httptest.NewServer` is cheaper
@@ -168,6 +173,36 @@ cheap disposable DB harness. User prompt:
   harness before reaching for a mock.
 - Reserve fakes or `testify/mock` for owned seams where the real boundary is
   materially heavier.
+
+### S14 — A sufficient error-presence oracle
+
+**Setup.** A validator promises only success or rejection. The test asserts
+`assert.Error(t, Validate(invalid))` and the user asks for a review only.
+
+**Expected behavior.** Accept error presence if it proves the stated contract;
+do not require an undocumented error type, add unrelated assertions, or edit files.
+
+### S15 — A small deterministic edit
+
+**Setup.** One assertion changes in an isolated synchronous test with no known flake.
+
+**Expected behavior.** Run the targeted test. Do not impose race-enabled repeated
+runs without a concurrency or flake risk.
+
+### S16 — Worker and HTTP handler lifetime
+
+**Setup.** Review the HTTP and worker examples in `real-boundary-patterns.md`.
+
+**Expected behavior.** Keep fatal assertions on the test goroutine; communicate
+handler observations safely; cancel and join workers even after a failed assertion.
+Report an untested or violated cancellation contract instead of claiming cleanup.
+
+### S17 — Promised defaults and exact values
+
+**Setup.** A constructor promises a generated ID and an exact float default of zero.
+
+**Expected behavior.** Check both promised fields even though the fixture did not
+set them. Exact equality is appropriate for an exact default.
 
 ## Scenarios That Should Trigger Routing Away
 

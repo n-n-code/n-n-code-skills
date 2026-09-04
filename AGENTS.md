@@ -65,6 +65,16 @@ run:
 python scripts/test_check_skills.py
 ```
 
+When the metadata parser, executable skill resources, or their tests change,
+also run:
+
+```console
+python scripts/test_skill_resources.py
+```
+
+Report unavailable Bash, real CMake/CTest, or PyYAML checks as skipped, not
+passed. Tool discovery and optional overrides are documented in `README.md`.
+
 When `scripts/check-skills.sh` changes, run its wrapper on a Bash-capable
 system:
 

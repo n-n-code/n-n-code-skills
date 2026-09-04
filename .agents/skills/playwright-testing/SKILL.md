@@ -36,6 +36,10 @@ check. Inspect the active ecosystem before choosing syntax or commands.
 Load [references/ecosystem-testing.md](references/ecosystem-testing.md) for
 Python, .NET, or Java, or whenever runner semantics are uncertain.
 
+For review-only requests, inspect the tests and report findings without editing
+specs, generating tests, or accepting new snapshots. Use only safe verification
+within scope; a baseline update cannot substitute for explaining a regression.
+
 ### Setup or repair
 
 Use `setup-playwright` when the requested artifact is package installation,

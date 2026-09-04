@@ -9,6 +9,10 @@ This is a composable project overlay, not a standalone implementation workflow.
 Use it with matching language or discipline guidance when the main task is a
 configuration contract or deterministic tests at that boundary.
 
+For review, inspect these contracts and report findings without editing config,
+tests, or process state. For implementation, apply only the requested changes
+and use isolated fixtures for validation.
+
 ## When to use
 
 The task involves configuration sources or precedence, defaults, parsing,

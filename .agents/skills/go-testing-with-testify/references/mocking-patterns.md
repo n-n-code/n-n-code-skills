@@ -57,14 +57,17 @@ func TestChargeUser(t *testing.T) {
     gateway.On("Charge", mock.Anything, ChargeRequest{UserID: "u1", Amount: 10}).
         Return(nil).
         Once()
+    t.Cleanup(func() { gateway.AssertExpectations(t) })
+    svc := NewService(gateway) // Adapt the constructor to the real subject.
 
     err := svc.ChargeUser(context.Background(), "u1", 10)
     require.NoError(t, err)
-    gateway.AssertExpectations(t)
 }
 ```
 
-Always assert expectations before the test returns. If multiple mocks are in
+Assert expectations after all owned calls finish, including after a fatal test
+failure; cleanup is useful for this. Join workers before checking their mocks.
+If multiple mocks are in
 play, `mock.AssertExpectationsForObjects(t, a, b, c)` checks all of them, and
 the testify docs note that calls may have occurred in any order unless you add
 an explicit ordering rule.

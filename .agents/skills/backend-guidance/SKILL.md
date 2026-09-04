@@ -73,12 +73,11 @@ this skill addresses.
 
 ## Decision Heuristics
 
-- **Handler size:** if a handler is hard to read in one screen or mixes
-  transport concerns with business decisions, it is doing too much. Extract the
-  logic; keep the handler as glue.
-- **Test smell:** if testing a function requires standing up a server or faking
-  a transport layer, the function has a boundary problem. Move the logic
-  inward.
+- **Handler responsibility:** extract business decisions from transport glue
+  when they obscure ownership; line count alone is not an architectural defect.
+- **Test seam:** if testing a business rule requires transport infrastructure,
+  move that rule inward. Tests of routing, serialization, or middleware may
+  correctly need a real transport boundary.
 - **Validation placement:** validate each concern at its owning boundary:
   transport shape at ingress, shared authorization before the action, domain
   invariants in the domain owner, and storage constraints in persistence. If

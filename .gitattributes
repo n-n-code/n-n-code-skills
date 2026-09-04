@@ -1,0 +1,2 @@
+# Keep shell entrypoints and bundled shell examples runnable across platforms.
+*.sh text eol=lf

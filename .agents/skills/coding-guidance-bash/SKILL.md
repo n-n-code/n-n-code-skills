@@ -127,8 +127,8 @@ for remediation.
 - Use command substitution `$()` instead of backticks
 - Name flags, env vars, and functions for what they do; shell scripts become
   unreadable quickly when names get vague
-- Keep shellcheck findings at zero in repo-owned code unless the script has a
-  documented exception
+- Introduce no new ShellCheck findings and explain any necessary scoped
+  suppression; distinguish existing unrelated debt from regressions
 
 ### Input, output, and contract design
 

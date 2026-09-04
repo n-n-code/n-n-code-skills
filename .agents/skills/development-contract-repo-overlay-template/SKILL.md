@@ -8,8 +8,9 @@ description: Template for authoring or revising the thin repo-local overlay gene
 This skill documents the expected shape of the repo-local overlay that a target repository should have after adopting the development contract system.
 It is not guidance for this skills repository itself, which only stores the reusable skills.
 
-In a target repo, start by reading that repo's policy file, then apply `development-contract-process`.
-Treat repo guidance as secondary to the policy file for contract mechanics; if they disagree, fix the mismatch instead of guessing.
+Use target policy as the source for contract mechanics within the host's
+instruction hierarchy. Keep an unresolved policy/documentation conflict visible;
+do not decide it merely by preferring whichever file was opened first.
 
 ## Use this skill when
 
@@ -25,14 +26,18 @@ target repo's actual local overlay and implementation skill.
 
 ## Repo overlay workflow
 
-1. Read the touched files before editing.
-2. Read the target repo's policy file for the plan directory, substantive path rules, required lanes, and validation profiles.
-3. Apply `development-contract-process` for the generic workflow and decision rules.
-4. If the change is substantive under repo policy, update a non-template plan in the lifecycle subdirectory under the repo's plan directory that matches the record's `State`.
-   Prefer the repo's lifecycle helper when changing an existing record's lifecycle.
-5. Keep verifier notes concrete: record commands, observed results, and any contract mismatches explicitly.
-6. Run the smallest repo policy profile that proves the change, then extend when the surface justifies it.
-7. Before closing work, run the checker command declared in the repo policy file.
+1. Select findings, draft, or apply from the request. Findings and conversation
+   drafts do not authorize repository writes.
+2. Read existing overlays and the policy, checker, helper, and profile definitions
+   that establish the target's actual commands and paths.
+3. Write only the overlay's local bindings and exceptional human guidance. Refer
+   to `development-contract-process` when it is available to the target agent;
+   otherwise include the minimum operator steps needed to use the repo's system.
+4. During authorized application, follow the target's existing contract process
+   if changing the overlay is itself substantive. Do not require an unrelated
+   implementation or record update merely to produce a draft.
+5. Check the overlay against the real files and safe checker modes. Report
+   observed commands separately from proposed or unrun commands.
 
 ## Decision rules
 
@@ -40,7 +45,8 @@ target repo's actual local overlay and implementation skill.
 - Do not leave a substantive change without a non-template plan update.
 - Use the repo's lifecycle helper with its supersede option when superseding a record so the replacement link is updated with the move.
 - Keep the repo overlay thin: change policy data first, then only add prose when the repo needs extra human guidance that policy cannot express.
-- If repo policy and docs disagree, fix the policy or the docs so the checker, template, and guidance converge again.
+- Resolve policy/documentation mismatches from evidence within authorized scope;
+  report unresolved decisions rather than silently changing policy.
 
 ## What the generated overlay should contain
 
@@ -65,14 +71,10 @@ Treat those as common examples, not universal constants.
 
 ## Output expectations
 
-When this skill applies, the final work should leave behind:
-
-- a thin repo-local overlay aligned with `development-contract-process`
-- code or docs aligned with repo guidance and policy
-- an updated non-template plan when the change is substantive
-- explicit verifier evidence in the plan
-- repo policy, docs, and checker behavior that still agree
-- a concise report of what was validated and what could not be validated
+Return findings, a draft, or the applied thin overlay as requested, with concrete
+policy/command bindings and validation limitations. Applied edits must follow
+any target-repo record requirement. This authoring workflow does not itself
+authorize product-code changes or adoption of a new contract system.
 
 ## Examples
 

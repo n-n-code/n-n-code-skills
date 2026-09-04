@@ -12,9 +12,13 @@ notes.
 This skill is self-contained on purpose so it can be moved into another repo or
 skill collection without depending on the smaller contract skills from this
 frame at runtime.
-When the target repo already uses local skills, also generate a thin repo-local
-process overlay that applies `development-contract-process` against the repo's
-concrete policy path and helper commands.
+When the target repo uses local skills, generate a thin overlay with its concrete
+policy and helper commands. Reference `development-contract-process` only when
+the target agent has that skill; otherwise include the minimum operator flow.
+
+Build or port the system only within the requested scope. Review and design
+requests return findings or a draft without creating policy, records, helpers,
+or new enforcement. Preserve an existing system until its migration is explicit.
 
 ## What this skill builds
 
@@ -88,10 +92,11 @@ Implement in this order to avoid drift:
 2. Create the repo-owned policy file.
 3. Create the `feature_records/` tree and template.
 4. Implement the checker against the policy file.
-5. Add lifecycle example records or seed records.
+5. Add isolated lifecycle fixtures or migrate real records.
 6. Add the lifecycle transition helper.
 7. Add shell tests for the checker and helper.
-8. If the repo uses local skills, add a thin repo-local process overlay that applies the portable process skill to the concrete repo policy.
+8. If the repo uses local skills, add a thin overlay with concrete policy and
+   commands, referencing the portable process skill only when it is available.
 9. Update README, AGENTS-style docs, and release/hygiene docs.
 10. Run the checker and hygiene lanes and fix drift.
 
@@ -115,7 +120,7 @@ workflows, or layout.
 Use
 [references/contract-system-implementation-details.md](references/contract-system-implementation-details.md)
 for the detailed policy surface, feature-record tree, template sections,
-checker checks, lifecycle helper behavior, seed-record guidance, and direct
+checker checks, lifecycle helper behavior, fixture guidance, and direct
 test cases.
 
 Keep these invariants in the main workflow:
@@ -138,7 +143,8 @@ If the target repository keeps project-local skills, generate a thin overlay
 that:
 
 - names the concrete policy file path
-- tells the agent to apply `development-contract-process`
+- applies `development-contract-process` when installed, or includes a concise
+  operator flow when that skill is unavailable
 - names the checker command and lifecycle helper command
 - points at the repo policy's validation profiles
 - avoids restating schema details already enforced by policy and checker
@@ -168,8 +174,9 @@ command explicitly.
 - Prefer a small explicit schema over a flexible but vague document format.
 - Keep feature records as Markdown so they are easy to review in git.
 - Keep lifecycle visibility obvious from the directory tree.
-- Seed each lifecycle folder with an example record unless the repo already has
-  real records.
+- Keep synthetic lifecycle examples in clearly labeled test fixtures or docs,
+  excluded from live changed-path coverage. Only real records belong in active
+  or completed work inventories; do not invent verifier evidence to seed them.
 - When the repo uses local skills, keep the repo-local process overlay thin and aligned
   with the policy, checker, template, and docs.
 - If the repo has a release checklist, point it at the checker and lifecycle
@@ -194,7 +201,7 @@ The system is complete when:
 When using this skill, leave behind:
 
 - the full repo-owned contract system
-- example lifecycle records or migrated real records
+- isolated lifecycle examples or migrated real records
 - tests that prove checker and helper behavior
 - docs aligned with the system
 - a concise summary of what was validated and what remains manual

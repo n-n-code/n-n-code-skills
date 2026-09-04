@@ -66,6 +66,14 @@ selection, race checks, fuzzing, benchmarking, or integration-test gating.
   changed.
 - Use `go test -count=N` for order-dependent or flaky behavior after making the
   test deterministic enough to be meaningful.
+- On Go 1.25+, consider `testing/synctest` for compatible in-process concurrent
+  code: virtual time and quiescence can replace wall-clock timing guesses.
+  Consult the [package contract](https://pkg.go.dev/testing/synctest) for supported
+  operations; real external I/O still needs its own evidence.
+- On Go 1.24+, `t.Context()` cancels before test cleanup. Cancellation does not
+  join a goroutine; wait for owned workers before tearing down their fixtures.
+- Use `t.Cleanup` for shared fixtures with parallel subtests. A parent function's
+  `defer` runs before paused parallel children resume and may close fixtures early.
 
 ## Fuzzing And Benchmarks
 

@@ -5,7 +5,7 @@ parallelism, cleanup, and process-wide state safely.
 
 ## Default To Flat Subtests
 
-The default Go test shape remains table-driven subtests:
+Use table-driven subtests when cases share setup and assertions:
 
 ```go
 func TestValidateUser(t *testing.T) {
@@ -126,8 +126,8 @@ func TestWritesCacheFile(t *testing.T) {
 }
 ```
 
-These helpers are cheaper and safer than ad hoc shared temp paths or forgotten
-cleanup code.
+These helpers localize ownership. Cancellation is not a join: wait for workers
+before their fixtures are torn down. `t.Context()` cancels before cleanup runs.
 
 Keep generic examples older-safe unless the point of the example is the Go
 1.24+ helper itself. When the module version is unknown, `context.Background()`
@@ -149,7 +149,9 @@ for _, tc := range cases {
 }
 ```
 
-Even in mixed-version teams, the explicit rebind is acceptable review armor.
+Keep the rebind for older module semantics. It is unnecessary for newly declared
+range variables under Go 1.22+ semantics; assignment to a pre-existing variable
+does not acquire a fresh per-iteration binding.
 
 ## Ordering And Shuffle
 
@@ -171,8 +173,10 @@ func TestGroupedParallel(t *testing.T) {
 }
 ```
 
-The parent does not complete until its parallel subtests finish, which gives
-you a place to bracket setup and cleanup.
+Use `t.Cleanup` for resources shared with parallel children. A `defer` in the
+parent function runs when that function returns, before paused parallel children
+resume; it can destroy their fixture too early. The test's registered cleanup
+runs after its children complete.
 
 ## Review Checklist
 

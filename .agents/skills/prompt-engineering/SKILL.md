@@ -9,6 +9,17 @@ Treat prompts as small behavioral specs. Improve them by naming the job,
 testing the behavior, changing one important thing at a time, and preserving
 the prompt's operating context.
 
+## Activity And Authority
+
+- For review, return findings and evidence without rewriting files or changing
+  a deployed prompt. A proposed revision may accompany findings when requested.
+- For drafting or implementation, change the requested prompt artifact within
+  existing authority. Separate local evaluation from deployments, live tool
+  actions, sensitive-data use, and metered runs that need additional authority.
+- Use the smallest useful output. A short rewrite need not produce a formal
+  experiment report; a consequential behavior change needs explicit cases and
+  honest evidence.
+
 ## Core Workflow
 
 1. **Scope the prompt job.**
@@ -19,7 +30,8 @@ the prompt's operating context.
 2. **Define success before rewriting.**
    State the desired behavior, hard requirements, acceptable variation, known
    failure modes, and evidence that would prove the prompt improved. If success
-   is vague, turn it into 3-7 concrete cases before editing.
+   is vague, establish representative cases and meaningful failure criteria
+   before editing. Preserve baseline cases and explain changed expectations.
 3. **Choose the lightest pattern that fits.**
    Use direct instructions for simple tasks, structured sections for context
    control, few-shot examples for format or judgment calibration, schemas for
@@ -33,7 +45,8 @@ the prompt's operating context.
 5. **Evaluate against reality.**
    Test representative, edge, adversarial, and regression cases. Compare outputs
    against explicit criteria instead of intuition. Record which failures changed
-   and which remained.
+   and which remained. If execution is unavailable, label the assessment as
+   static and name the material untested behavior; do not invent run results.
 6. **Iterate deliberately.**
    Change one major variable at a time: instruction wording, context ordering,
    examples, output schema, tool contract, reasoning guidance, or model
@@ -87,8 +100,10 @@ the prompt's operating context.
   prompt embeds retrieved or user-supplied material, fence it with explicit
   delimiters (e.g. `<<untrusted:source>> ... <</untrusted>>`, matching the
   `context-engineering` convention) and tag fact provenance with
-  `[src:code|user|tool|docs|memory|inferred]` so downstream graders can detect
-  leakage and instruction-override attempts.
+   `[src:code|user|tool|docs|memory|inferred]` when provenance affects judgment.
+   These conventions aid inspection; they do not enforce trust or authorization.
+   Grade permitted extraction or quotation separately from obeying embedded
+   instructions, disclosing protected content, or taking unauthorized actions.
 - Specify output shape with examples or schemas when downstream code depends on
   structure.
 - Use examples that demonstrate decisions, not examples that merely repeat the
@@ -106,18 +121,19 @@ the prompt's operating context.
 
 Prompts that look polished but fail in practice:
 
-- **Over-explanation:** repeating the same instruction in three different
-  registers; the model averages them and weakens all three.
+- **Over-explanation:** redundant instructions increase context cost and can
+  obscure priorities; verify the effect rather than assuming how a model works.
 - **Role stacking:** layering "you are an expert X, careful Y, helpful Z"
-  before the task; clutter without behavioral effect.
+  before the task without evidence that the roles improve the target behavior.
 - **Examples that contradict instructions:** when a few-shot demo violates a
-  rule, the example wins.
+  rule, the prompt supplies conflicting signals; repair the conflict and test.
 - **Repetition without structure:** restating constraints in prose instead of
   putting them in a labeled section or schema.
 - **Vague quality bars:** "be helpful", "be thorough", "use best practices"
   without observable criteria.
-- **Schema mixed with freeform:** asking for JSON *and* commentary; the model
-  picks one and the parser breaks.
+- **Schema mixed with freeform:** requesting prose outside a JSON-only contract.
+  Put explanations in schema fields or a separate supported output channel when
+  the consumer needs both.
 
 ## Failure Diagnosis
 

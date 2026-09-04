@@ -68,9 +68,10 @@ trust boundaries.
      direction may need to move
    - reliability-hardening or review mode when the main risk is missing tests,
      auth gaps, retries, observability, or unsafe failure handling
-3. Keep the boundary thin: decode input, authenticate and authorize, validate,
-   call a service, map transport errors, and serialize output. Business
-   decisions belong in service code that can run without the transport layer.
+3. Keep the boundary thin: decode input, authenticate, validate transport shape,
+   call the shared policy/service path, map transport errors, and serialize
+   output. Authorization must cover every entrypoint; business decisions belong
+   in service code that can run without the transport layer.
 4. Place persistence and external integrations deliberately:
    - repositories or data adapters own query shape, batching, and transaction
      details when that improves clarity or testing
