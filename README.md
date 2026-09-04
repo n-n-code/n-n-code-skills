@@ -92,6 +92,9 @@ Examples:
   add `tester-mindset` when the validation strategy is the main concern
 - agent context setup, long task handoff, compaction, or context-quality
   debugging: `context-engineering`
+- DeepSeek Harness operation, configuration, SDK/ACP integration, plugin
+  extension, or source-checkout maintenance: `deepseek-harness`; add
+  `coding-guidance-python` when implementing a Python SDK caller
 - user story, acceptance criteria, discussion synthesis, or story splitting:
   `story-clarifier`
 - one story-preparation artifact: use its owner — `story-clarifier`,
@@ -205,6 +208,10 @@ Defaults:
 ### Workflow Skills
 
 - `context-engineering` — workflow for curating, auditing, compacting, and refreshing AI-agent context before or during agent work
+- `deepseek-harness` — workflow for installing, operating, configuring,
+  automating, extending, troubleshooting, or maintaining DeepSeek Harness
+  across Profiles, patches, plugins, Web/headless/SDK/ACP surfaces, Cordis
+  extension points, and source checkouts
 - `dream-thinking` — explicitly invoked creative retrospective that uses simulated dream imagery and metaphor to derive grounded hypotheses and next observations or actions without treating imagery as evidence
 - `go-testing-with-testify` — workflow for writing, reviewing, and hardening Go tests built on the standard `testing` package plus `stretchr/testify`, including `assert`, `require`, `mock`, and `suite`
 - `playwright-testing` — workflow for standalone `playwright-cli` investigation or for writing, debugging, reviewing, and hardening Playwright tests in an existing Node, Python, .NET, or Java harness
@@ -244,6 +251,12 @@ Defaults:
 - Use `playwright-testing` for live `playwright-cli` investigation even when no repo harness exists, or when a working harness exists and the job is to design, generate, harden, debug, or review browser tests.
 - Use `prompt-engineering` when the main artifact is an LLM prompt, system or developer prompt, prompt eval set, structured-output instruction, or prompt-behavior diagnosis.
 - Use `context-engineering` when the main artifact is a context packet, context audit, long-session compaction, or handoff summary for AI-agent work.
+- Use `deepseek-harness` when the work centers on `dsh` Profiles, patches,
+  plugins, sessions, SDK/ACP integration, Cordis extension points, runtime
+  troubleshooting, or an explicit Harness source checkout. Let
+  `prompt-engineering`, `security`, `project-platform-diagnose`, or
+  `project-release-maintainer` lead when prompt behavior, a security review,
+  unresolved platform variance, or publication machinery is the primary job.
 - Use `thinking` when no candidate has won yet and the job is to frame an ambiguous decision, compare plausible approaches, and converge. It may precede or accompany implementation while the decision remains open.
 - Use `recursive-thinking` when a candidate already exists and the user wants a premortem, countercase, assumption challenge, or evidence-based stress test.
 - Use `dream-thinking` only for an explicit dream, sleep, nightmare, or metaphorical-reflection request; use ordinary retrospective or postmortem guidance otherwise, and never treat dream imagery as an evidence basis.
