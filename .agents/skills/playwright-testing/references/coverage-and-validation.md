@@ -131,6 +131,10 @@ Expected to trigger `playwright-testing` plus another skill:
 
 Expected not to trigger `playwright-testing` as the primary skill:
 
+- `Open this site, search for the product, and verify the results.` ->
+  `chrome-devtools-axi` for generic browser operation
+- `The save button does nothing; inspect the browser console and requests
+  without editing code.` -> `chrome-devtools-axi` for ad hoc investigation
 - `Set up Playwright in this fresh repo.` -> route to `setup-playwright`
 - `Repair playwright.config.ts and browser installation after a package move.` ->
   route to `setup-playwright`
@@ -141,20 +145,38 @@ Expected not to trigger `playwright-testing` as the primary skill:
 
 Boundary check:
 
-- Live `playwright-cli` investigation belongs to `playwright-testing` whether
-  or not a repo harness exists.
+- Explicitly requested `playwright-cli` investigation and investigation that
+  serves Playwright test work belong to `playwright-testing` whether or not a
+  repo harness exists. Generic ad hoc Chrome work defaults to
+  `chrome-devtools-axi`; an existing harness alone does not turn every browser
+  question into test work.
 - If a harness exists and the user is asking about test behavior, flakiness,
   locators, or assertions, prefer `playwright-testing`.
-- If the harness is missing, broken, or the main work is runner config,
-  browser install, CI shape, or reusable-auth plumbing, prefer
-  `setup-playwright`.
+- When harness creation or repair is requested, or the main work is runner
+  config, browser install, CI shape, or reusable-auth plumbing, prefer
+  `setup-playwright`. Harness absence alone does not select setup for a live
+  investigation.
 
 Coexistence check:
 
+- Generic Chrome operation selects `chrome-devtools-axi`; explicit Playwright
+  CLI sessions retain this skill. For `Inspect the failing request in Chrome
+  DevTools, then add a regression test to the existing Playwright harness`,
+  AXI owns browser investigation and this skill owns the resulting test.
 - When both this skill and Playwright's upstream `playwright-cli` skill are
   exposed, the upstream skill supplies current command mechanics while
   `playwright-testing` owns the claim, safety boundary, repo decision, and test
   artifact. Runtime `--help` is authoritative over either document.
+
+## AXI routing refresh — 2026-09-05
+
+The explicit Playwright investigation and existing-harness cases above retain
+this skill. Generic Chrome operation now belongs to `chrome-devtools-axi`.
+The new negatives and composition boundary were reviewed as static predictions
+against both descriptions and README defaults; no new host activation or
+browser execution was observed. The repository checker passed for the current
+working-tree inventory.
+The older evidence below remains a dated record of the earlier Playwright work.
 
 ## Validation Evidence — 2026-08-24
 

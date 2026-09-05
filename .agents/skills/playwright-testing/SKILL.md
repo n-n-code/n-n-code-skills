@@ -1,6 +1,6 @@
 ---
 name: playwright-testing
-description: Use for live browser investigation with `playwright-cli`, or for writing, debugging, reviewing, or hardening Playwright tests in an existing working harness across Node, Python, .NET, or Java. Covers flake triage, locator refinement, visual and responsive checks, test structure, fixtures, auth-state use, and mock boundaries. Not for installing or repairing runner config, browser binaries, reusable-auth plumbing, or CI harnesses; use `setup-playwright`.
+description: Use for explicitly requested live browser investigation with `playwright-cli`, or for writing, debugging, reviewing, or hardening Playwright tests in an existing working harness across Node, Python, .NET, or Java. Covers flake triage, locator refinement, visual and responsive checks, test structure, fixtures, auth-state use, and mock boundaries. Generic ad hoc Chrome work defaults to `chrome-devtools-axi`. Not for installing or repairing runner config, browser binaries, reusable-auth plumbing, or CI harnesses; use `setup-playwright`.
 ---
 
 # Playwright Testing
@@ -15,10 +15,16 @@ Route by the artifact and state model, not by the word “Playwright.”
 
 ### Live investigation
 
-Use `playwright-cli` to inspect a running app, reproduce a browser behavior, or
-collect evidence. This lane does **not** require a repo-owned test harness and
-does not authorize adding one. Keep the CLI agent-side unless the user asks for
-repo changes.
+Use `playwright-cli` when the user explicitly selects Playwright investigation
+or when the investigation serves the Playwright test work owned by this skill.
+Inspect the running app, reproduce behavior, or collect evidence. This lane
+does **not** require a repo-owned test harness and does not authorize adding
+one. Keep the CLI agent-side unless the user asks for repo changes.
+
+Generic ad hoc Chrome investigation and browser use default to
+`chrome-devtools-axi`. Preserve an explicitly chosen browser/tool and its
+session. AXI findings may feed a durable Playwright test; this skill owns that
+test artifact and the existing runner's behavior.
 
 Load [references/playwright-cli-investigation.md](references/playwright-cli-investigation.md).
 
