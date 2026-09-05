@@ -26,8 +26,8 @@ npx --no-install playwright cli --help
 
 Do not install a repo dependency merely to investigate a page. If no suitable
 command exists, report the missing capability or ask before changing the
-environment. Validate unfamiliar subcommands with `--help`; the upstream
-installable skill and website can lag the runtime.
+environment. Validate unfamiliar subcommands with `--help`; documentation
+and local examples can lag the runtime.
 
 The examples below use the standalone command. Replace `playwright-cli` with
 the verified no-install package-manager equivalent only when the installed

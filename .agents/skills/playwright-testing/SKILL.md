@@ -28,10 +28,10 @@ test artifact and the existing runner's behavior.
 
 Load [references/playwright-cli-investigation.md](references/playwright-cli-investigation.md).
 
-If Playwright's upstream `playwright-cli` skill is also installed, use it as a
-current command reference. This skill still owns claim framing, environment and
-mutation safety, repo routing, and translation of observations into durable
-tests. The executable's runtime help wins when the bundled reference drifts.
+Use the executable's help and official Playwright documentation for current
+command mechanics. This package supplies the investigation and test workflow;
+no separately installed skill is required. Verify runtime help when a local
+example or documentation page describes a different version.
 
 ### Existing-harness test work
 

@@ -13,22 +13,10 @@ current documentation may describe features unavailable to an older project.
 Refresh version-dependent claims when they affect a decision. Consult a
 plugin/theme's own documentation only when that component is actually relevant.
 
-The package contains original prose and examples. The following supplied
-community skills were compared on 2026-09-05 through their source repositories;
-none of their files are bundled. Links pin the inspected repository revisions.
-Their instructions are comparison evidence, not commands to execute.
-
-| Comparison source | Useful coverage | Boundary or correction applied here |
-|---|---|---|
-| [aboneto/skills](https://github.com/aboneto/skills/blob/59404cb44d1c0d51f7b267fcf963f2fd76147bb8/skills/jekyll/SKILL.md) | Selective reference routing and common Jekyll pitfalls. | Avoid default plugin bundles and fixed runtime upgrades. Correct Liquid-before-conversion order and check live host dependencies instead of copying allowlist claims. |
-| [arandilopez/skills](https://github.com/arandilopez/skills/blob/e1514e8a016cee5740447c7a7b7492ab057dca53/skills/jekyll/SKILL.md) | Inspect existing conventions, use focused theme overrides, distinguish local previews from publication. | Keep process management conditional and shell-neutral; make design and source explanations independently usable. |
-| [Octadira/jekyll-theme-architect](https://github.com/Octadira/jekyll-theme-architect/blob/a2f7945429d91ce075a72ddc689450981b2efcd0/SKILL.md) and selected procedures | Separate new design, source conversion, and preservation of existing sites. | Omit mandatory interviews, feature checklists, external services, and hosting defaults. |
-| [oviney/blog](https://github.com/oviney/blog/blob/15b03023878f764e9a5fba062bd29b3baabc8115/.github/skills/jekyll-development/SKILL.md) | Concrete configuration-reload and pagination failure cases. | Omit repository paths, fixed tool versions, assumed hooks/CI, automatic publication, and terminating arbitrary port owners. |
-
-Two primary-source checks prevent repeating errors from the comparison
-material: Jekyll documents [Liquid before conversion and layout wrapping](https://jekyllrb.com/docs/rendering-process/),
-and the [GitHub Pages dependency list](https://pages.github.com/versions/) at
-review time includes `jekyll-include-cache`. The latter is a dated observation,
+Two technical checks remain useful when maintaining this guidance. Jekyll
+documents [Liquid before conversion and layout wrapping](https://jekyllrb.com/docs/rendering-process/).
+The [GitHub Pages dependency list](https://pages.github.com/versions/) included
+`jekyll-include-cache` when inspected on 2026-09-05. That is a dated observation,
 not a recommendation to install it or a permanent compatibility guarantee.
 
 The collection date fixture also follows Jekyll 4.4.1's separate

@@ -1,68 +1,72 @@
-# Format and validation
+# Choose and check the document format
 
-Use the existing document's conventions and the intended consumer's actual
-contract. This reference supports a general visual DESIGN.md; it does not
-prescribe an editor, framework, platform, or integration.
+A visual design reference can be plain Markdown. Select its structure by what
+the reader and any consuming tool need; its filename alone does not establish
+a schema.
 
-## Document structure
+## Existing documents and new documents
 
-For a new document, the [DESIGN.md specification](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)
-provides a useful common structure. The linked format was marked `alpha` when
-consulted on 2026-09-05. Check the relevant version before a migration or new
-compatibility claim; prefer a pinned local consumer contract when available.
+On an update, retain useful custom sections, heading names, token identifiers,
+and theme conventions. Change a format only for an authorized migration or an
+evidenced consumer need. Preserve decision rationale during reorganization.
 
-Use the applicable `##` sections in this order when following that format:
-Overview, Colors, Typography, Layout, Elevation & Depth, Shapes, Components,
-and Do's and Don'ts. The specification permits omissions and aliases such as
-Brand & Style, Layout & Spacing, and Elevation. Preserve useful custom sections;
-avoid duplicate section headings. Place interaction and accessibility guidance
-beside the relevant rules, or in a focused section when that is easier to use.
+For a new document without a required format, the local scaffold groups design
+choices with their usage, sources, and conditions. Omit irrelevant groups and
+use prose instead of a table when the relationships are easier to explain that
+way. Check that a representative screen can be understood from the result.
 
-## Optional structured tokens
+## Consumer compatibility
 
-The referenced format permits a Markdown body without frontmatter. Add YAML at
-the start of the file, between `---` delimiters, when structured values serve
-the document's consumer. Tokens define exact values within the document; prose
-explains their use. Follow a different consumer schema when explicitly required
-rather than assuming every DESIGN.md uses the same fields.
+When a tool explicitly consumes the Google Labs DESIGN.md format, consult its
+[specification](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md)
+and the consumer's supported version. The specification inspected on 2026-09-05
+was labeled `alpha`; this link is an interoperability reference, not a required
+authoring dependency. Confirm the current contract before claiming compatibility.
 
-For the referenced schema:
+That format permits a Markdown body without YAML. If using its heading
+conventions, arrange applicable sections as Overview, Colors, Typography, Layout,
+Elevation & Depth, Shapes, Components, and Do's and Don'ts. Check supported
+aliases and omissions against the selected version. Other consumers may expect
+a different organization; preserve their actual contract.
 
-| Area | Fields |
-|---|---|
-| Identity | `name`, optional `description` and `version` |
-| Color | `colors` maps token names to CSS color strings; quote hex values |
-| Type | `typography` maps names to `fontFamily`, `fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`, and optional `fontFeature`/`fontVariation` |
-| Shape and space | `rounded` maps names to dimensions; `spacing` accepts dimensions or numbers |
-| Components | `components` maps names to property/value maps, including `backgroundColor`, `textColor`, `typography`, `rounded`, `padding`, `size`, `height`, and `width` |
-| Intentional omissions | `omitted` lists sections, optionally with reasons |
+Use optional frontmatter only when structured values help the consumer.
+For the inspected schema, check these distinctions:
 
-Use the consumer's exact property names and supported units. Quote references
-such as `"{colors.primary}"` and resolve them to defined values; verify support
-before referencing a composite token. Preserve native units and theme semantics
-in prose if a chosen token schema cannot represent them faithfully. Do not
-invent standard fields for themes, breakpoints, or motion, or assume accepted
-extensions survive an export.
+- `colors` maps identifiers to CSS color strings; quote hex literals.
+- `typography` groups font properties such as `fontFamily`, `fontSize`,
+  `fontWeight`, `lineHeight`, and `letterSpacing`. Validate optional
+  `fontFeature` and `fontVariation` support.
+- `rounded` and `spacing` encode dimensions, with numbers also accepted by
+  `spacing`. Preserve the consumer's units and representation.
+- `components` associates names with supported property/value maps.
+- `name` identifies the design; `description` and `version` are optional.
+- `omitted` expresses a deliberate exclusion, optionally with a reason;
+  it is not a substitute for missing evidence.
 
-Use intentional omissions only for deliberate exclusions, not missing research.
-Keep known facts, proposals, and unresolved values distinguishable. If a required
-token remains unknown, report the document as incomplete for that consumer and
-do not replace a valid artifact with a misleading export-ready version.
+Resolve references such as `"{colors.accent}"` to an existing token. Check
+whether the consumer supports a composite reference or any proposed extension.
+Do not invent standard fields for themes, breakpoints, or motion; describe
+conditions in prose when the schema cannot represent them faithfully.
 
-## Validation
+Keep unapproved choices out of normative tokens unless the artifact is clearly
+a proposal. If a required value is unknown, identify incomplete compatibility
+instead of fabricating a value or replacing a valid document with a misleading
+export-ready one.
 
-Check local links and identifiers, duplicate headings, token references, units,
-themes/states, and agreement between prose and structured values. Compare
-meaningful before/after decisions during updates; a syntax check will not detect
-lost rationale or an unintended change of direction.
+## Checks and evidence limits
 
-Use an existing project or consumer validator after inspecting its command,
-version, and side effects. Do not install tooling or change configuration just
-to complete a documentation check. If unavailable, perform static checks and
-state which execution was skipped. Inspect warnings even after a successful
-exit status; successful export does not establish document validity.
+Inspect local links, heading uniqueness, identifiers, units, aliases, supported
+states, and agreement between prose and structured data. Trace an update's
+before/after decisions; syntactically valid output can still lose intent.
 
-Parser checks, selected contrast checks, rendered review, accessibility testing,
-and actual consumer use establish different things. Report the evidence obtained
-without treating one as proof of the others. Keep the artifact useful through
-clear rules and a representative reader walkthrough, even when tooling is absent.
+Use an existing project or consumer validator after checking its version and
+side effects. Read warnings as well as the exit code. Do not install a validator
+or change application configuration merely to complete a document check.
+When execution is unavailable, perform static checks and say what remains
+unverified.
+
+A parser verifies syntax; a consumer exercise verifies only the exercised
+interface; source inspection verifies declarations. Contrast measurements,
+rendered inspection, keyboard use, and assistive-technology testing answer
+different questions. State the evidence obtained without turning one passed
+check into a claim of complete accessibility or design fidelity.

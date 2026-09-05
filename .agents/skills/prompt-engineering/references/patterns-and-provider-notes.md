@@ -9,13 +9,13 @@ material.
 explicit `Links checked:` date for the linked official docs used by that
 section. Before citing provider-specific behavior:
 
-- re-verify against the current official source linked under Source Synthesis
+- re-verify against the current official source linked under Primary references
 - treat the date as provenance, not a freshness guarantee; verify a material
   model or API claim whenever its version or applicability may have changed
 
-## Source Synthesis
+## Primary references
 
-The source set converges on a few durable ideas:
+Use these principles when selecting and evaluating a prompt pattern:
 
 - start with a clear task, context, constraints, and output contract
 - use examples when the task requires judgment, style calibration, or exact
@@ -46,18 +46,6 @@ Primary sources:
   <https://github.com/anthropics/prompt-eng-interactive-tutorial>
 - Google Cloud prompt engineering overview:
   <https://cloud.google.com/discover/what-is-prompt-engineering>
-
-Adjacent skill examples from the supplied source set:
-
-- <https://skills.sh/google-labs-code/stitch-skills/enhance-prompt>
-- <https://skills.sh/github/awesome-copilot/prompt-builder>
-- <https://skills.sh/wshobson/agents/prompt-engineering-patterns>
-- <https://skills.sh/supercent-io/skills-template/prompt-repetition>
-- <https://skills.sh/jeffallan/claude-skills/prompt-engineer>
-- <https://skills.sh/github/awesome-copilot/ai-prompt-engineering-safety-review>
-
-Use these as adjacent workflow inspiration, not as structure to copy. This repo
-keeps its own frontmatter, folder structure, and concise workflow style.
 
 ## Prompt Anatomy
 

@@ -9,10 +9,9 @@ Last evidence refresh: 2026-08-24.
 - Stable [Playwright 1.62.1](https://github.com/microsoft/playwright/releases/tag/v1.62.1)
   reviewed.
 - Standalone [`@playwright/cli` 0.1.18](https://github.com/microsoft/playwright-cli/releases/tag/v0.1.18)
-  reviewed, including the files produced by `playwright-cli install --skills`
-  and the executable's own `--help`.
+  reviewed, including the executable's own `--help`.
 - That CLI package depends on a Playwright 1.63 alpha while the stable runner is
-  1.62.1. Review its runtime and skill as a separate moving surface; do not
+  1.62.1. Review its runtime as a separate moving surface; do not
   import alpha-only assumptions into stable test-runner guidance.
 - Primary sources: [release notes](https://playwright.dev/docs/release-notes),
   [best practices](https://playwright.dev/docs/best-practices),
@@ -21,23 +20,18 @@ Last evidence refresh: 2026-08-24.
   [authentication](https://playwright.dev/docs/auth),
   [API testing](https://playwright.dev/docs/api-testing),
   [Trace Viewer](https://playwright.dev/docs/trace-viewer-intro), and
-  [Playwright CLI skills](https://playwright.dev/agent-cli/skills).
+  [Playwright CLI command documentation](https://github.com/microsoft/playwright-cli/tree/v0.1.18#commands).
 - Cross-language sources: [Python test runners](https://playwright.dev/python/docs/test-runners),
   [.NET test runners](https://playwright.dev/dotnet/docs/test-runners), and
   [Java test runners](https://playwright.dev/java/docs/test-runners).
 
-The installed upstream CLI skill is comparison evidence, not a specification.
-Retained ideas: snapshot/ref discipline, scoped `find`, current request
-inspection, named sessions, targeted cleanup, saved-state secrecy,
-  `--debug=cli`, and runtime help discovery. Rejected ideas: incompatible
-frontmatter, Node-only test assumptions, default scaffolding during
-investigation, contradictory `networkidle` and parallelism rules, broad
-  `close-all` / `kill-all`, and treating the live app as the intended spec.
-  Although the 0.1.18 release notes advertise broader generated-code
-  languages, the installed CLI skill, config schema, and `generate-locator`
-  runtime surface still expose TypeScript-oriented action/locator output.
-  Translate that evidence into the active binding instead of claiming a
-  selectable non-Node target that the command does not expose.
+Keep command guidance grounded in executable behavior: snapshot/ref lifetimes,
+scoped queries, current requests, named sessions, targeted cleanup, saved-state
+secrecy, and `--debug=cli`. Although the 0.1.18 release notes advertise broader
+generated-code languages, the inspected config schema and `generate-locator`
+runtime expose TypeScript-oriented action/locator output. Translate that
+evidence into the active binding instead of promising an unsupported output
+target.
 
 ## Official Doc Coverage Map
 
@@ -163,10 +157,10 @@ Coexistence check:
   CLI sessions retain this skill. For `Inspect the failing request in Chrome
   DevTools, then add a regression test to the existing Playwright harness`,
   AXI owns browser investigation and this skill owns the resulting test.
-- When both this skill and Playwright's upstream `playwright-cli` skill are
-  exposed, the upstream skill supplies current command mechanics while
+- CLI help and official tool documentation supply current command mechanics;
   `playwright-testing` owns the claim, safety boundary, repo decision, and test
-  artifact. Runtime `--help` is authoritative over either document.
+  artifact without depending on another installed skill. Runtime `--help`
+  takes precedence when a documented example disagrees.
 
 ## AXI routing refresh — 2026-09-05
 

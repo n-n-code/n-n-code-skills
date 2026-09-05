@@ -1,22 +1,11 @@
 # Sources and validation
 
-Maintainer reference for provenance, refresh decisions, routing, and evidence.
+Maintainer reference for tool contracts, refresh decisions, routing, and evidence.
 Runtime agents should load the reference matching their task instead.
 
-## Source record
+## Primary technical sources
 
-Reviewed 2026-09-05. The supplied `skills.sh` pages were locators; they could not
-be retrieved through the web tool, so their public repository trees and source
-files were read instead. The duplicated text in the final URL was corrected to
-`adwilkinson/claude-code-tools/lighthouse`. All nine references were inspected;
-their instructions and scripts were not executed or installed for review.
-
-This package is independently written from the verified tool contracts. The
-community skills informed workflow choices and failure cases; no community
-skill text or helper implementation is copied into the package. It is a new
-Lighthouse workflow, not a fusion that promises to preserve every source feature.
-
-### Primary technical sources
+Technical evidence reviewed 2026-09-05.
 
 - [Lighthouse overview](https://developer.chrome.com/docs/lighthouse/overview)
   owns the supported usage surfaces and their general purpose.
@@ -46,23 +35,6 @@ Lighthouse workflow, not a fusion that promises to preserve every source feature
   and [getting started](https://googlechrome.github.io/lighthouse-ci/docs/getting-started.html)
   ground collection, assertions, budgets, storage, and startup. Their older
   examples require version checks before reuse.
-
-### Community references and dispositions
-
-Each source link is pinned to the inspected revision. Retained ideas are
-rewritten and checked against the primary sources above.
-
-| Reference source | Useful idea retained | Not adopted |
-|---|---|---|
-| [onnokh / lighthouse](https://github.com/onnokh/lighthouse/blob/ddc76ad4b370ade131cf2334c626c567af3623e0/SKILL.md) | Discover CLI surfaces, reports, configuration, and auth options | Copied flag catalogs, retired PWA category, routine global installs/sandbox disabling, and incomplete desktop settings |
-| [jeremylongshore / performance-lighthouse-runner](https://github.com/jeremylongshore/tons-of-skills-marketplace/blob/a0ea67e4efd7f1236ec900ae4fc2e70d9e805e15/skills/05-frontend-dev/performance-lighthouse-runner/SKILL.md) | Considered as a broad activation example | Generic frontend trigger and instructions lacking a concrete Lighthouse procedure |
-| [tech-leads-club / perf-lighthouse](https://github.com/tech-leads-club/agent-skills/blob/fc886b77e54db38b621f08472434cbb73ef35008/packages/skills-catalog/skills/%28performance%29/perf-lighthouse/SKILL.md) | Report parsing, budgets, comparisons, and CI structure | Standalone repetition flag, stale audit examples, unconditional accuracy claims, public uploads, and zero-baseline division |
-| [community-access / lighthouse-scanner](https://github.com/community-access/accessibility-agents/blob/161c60c7493ad657f371ad8f91253d33c3b12044/.github/skills/lighthouse-scanner/SKILL.md) | Discover existing CI and inspect individual accessibility findings | Universal score grades/severity mappings, automatic conclusions from score deltas, and assumed wrapper defaults |
-| [guia-matthieu / lighthouse-audit](https://github.com/guia-matthieu/clawfu-skills/blob/a69bf676d7fbc532f898f092e6326871052e414a/skills/seo-tools/lighthouse-audit/SKILL.md) | Explicit batch scope and before/after reporting | Extra Python runner, FID/PWA guidance, and capabilities not consistently implemented; its [helper](https://github.com/guia-matthieu/clawfu-skills/blob/a69bf676d7fbc532f898f092e6326871052e414a/skills/seo-tools/lighthouse-audit/scripts/main.py) substitutes random demo results when Lighthouse is unavailable and defaults absent scores to zero |
-| [membranedev / lighthouse](https://github.com/membranedev/application-skills/blob/f484c8265e70ec910a57342389cca5c5de7d8167/skills/lighthouse/SKILL.md) | Negative routing case for the same product name | Membrane account/connector workflow targeting the separate Lighthouse ticketing service |
-| [dembrandt / performance-and-web-vitals](https://github.com/dembrandt/dembrandt-skills/blob/aa660ff3b6a928074c707e876e44f25154405b66/skills/performance-and-web-vitals/SKILL.md) | Connect findings to images, fonts, loading, and interaction behavior | Universal score targets, broad framework prescriptions, and automatic public upload |
-| [petrkindlmann / performance-testing](https://github.com/petrkindlmann/qa-skills/blob/b3bb61bd268b147476252c6ed5a0440c87b97441/skills/performance-testing/SKILL.md) | Baseline-driven budgets, failing gates, and separating TBT from field INP | Backend load-test scope, compulsory infrastructure, and an overbroad claim that INP can only be measured in the field |
-| [adwilkinson / lighthouse](https://github.com/adwilkinson/claude-code-tools/blob/f574c9085d00b035b03ea1508fe11ecaa828c891/skills/lighthouse/SKILL.md) | Production-build, measure, inspect, fix, and remeasure loop | Automatic fixes for an audit-only request, universal 95 targets, synthetic category totals, stale audits, broad process kills, and unconditional source-map exposure |
 
 ## Refresh boundaries
 

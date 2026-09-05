@@ -46,6 +46,12 @@ routing, and composition examples. Do not duplicate that catalog here.
   neighboring skills and update the relevant `README.md` family and defaults
 - Treat `README.md` and `AGENTS.md` as durable repo docs; do not add process or automation claims that the repository does not implement
 - Prefer small, targeted edits over broad repo rewrites
+- Author skills, examples, and templates independently. Keep external references
+  when primary documentation, specifications, research, or tool evidence supports
+  a concrete procedure, constraint, or maintenance decision
+- Obtain explicit user agreement before incorporating third-party material that
+  requires additional licenses or notices; retain required notices for any such
+  material that remains
 
 ## Validation
 

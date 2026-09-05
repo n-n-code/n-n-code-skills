@@ -17,8 +17,7 @@ The published repository is intentionally small at the root:
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
 - `scripts/test_skill_resources.py` tests the release scaffold and optionally
   checks real CTest behavior and metadata against PyYAML
-- `LICENSE` covers original repository content; adapted third-party material
-  retains its package-local license and attribution
+- `LICENSE` contains the repository's MIT license
 
 ## Repository Layout
 
@@ -336,7 +335,7 @@ Defaults:
   authoritative artifacts, compact authorized work records, and one agent unless
   useful delegation is available and authorized. The packages provide procedures,
   not a scheduler, runtime, or enforcement service. See their
-  [source synthesis](.agents/skills/agentic-sdlc/references/sources.md) and
+  [technical references](.agents/skills/agentic-sdlc/references/sources.md) and
   [delivery](.agents/skills/agentic-sdlc/references/trigger-evals.md) /
   [improvement](.agents/skills/agentic-sdlc-improvement/references/trigger-evals.md)
   evaluation cases for the detailed boundaries.
@@ -482,12 +481,5 @@ repository evidence relevant to each change before finishing.
 
 ## License
 
-Original repository content is licensed under the MIT License. See
-[LICENSE](LICENSE). Adapted third-party material retains its original terms:
-`design-md-author` includes modified Apache-2.0 material, with
-[source attribution](.agents/skills/design-md-author/ATTRIBUTION.md) and the
-upstream license inside the package.
-
-`chrome-devtools-axi` combines modified MIT and Apache-2.0 source material;
-its [source manifest and license notices](.agents/skills/chrome-devtools-axi/references/sources-and-validation.md)
-record the upstream revisions, adaptations, and package-local licenses.
+Repository content is licensed under the [MIT License](LICENSE).
+External tools and linked resources retain their own terms.

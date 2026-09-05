@@ -1,91 +1,27 @@
 # Sources and validation
 
-Maintainer reference for the AXI workflow, source refreshes, and routing checks.
-Runtime agents need this file only for provenance or skill maintenance.
+Use this reference to verify a tool-specific claim or evaluate the skill.
+Routine tasks need only the core workflow and the relevant operating reference.
 
-## Source manifest and attribution
+## Technical evidence
 
-Retrieved 2026-09-05 through read-only GitHub API tree inspection and raw files
-at the immutable revisions below. The supplied `skills.sh` pages were locators;
-the duplicate AXI locator was counted once. Each selected upstream skill is a
-standalone `SKILL.md`; no required bundled references, scripts, or assets were
-missing from the selected skill folders. No upstream code was executed to
-inspect these sources.
+The inspected AXI revision is
+[d688a3ede0707110e19dfd9bb540b71146ea1ddf](https://github.com/kunchenguid/chrome-devtools-axi/tree/d688a3ede0707110e19dfd9bb540b71146ea1ddf),
+package 0.1.34. This is the basis of the version-specific limitations below,
+not a requirement to install that version. Review the actual executable's
+help and matching source before changing those limitations.
 
-| Source | Immutable revision | Selected skill path | License |
-|---|---|---|---|
-| [Kun Chen / AXI](https://github.com/kunchenguid/chrome-devtools-axi/tree/d688a3ede0707110e19dfd9bb540b71146ea1ddf) | `d688a3ede0707110e19dfd9bb540b71146ea1ddf` | `skills/chrome-devtools-axi/SKILL.md` | [MIT, copyright 2026 Kun Chen](../licenses/chrome-devtools-axi-MIT.txt) |
-| [GitHub / Awesome Copilot](https://github.com/github/awesome-copilot/blob/7b1ebe6333397841ca918dec904d24d4695fe953/skills/chrome-devtools/SKILL.md) | `7b1ebe6333397841ca918dec904d24d4695fe953` | `skills/chrome-devtools/SKILL.md` | [MIT, copyright GitHub, Inc.](../licenses/awesome-copilot-MIT.txt) |
-| [Addy Osmani / Agent Skills](https://github.com/addyosmani/agent-skills/blob/84ee50673804b95c287d1e4eb4f1c1dad7c5188a/skills/browser-testing-with-devtools/SKILL.md) | `84ee50673804b95c287d1e4eb4f1c1dad7c5188a` | `skills/browser-testing-with-devtools/SKILL.md` | [MIT, copyright 2025 Addy Osmani](../licenses/addyosmani-agent-skills-MIT.txt) |
-| [Chrome DevTools / MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/086299a69e6d322df43d7e54417fce25b3a2fc08/skills/chrome-devtools/SKILL.md) | `086299a69e6d322df43d7e54417fce25b3a2fc08` | `skills/chrome-devtools/SKILL.md` | [Apache-2.0](../licenses/chrome-devtools-mcp-APACHE-2.0.txt) |
-
-Modification notice: this package substantially rewrites and combines the
-selected skills for AXI-only execution, portable metadata, bounded evidence,
-and explicit local skill ownership. MCP tool examples were replaced with AXI
-procedures; the source files are not reproduced unchanged. Upstream licenses
-are retained verbatim apart from final newline normalization. No applicable
-separate `NOTICE` file was present in the inspected source trees.
-
-Additional command evidence at these same revisions:
-
-- AXI `README.md`, `package.json`, and `src/cli.ts`, `src/bridge.ts`,
-  `src/bridge-script.ts`, and `src/run.ts`: help text, separate backend
-  resolution, connection/session semantics, references, output paths,
-  profiling defaults, and host-side batch execution. AXI's package version
-  was 0.1.34.
-- Chrome DevTools MCP `package.json` and `docs/troubleshooting.md`: separately
-  reviewed engine requirements and launch diagnostics. Its package version
-  was 1.8.0; this does not prove which backend any AXI installation will run.
-
-The follow-up review traced two limitations at the pinned AXI revision:
-
-- [CLI freshness checking](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/cli.ts#L1068-L1082)
-  is used by ordinary CLI UID actions. The
-  [batch UID parser](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L128-L131)
-  strips the generation without checking it, and
-  [batch snapshots/actions](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L242-L265)
-  bypass AXI snapshot stamping. This is a source finding, not an observed
-  stale browser action or evidence that upstream MCP accepts every stale UID.
-- The [batch script loader](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L315-L335)
-  imports a native absolute path. A local Windows Node probe reproduced the
-  incompatible import form; actual AXI execution remains unobserved. The
-  operating reference therefore qualifies native-Windows batching and retains
-  ordinary commands as the supported recommendation for this revision.
-
-Use the [AXI repository](https://github.com/kunchenguid/chrome-devtools-axi)
-and the actual executable's help for refreshes. Resolve a new moving revision
-before updating related source claims; do not silently mix revisions.
-
-## Ownership and capability dispositions
-
-All four remote packages are input-only evidence, with no source-package
-action. The new local AXI package owns generic ad hoc Chrome work. The local
-`playwright-testing` boundary is narrowed to explicit Playwright investigation
-and existing-harness test work; its CLI and test capabilities are preserved.
-`setup-playwright` retains harness ownership unchanged. Neither local skill
-is an externalized runtime dependency of the new package.
-
-| Source behavior cluster | Disposition and destination |
+| Decision | Primary evidence |
 |---|---|
-| AXI real-browser triggers, navigation, tabs, input, extraction | **Keep/merge** in [core workflow](../SKILL.md) and [page operation](investigation-workflows.md#operate-a-page-or-extract-content); explicit other-tool choices and static fetching are excluded |
-| AXI live command discovery and contextual hints | **Keep** in core and [runtime discovery](operation-and-sessions.md#discover-without-starting-an-investigation); **externalize** exhaustive syntax/catalog ownership to the maintained AXI CLI help, not the upstream skill |
-| AXI connection modes, session identity, stale-reference recovery, batch API | **Move-to-ref** in [operation and sessions](operation-and-sessions.md); retain identity and retry rules in core; qualify batch freshness and native-Windows loader limitations instead of promising the CLI contract for every interface |
-| Copilot snapshots, screenshots, tab targeting, console/network/performance methods | **Merge** in core and [investigation workflows](investigation-workflows.md); replace MCP calls with AXI mechanics |
-| Addy reproduce/inspect/verify, computed styles, focused UI scenarios, before/after evidence | **Merge** in investigation workflows; code fixes and durable tests remain conditional on the requested artifact |
-| Addy profile isolation, untrusted browser data, secret protection | **Merge** in core boundaries and operation reference; preserve task authorization instead of requiring confirmation for every URL or script mutation |
-| Addy blanket clean-console/whole-site completion rules and simplistic status/contrast conclusions | **Drop/replace** with task-related findings and qualified evidence in investigation workflows; universal audits and automatic root-cause claims are not the requested job |
-| DevTools page identity, efficient capture, pagination, output files, ordered interaction | **Merge** in operation and investigation references using AXI session/page semantics; do not copy MCP `pageId` or optional-tool assumptions |
-| Direct MCP configuration, extension installation/service-worker tools, fallback to direct MCP | **Drop** from target scope by the approved AXI-only contract; these remain upstream capabilities and are not promised here |
-| AXI upstream host metadata, generated stub machinery, global setup hooks/updates | **Drop** from package implementation; only local `name`/`description` metadata is used and environment changes require task authority |
-| Browser outcome, artifacts, runtime limitations, a11y/performance conclusions | **Merge** into the core output contract and bounded verification procedures |
-| Source attribution and licenses | **Keep** in this manifest and the linked license files; retain them when redistributing adapted material |
-| Local Playwright investigation and test resources | **Excluded from target scope**, retained by `playwright-testing`; only selection boundaries and corresponding fixtures change |
+| Command syntax, profiles, sessions, output paths, and profiling defaults | AXI [README](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/README.md), [CLI](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/cli.ts), and [bridge](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/bridge.ts) |
+| CLI generation checks | [UID validation](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/cli.ts#L1068-L1082) applies before ordinary CLI UID actions |
+| Batch reference and snapshot differences | [UID parsing](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L128-L131) drops the generation; [helper actions](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L242-L265) bypass CLI stamping/checks |
+| Native-Windows batch loading | The [script import](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L315-L335) uses a native absolute path; see the Node observation below |
+| Separate backend requirements | Chrome DevTools MCP [package metadata](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/086299a69e6d322df43d7e54417fce25b3a2fc08/package.json) and [launch troubleshooting](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/086299a69e6d322df43d7e54417fce25b3a2fc08/docs/troubleshooting.md), reviewed at package 1.8.0 |
 
-Gained: one AXI execution workflow with current-help discovery, session and
-outcome discipline, and focused diagnostic methods. Deliberately omitted:
-the direct MCP interface, extension workflow, installer machinery, and
-unconditional audit/confirmation obligations. No upstream skill must be
-installed alongside this package.
+These source findings do not establish successful AXI execution, acceptance
+of every stale UID by the backend, or the backend selected by another AXI
+installation. Pin a newly inspected revision when refreshing a source claim.
 
 ## Routing cases
 
@@ -149,6 +85,10 @@ the task and input evidence; keep the expected behavior separate for grading.
 
 ## Validation evidence
 
+The following observations and reviews describe the earlier package versions
+on 2026-09-05. They are retained for the tool limitations and fixed cases;
+they do not establish behavior of replacement instructions without rechecking.
+
 Evidence refresh: 2026-09-05. The initial static review covered 15 routing
 cases and 12 instruction pressures but missed the batch-reference and Windows
 loader differences. The follow-up corrected those contracts and added B1, W1,
@@ -158,16 +98,9 @@ establish host selection or successful browser execution.
 | Surface | Method | Context | Comparison | Result and limit |
 |---|---|---|---|---|
 | Structure | Observed run | Current target host, Windows workspace | Before/after | Repository skill checker passed for the working-tree inventory using the bundled Python; `git diff --check` passed. |
-| Structure: source resources | Observed run | Current target host | None | File comparison found all four local license texts matched the pinned upstream texts after newline normalization; package links and inventory passed the checker. |
 | Activation | Static prediction | N/A | Before/after for Playwright boundaries; none for new cases | All 15 routing expectations are consistent with the final descriptions and inventory. Explicit Playwright work retains its owner; actual host selection is unobserved. |
 | Instruction behavior | Static prediction | N/A | Before/after | Reviewed the 12 pressures and three interface fixtures against the corrected CLI/batch distinction, conditional Windows guidance, and submission recovery. No host instruction run was performed. |
 | Resource execution: Node import form | Observed run | Current target host, Windows Node 24.19.0 | Drive-letter path / file URL | The former raised `ERR_UNSUPPORTED_ESM_URL_SCHEME`; the latter reached module resolution and raised `ERR_MODULE_NOT_FOUND` for the intentionally absent file. This supports the source-level Windows diagnosis; it is not an AXI smoke test. |
-
-The first package check flagged two bare AXI command names as possible skill
-references. The prose now names the full commands; the checker was not changed.
-Existing Playwright trigger terms and test/CLI resources were preserved. The
-routine isolated workflow now stays in the main skill; advanced connection,
-recovery, and batch details load only when needed.
 
 The Node probe used `C:/__axi_readonly_review_nonexistent__/script.mjs` as an
 intentionally absent target and compared native-path import with

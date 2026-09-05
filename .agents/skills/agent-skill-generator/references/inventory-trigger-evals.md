@@ -253,11 +253,11 @@ Collision and composition checks:
   boundaries.` -> `setup-playwright` owns generation and placement;
   `prompt-engineering` owns the requested behavioral prompt review. Do not add
   `agent-skill-generator` because these are not reusable `SKILL.md` packages.
-- `Both the local Playwright skills and Playwright's installed playwright-cli
-  skill are available; inspect checkout and harden its existing regression
-  test.` -> `playwright-testing` owns the claim, safety, repo decisions, and
-  test artifact; the upstream skill may supply current command mechanics, with
-  runtime help authoritative.
+- `Use the installed Playwright CLI to inspect checkout and harden its existing
+  regression test; an example disagrees with the executable's help.` ->
+  `playwright-testing` owns the claim, safety, repo decisions, and test artifact;
+  verify mechanics against runtime help and official tool documentation.
+  No additional skill installation is required.
 
 ## Go
 

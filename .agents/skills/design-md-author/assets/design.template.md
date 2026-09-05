@@ -1,58 +1,56 @@
-<!-- Modified authoring scaffold; source credit/license: ../ATTRIBUTION.md.
-Replace prompts and remove this comment. Omit irrelevant sections, preserve an
-existing document's format on updates, and label unresolved choices. Add token
-frontmatter before all Markdown only when the intended consumer calls for it;
-use real values and the applicable schema. -->
+<!-- Authoring prompts: adapt this outline to the product, delete unused areas,
+and remove this comment from the finished document. Preserve an existing
+document's format during updates. Consumer-specific tokens belong before the
+Markdown body only when that consumer requires or benefits from them. -->
 
-# [Product] design
+# [Product] visual design
 
-## Overview
+## Scope and direction
 
-[State the purpose, audience, platform/scope and design status. Explain a few
-concrete principles governing hierarchy, density, emphasis and visual character.]
+[Identify the product area, audience, platforms, and whether this records
+accepted decisions, observed behavior, or a proposed direction.]
 
-### Sources and implementation
+[Explain the few choices that control hierarchy, emphasis, density, imagery,
+and tone. Tie each choice to the product's purpose.]
 
-[Link maintained tokens, components, accepted decisions or inspected references.
-Distinguish intended rules, observed behavior and proposed changes. Include
-version/scope information only when useful; omit credentials and temporary URLs.]
+## Foundations and their use
 
-## Colors
+[Keep the rows that help a reader make decisions. Use maintained token names
+and verified values. Label estimates and proposals; preserve native units.]
 
-[Define semantic roles, foreground/background pairings, emphasis, feedback and
-supported themes. Use verified identifiers/values and preserve conditional modes.]
+| Concern | Usage rule and rationale | Maintained source or value | Conditions and exceptions |
+|---|---|---|---|
+| Color and themes | [Roles, paired surfaces/text, feedback] | [Token or definition] | [Theme/state] |
+| Text | [Hierarchy, fonts/fallbacks, scaling] | [Text role or definition] | [Platform/size] |
+| Space and shape | [Grouping, rhythm, edges] | [Layout or style definition] | [Density/size] |
+| Layers | [Surface order, borders, overlays] | [Component or definition] | [Overlay/state] |
 
-## Typography
+## Composition and adaptation
 
-[Describe available fonts/fallbacks, text roles, hierarchy, size, weight, tracking
-and line height. Preserve native units and text-scaling behavior where relevant.]
+[Describe how a representative screen is arranged and why. Cover content width,
+alignment, grouping, navigation, and changes across the supported sizes,
+orientations, and input methods.]
 
-## Layout
+## Reusable interface patterns
 
-[Explain content width, grouping, alignment, density and spacing rhythm. Describe
-adaptation to supported sizes, orientations and input methods; label estimates.]
+[Describe the maintained components people should use, their variants, and
+when each fits. Include relevant focus, active, disabled, validation, loading,
+empty, error, and success states. Link implementation owners.]
 
-## Elevation & Depth
+## Interaction and access
 
-[Explain how surfaces, borders, overlays or shadows express hierarchy. A flat
-system can describe its alternative without inventing an elevation scale.]
+[Record meaningful keyboard/touch behavior, focus transitions, labels,
+non-color feedback, and reduced-motion behavior. Distinguish requirements
+from checks that were actually performed.]
 
-## Shapes
+## Exceptions and recurring choices
 
-[Describe shape, radius and border rules with verified values and exceptions.]
+[Explain permitted departures and the mistakes these rules should prevent.
+Keep specific rationale rather than generic aesthetic advice.]
 
-## Components
+## Evidence and open decisions
 
-[Cover recurring components and their supported variants. Reference maintained
-implementations where available. Explain when to use each and its applicable
-focus, active, disabled, validation, loading, empty, error and success states.
-Include labels, keyboard/touch use, non-color cues and reduced motion as relevant.]
-
-## Do's and Don'ts
-
-[Record a few specific product rules and recurring mistakes. Distinguish
-accessibility requirements from behavior that has actually been verified.]
-
-### Open decisions
-
-[Keep only meaningful unresolved choices and their impact. Remove when empty.]
+[Link the accepted decisions and inspected sources that establish these rules.
+Identify unresolved conflicts, missing states, and proposed changes with their
+impact. Remove this section if neither source context nor open decisions
+adds information beyond the sections above.]
