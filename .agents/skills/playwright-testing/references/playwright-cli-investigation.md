@@ -1,7 +1,10 @@
 # Playwright CLI Investigation
 
-Load this file for agent-side browser exploration of a running app, including
-the valid case where the repository has no Playwright test harness.
+Load this file for explicitly requested Playwright browser exploration or
+investigation supporting Playwright test work, including the valid case where
+the repository has no harness. Generic ad hoc Chrome work defaults to
+`chrome-devtools-axi`; the command and session guidance here remains specific
+to Playwright.
 
 ## Discover The Installed Surface
 
@@ -23,8 +26,8 @@ npx --no-install playwright cli --help
 
 Do not install a repo dependency merely to investigate a page. If no suitable
 command exists, report the missing capability or ask before changing the
-environment. Validate unfamiliar subcommands with `--help`; the upstream
-installable skill and website can lag the runtime.
+environment. Validate unfamiliar subcommands with `--help`; documentation
+and local examples can lag the runtime.
 
 The examples below use the standalone command. Replace `playwright-cli` with
 the verified no-install package-manager equivalent only when the installed

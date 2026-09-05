@@ -2,15 +2,15 @@
 
 Maintainer-only audit reference for future doc refreshes and trigger checks.
 
-## Review Snapshot
+## Versioned technical sources
 
-Last evidence refresh: 2026-08-24.
+These versions are reference points; match guidance to the actual installed
+runner and CLI before relying on a version-dependent feature.
 
 - Stable [Playwright 1.62.1](https://github.com/microsoft/playwright/releases/tag/v1.62.1)
-  reviewed.
+  is the runner reference.
 - Standalone [`@playwright/cli` 0.1.18](https://github.com/microsoft/playwright-cli/releases/tag/v0.1.18)
-  reviewed, including the output of `playwright-cli install --skills` and
-  current runtime help.
+  is the standalone CLI reference; its executable help owns command syntax.
 - Its [package manifest](https://raw.githubusercontent.com/microsoft/playwright-cli/v0.1.18/package.json)
   depends on a Playwright 1.63 alpha while the stable runner is 1.62.1, so
   persisted CLI tooling requires a before/after coexistence proof rather than
@@ -158,31 +158,20 @@ Boundary check:
   requires a compatible Node Playwright Test harness and target host plus
   validation of an existing or generated default seed.
 
-## Validation Evidence — 2026-08-24
+## Setup instruction cases
 
-- **Structure:** the bundled workspace Python ran `scripts/check_skills.py`
-  successfully against all 38 skills and local links. Plain `python` was not on
-  this machine's `PATH`; that lookup failure is environment evidence, not a
-  checker failure.
+These are reusable planning fixtures, not recorded outcomes. Requests below are
+read-only; expected setup and verification steps must not be reported as executed.
 
-Focused post-selection evidence:
+| Input | Expected behavior |
+|---|---|
+| Python 3.12, pytest 8, pytest-asyncio>=0.26, async API, no package.json; plan a Chromium harness. | Use the supported `page` fixture, deliberate async mode and compatible loop scopes; await actions/assertions and avoid a Node sidecar. Do not invent `async_page`. |
+| .NET 8 NUnit project without Node tooling; plan a Linux Chromium harness. | Preserve NUnit, select the .NET package, build before using the generated `playwright.ps1`, and specify focused `dotnet test` verification. |
+| Java 21 Maven/JUnit 5 module without Node tooling; plan a Chromium harness. | Preserve the module and Java runner, install browsers through the supported Java CLI, and avoid a Node test project. |
+| Stable Playwright 1.62.1 harness; plan persisted `@playwright/cli` 0.1.18 tooling. | Inspect coexistence, manifests/lockfile and command resolution; distinguish the CLI's runtime from the stable runner and avoid forced alpha alignment. |
+| Working Node harness with `tests/seed.spec.ts`; plan Codex planner/generator/healer definitions. | Verify installed help and host support, exercise the seed when authorized, scope generation, and inspect outputs including untracked files. This is harness work, not reusable skill authoring. |
+| Working Node harness without a seed; plan Test Agent definitions. | Check installed-version default-seed behavior and review a generated default; require an explicit seed only when project bootstrap needs it. Seed absence alone does not establish a blocker. |
 
-| Case | Expected primary | Expected companions | Selection to avoid | Surface | Method | Context | Comparison | Result | Failure class | Residual risk |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `Use setup-playwright. Python 3.12, pytest 8, pytest-asyncio>=0.26, async_api, no package.json; plan a Chromium harness without edits.` | N/A | N/A | N/A | instruction behavior | observed run | isolated target host | before/after | Pass after revision: a fresh rerun used the documented `page` fixture, preserved deliberate auto mode, added session loop scope, awaited actions and assertions, and introduced no Node artifacts. The initial probe had invented `async_page`. | workflow (corrected) | No package, browser, collection, or smoke execution. |
-| `Use setup-playwright. .NET 8 NUnit project, no Node tooling; plan a Linux Chromium harness without edits.` | N/A | N/A | N/A | instruction behavior | observed run | isolated target host | none | Pass: preserved NUnit and proposed the .NET package, build-before-`playwright.ps1` flow, and focused `dotnet test` validation. | N/A | No NuGet resolution, generated install script, browser, or CI execution. |
-| `Use setup-playwright. Java 21 Maven/JUnit 5 module, no Node tooling; plan a Chromium harness without edits.` | N/A | N/A | N/A | instruction behavior | observed run | isolated target host | none | Pass: preserved Maven/JUnit, proposed Java CLI wiring and per-test contexts, and added no Node artifacts. | N/A | No Maven resolution, browser, smoke, or parallel execution. |
-| `Use setup-playwright. Persist @playwright/cli 0.1.18 beside a working @playwright/test 1.62.1 pnpm harness without edits.` | N/A | N/A | N/A | instruction behavior | observed run | isolated target host | none | Pass: required before/after version and dependency-tree evidence, kept the stable runner separate, and rejected forced alpha alignment. | N/A | No real install, lockfile diff, command resolution, or runner smoke. |
-| `Use setup-playwright. Generate Codex planner, generator, and healer definitions for a working Node harness with tests/seed.spec.ts, without edits.` | N/A | N/A | N/A | instruction behavior | observed run | isolated target host | none | Pass: required runtime help, seed execution, scoped generation, untracked-file review, host discovery, and no `agent-skill-generator`. | N/A | No generation, seed run, browser use, or fresh-host discovery. |
-| `Use setup-playwright. Generate Codex Test Agent definitions for a working Node harness with no seed, without edits.` | N/A | N/A | N/A | instruction behavior | observed run | isolated target host | none | Pass: a fresh probe did not block generation on seed absence; it required installed-version verification, review of any default seed, and an explicit seed only when custom bootstrap behavior needs one. | N/A | No generation, default-seed inspection, host discovery, or seed execution. |
-
-- **Static routing prediction:** fresh catalog-review probes selected
-  `setup-playwright` for async Python, .NET, Java, persisted CLI, and Test Agent
-  prerequisite cases; selected `setup-playwright` + `prompt-engineering` only
-  for requested Test Agent instruction/tool-boundary changes; and rejected a
-  Node sidecar for a Python repo without a compatible Node harness. Seed absence
-  alone was removed as a blocker after current source verification.
-- **Activation limitation:** the routing probes were explicitly asked to select
-  from the catalog, so they remain static predictions rather than automatic
-  host activation. The observed rows above test behavior after explicit skill
-  selection, not metadata activation or resource execution.
+Keep package/browser resolution, collection, seed execution, generated-file
+inspection, and host discovery as separate checks. A setup proposal or explicit
+skill selection does not establish successful installation or activation.

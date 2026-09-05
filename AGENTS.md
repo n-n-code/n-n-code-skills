@@ -46,10 +46,27 @@ routing, and composition examples. Do not duplicate that catalog here.
   neighboring skills and update the relevant `README.md` family and defaults
 - Treat `README.md` and `AGENTS.md` as durable repo docs; do not add process or automation claims that the repository does not implement
 - Prefer small, targeted edits over broad repo rewrites
+- Author skills, examples, and templates independently. Keep external references
+  when primary documentation, specifications, research, or tool evidence supports
+  a concrete procedure, constraint, or maintenance decision
+- Obtain explicit user agreement before incorporating third-party material that
+  requires additional licenses or notices; retain required notices for any such
+  material that remains
 
 ## Validation
 
 There is no application build or lint workflow.
+
+Keep reusable validation procedures, fixtures, expected outcomes, and checker
+code in the repository. Never commit individual skill-maintenance run reports,
+transcripts, logs, run-specific output snapshots, per-run hashes, or result tables, including
+under skill `references/` or `assets/` directories.
+
+When retaining run artifacts, use the host's task-artifact storage outside the
+checkout, or an OS temporary directory outside it when no task storage is available.
+Report their location in the task, not in committed files. Retain concise
+source/version facts that support current guidance, and turn useful failures
+into minimal reusable cases instead of shipping their run history.
 
 For changes to skills, supporting files, root documentation, or validation
 behavior, run:

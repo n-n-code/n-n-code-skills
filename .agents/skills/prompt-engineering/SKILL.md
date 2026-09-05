@@ -197,7 +197,7 @@ Cases that should pass, fail, or remain uncertain.
 ## Reference Map
 
 - [patterns-and-provider-notes.md](references/patterns-and-provider-notes.md) -
-  prompt patterns, source synthesis, and provider-specific notes.
+  prompt patterns, primary references, and provider-specific notes.
 - [evaluation-flywheel.md](references/evaluation-flywheel.md) - lightweight
   prompt eval design, iteration, and grading workflow.
 - [trigger-evals.md](references/trigger-evals.md) - positive and negative
