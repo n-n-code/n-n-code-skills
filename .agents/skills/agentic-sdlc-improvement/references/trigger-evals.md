@@ -42,6 +42,3 @@ executed development tasks or measured workflow improvements.
 Use `agent-skill-generator` evidence conventions when available. Explicit skill
 injection tests post-selection behavior, not activation. Static expectations and
 illustrative examples must never become observed pass rates.
-
-The optional [initial validation record](../../agentic-sdlc/references/validation-results.md)
-identifies exercised cases and their limits; it is evidence for that revision only.

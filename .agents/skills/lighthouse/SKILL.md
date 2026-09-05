@@ -103,5 +103,5 @@ These companions are optional; Lighthouse use alone does not require a harness.
   scores, relabel a stale artifact as a new run, suppress audits to meet a
   target, or present proposed commands as executed.
 
-For source provenance, drift checks, routing cases, and validation evidence,
+For technical sources, drift checks, routing cases, and validation procedures,
 read [sources and validation](references/sources-and-validation.md).

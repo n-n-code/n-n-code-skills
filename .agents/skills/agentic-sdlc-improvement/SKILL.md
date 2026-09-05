@@ -97,7 +97,3 @@ their illustrative data is not validation evidence.
 - [Evaluation cases](references/trigger-evals.md): routing and behavior criteria.
 - [Raw behavior fixtures](references/behavior-fixtures.md): isolated probe inputs;
   keep grading material out of the probe.
-- [Initial validation record](../agentic-sdlc/references/validation-results.md):
-  optional historical evidence; exclude from probe inputs.
-- [Execution pilot](../agentic-sdlc/references/execution-pilot.md): optional shared
-  delivery evidence and limits; exclude from probe inputs.

@@ -1,19 +1,16 @@
 # Sources and validation
 
-Maintainer reference for tool contracts, refresh decisions, routing, and evidence.
+Maintainer reference for tool contracts, refresh decisions, and reusable checks.
 Runtime agents should load the reference matching their task instead.
 
 ## Primary technical sources
-
-Technical evidence reviewed 2026-09-05.
 
 - [Lighthouse overview](https://developer.chrome.com/docs/lighthouse/overview)
   owns the supported usage surfaces and their general purpose.
 - Lighthouse source snapshot:
   [`74d982bd211c5fb12c4b2c18c4a1fc8bc17f6b6c`](https://github.com/GoogleChrome/lighthouse/tree/74d982bd211c5fb12c4b2c18c4a1fc8bc17f6b6c).
-  Reviewed package metadata identifies version 13.4.1 and Node >=22.19. This
-  records the source reviewed, not an assertion about an installed or published
-  package on a future host.
+  At this revision, package metadata identifies version 13.4.1 and Node >=22.19.
+  Match the source contract to the actual runtime before applying it.
 - [CLI reference](https://github.com/GoogleChrome/lighthouse/blob/74d982bd211c5fb12c4b2c18c4a1fc8bc17f6b6c/readme.md),
   [CLI flags](https://github.com/GoogleChrome/lighthouse/blob/74d982bd211c5fb12c4b2c18c4a1fc8bc17f6b6c/cli/cli-flags.js),
   [configuration](https://github.com/GoogleChrome/lighthouse/blob/74d982bd211c5fb12c4b2c18c4a1fc8bc17f6b6c/docs/configuration.md),
@@ -71,9 +68,8 @@ Review both the full description and its leading job-bearing prefix.
 
 ## Instruction-behavior cases
 
-These are **static predictions**, context **N/A**, comparison **none**, unless
-an observed execution record below explicitly says otherwise. Passing code
-examples does not turn these into observed agent-behavior tests.
+These define expected instruction behavior, not recorded outcomes. Exercising
+code examples does not by itself test the agent's selection or decisions.
 
 | Exact request or fixture | Required behavior |
 |---|---|
@@ -93,73 +89,37 @@ examples does not turn these into observed agent-behavior tests.
 | A flow's click fails; finalizing the timespan or exporting JSON also fails. | Retain the original failure, attempt remaining exports/cleanup, record secondary failures, and mark the flow incomplete |
 | An authenticated LHR contains extraHeaders; share its HTML report. | Inspect and sanitize a separate copy, regenerate HTML from sanitized data, and keep raw artifacts private |
 
-## Validation evidence
+## Resource validation cases
 
-Reviewed and followed up 2026-09-05. Do not treat source review or candidate
-cases as observed routing. The initial runtime skips were followed by the
-temporary integration checks below. Comparison is **none** unless noted.
+Use these cases when changing the parsing, flow, or CI examples. Fix inputs and
+expected behavior before execution; keep run outputs with the task.
 
-| Surface / method / context | Evidence | Result and limit |
-|---|---|---|
-| Structure / observed run / current target host | Repository `python scripts/check_skills.py`, using the bundled Python executable because Python is absent from PATH | Passed with 45 skills at follow-up; checks metadata, inventory, local references, and layout |
-| Structure / observed run / current target host | `git diff --check` and trailing-whitespace inspection of the new untracked package | Passed; Git also emitted existing LF-to-CRLF conversion warnings |
-| Activation / static prediction / N/A | Ten routing cases above, reviewed against the current neighboring descriptions and README ownership | Expected boundaries are consistent; actual host selection unobserved |
-| Instruction behavior / static prediction / N/A | Fifteen requests/fixtures above reviewed against the workflow and references | Required responses are specified; no isolated agent-behavior run |
-| Resource execution / observed run / generic Node harness on Windows | Extracted examples: original nine parser fixtures, four comparison/redaction fixtures, and eight flow-failure scenarios | All 21 passed; review counterexamples changed from lost comparison context/exports to preserved context/partial evidence (before/after) |
-| Structure / observed run / generic Node harness on Windows | `node --check` on both extracted JS examples and `JSON.parse` on both JSON config examples | Syntax passed; does not establish Puppeteer or LHCI compatibility at runtime |
-| Resource execution / observed run / current target host | Native Lighthouse navigation through an owned browser port, with a synthetic Authorization header on a loopback-only fixture | Valid LHR and HTML; four standard categories; CLI exit 0; actual report summarized with comparison metadata present |
-| Resource execution / observed run / current target host | Synthetic secret-marker inspection in raw JSON/HTML, selected-field summary, sanitized JSON copy, and HTML regenerated from that copy | Raw reports retained the configured header; summary and sanitized copies excluded the marker. This is a targeted check, not a universal redaction guarantee |
-| Resource execution / observed run / current target host | Unmodified flow example against complete, missing-control, and inert-control fixtures | Complete flow exported three steps with exit 0; readiness failure preserved one step; active-timespan failure preserved two. Both failures exported JSON/HTML, marked incomplete, exited 1, and preserved the original error |
-| Resource execution / observed run / current target host | LHCI collection through an owned browser port, three runs, then error/pass/warn assertions and filesystem export | Three valid Lighthouse 12.6.1 reports; breached error exit 1, passing assertion exit 0, breached warning exit 0, filesystem export exit 0 |
-| Resource execution / observed run / generic pipeline wrapper on Windows | Run a failing LHCI assertion, export locally afterward, and return the retained assertion status | Wrapper exited 1 while export exited 0; local manifest and report files existed. No named CI provider was exercised |
-| Resource execution / observed run / current target host | Initial default Chrome-launcher lifecycle in standalone Lighthouse and LHCI | Failed during Windows temporary-profile cleanup with EPERM after capture. Owned-browser attachment passed; the underlying default-launch cleanup issue was not fixed or reclassified as success |
+- **Report parsing:** exercise a single LHR, Node `lhr` wrapper, PSI
+  `lighthouseResult` wrapper, runtime errors, unusual display/value types,
+  unsupported manifest/flow envelopes, malformed JSON, and JSON null. Preserve
+  zero, null, missing fields, and warnings distinctly. Invalid inputs and runtime
+  errors must remain visible; do not coerce numeric strings into measurements.
+- **Comparison and redaction:** cover complete context containing zero/false,
+  different devices/browsers/throttling, unexpected nested objects and synthetic
+  secrets, and missing context. Preserve selected comparison fields and unknowns;
+  verify the summary and sanitized JSON/HTML exclude the planted secret.
+- **Flow failures:** cover success, failed clicks, a primary failure followed by
+  finalization/export/cleanup failures, launch/navigation/snapshot failures,
+  captured runtimeError, and status-write failure. Preserve the first error,
+  secondary errors, completed steps, partial exports, and incomplete status.
+- **Local integration:** use a controlled loopback page with complete,
+  missing-control, and inert-control variants. Verify report files and the
+  expected complete/partial flow state independently of the process exit code.
+  Keep synthetic headers and measurements separate from real-site claims.
+- **LHCI assertions:** exercise passing, failing-error, and warning budgets in
+  an owned scratch configuration. Export locally after a failed assertion and
+  verify the wrapper still returns the assertion failure. Do not change a
+  production budget or configure a public upload just to run the check.
+- **Lifecycle cleanup:** inspect capture validity and owned-browser/profile
+  cleanup separately. A report can exist even when cleanup fails. Use the
+  [recovery guidance](execution-and-configuration.md#recovery) without treating
+  a host-specific failure as a universal platform limitation.
 
-No isolated target-host activation or cross-host installation was exercised.
-The evidence does not establish cross-host execution or discovery behavior.
-
-The nine parser fixtures were: a single LHR, its Node `lhr` envelope, its PSI
-`lighthouseResult` envelope, an LHR with a runtime error, unusual display/value
-types, an LHCI-style manifest array, a flow-result envelope, malformed JSON,
-and JSON null. The base synthetic LHR used performance score 0.91, null
-accessibility score, no SEO category, TBT 0 milliseconds, no CLS audit, and an
-explicit fixture warning. Checks preserved zero/null/missing distinctions and
-warnings. The runtime-error fixture returned nonzero with its error visible;
-unsupported envelopes and malformed inputs returned nonzero. A numeric string
-was not converted to a measurement, and a custom fraction display mode survived.
-
-The four additional summary fixtures checked complete comparison context with
-zero/false values, differing devices/browsers/throttling, unexpected nested
-objects and secret markers, and absent comparison context. Only selected fields
-survived; missing conditions remained explicit rather than receiving defaults.
-
-The eight flow adapter scenarios covered success, a failed click, a failed click
-plus finalization/export/cleanup failures, browser-launch failure, navigation
-failure, snapshot failure, a captured runtimeError, and status-write failure.
-They checked first-error identity, secondary failures, partial exports, incomplete
-status, and cleanup. These are code-behavior tests, not agent instruction tests.
-
-The live environment used Windows, Node 24.19.0, Lighthouse 13.4.1, LHCI CLI
-0.15.1 with Lighthouse 12.6.1, Puppeteer 25.10.0, and Chrome for Testing
-152.0.7977.75. Packages and Chrome were provisioned only in an owned temporary
-directory, with no repository dependency or global installation. Browser audits
-ran sequentially against a disposable loopback HTTP server. The flow fixtures
-either exposed the documented details control, omitted it, or prevented its
-default opening action to provoke a timeout inside an active timespan.
-
-Native execution used the documented CLI flags plus `--port` for an owned
-Puppeteer browser. LHCI used the documented config with the local URL, filesystem
-output directory, and `collect.settings.port` substituted. Scratch error
-thresholds were set below all captured LCP values to fail, then above all values
-to pass; existing repository budgets were not involved. Three JSON/HTML report
-pairs and a local manifest were verified. No external report upload or status
-publication was requested or configured.
-
-The initial default-launch failure is an environment observation, not proof of
-its root cause or a general Windows limitation. Direct-launch cleanup remains
-unverified beyond that failure; the successful attachment path has separate
-evidence. Keep that distinction when refreshing the skill or testing another host.
-Synthetic markers and fixture measurements are validation data, not real-site
-performance claims. Temporary dependencies and artifacts are not shipped with
-this package. The integration directory, downloaded browser, packages, and
-artifacts were removed after verification; no process using the task's browser
-binary remained at cleanup.
+Record the actual runtime/configuration and report unavailable checks honestly.
+Syntax, code-resource execution, instruction behavior, and host activation answer
+different questions; none implies the others.

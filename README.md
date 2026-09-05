@@ -429,6 +429,13 @@ Published skills live under `.agents/skills/`, and every published skill folder 
 
 ## Validation
 
+Store individual validation runs, reports, logs, run-specific snapshots, and result
+bundles in task-artifact storage outside this checkout; never commit them.
+Use an external OS temporary directory if the host provides no task storage,
+and report the location in the task. Keep reusable cases, expected behaviors,
+validation procedures, checker code, and concise version-specific technical
+constraints in the repository.
+
 This repository does not currently have an application build or lint pipeline.
 
 For changes to skills, supporting files, root documentation, or validation

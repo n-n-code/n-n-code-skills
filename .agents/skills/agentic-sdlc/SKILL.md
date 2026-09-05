@@ -112,7 +112,3 @@ Keep sensitive payloads out of work records.
 - [Evaluation cases](references/trigger-evals.md): routing and behavior criteria.
 - [Raw behavior fixtures](references/behavior-fixtures.md): isolated decision
   probe inputs; keep grading material out of the probe.
-- [Initial validation record](references/validation-results.md): historical
-  decision-probe evidence and limitations; exclude from probe inputs.
-- [Execution pilot](references/execution-pilot.md): comparative repository-work
-  evidence and retained artifacts; exclude from probe inputs.

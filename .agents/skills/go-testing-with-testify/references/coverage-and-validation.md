@@ -21,10 +21,9 @@ Maintainer-only audit reference for future doc refreshes and trigger checks.
   [testing/synctest](https://pkg.go.dev/testing/synctest) and the
   [Go 1.25 introduction](https://go.dev/blog/testing-time)
 
-The 2026-09-04 revision corrects test-goroutine assertions, cleanup, narrow
-oracles, and proportional flake checks. Primary-source review and repository
-checks do not establish compiled execution of the illustrative Go examples or
-observed skill activation. Record those separately when performed.
+Source inspection and repository checks do not establish compiled execution of
+the illustrative Go examples or observed skill activation. Report those checks
+separately when performed.
 
 ### Where that guidance currently lands
 

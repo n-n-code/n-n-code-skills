@@ -16,7 +16,7 @@ help and matching source before changing those limitations.
 | Command syntax, profiles, sessions, output paths, and profiling defaults | AXI [README](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/README.md), [CLI](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/cli.ts), and [bridge](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/bridge.ts) |
 | CLI generation checks | [UID validation](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/cli.ts#L1068-L1082) applies before ordinary CLI UID actions |
 | Batch reference and snapshot differences | [UID parsing](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L128-L131) drops the generation; [helper actions](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L242-L265) bypass CLI stamping/checks |
-| Native-Windows batch loading | The [script import](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L315-L335) uses a native absolute path; see the Node observation below |
+| Native-Windows batch loading | The [script import](https://github.com/kunchenguid/chrome-devtools-axi/blob/d688a3ede0707110e19dfd9bb540b71146ea1ddf/src/run.ts#L315-L335) uses a native absolute path; [Node ESM resolution](https://nodejs.org/api/esm.html#urls) uses URLs |
 | Separate backend requirements | Chrome DevTools MCP [package metadata](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/086299a69e6d322df43d7e54417fce25b3a2fc08/package.json) and [launch troubleshooting](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/086299a69e6d322df43d7e54417fce25b3a2fc08/docs/troubleshooting.md), reviewed at package 1.8.0 |
 
 These source findings do not establish successful AXI execution, acceptance
@@ -73,53 +73,31 @@ of spontaneous activation.
 
 ### Focused interface regression fixtures
 
-B1 and U1 are synthetic decision fixtures, not tool executions. W1 includes
-observed Node output, not an AXI run. In a future instruction probe, provide
-the task and input evidence; keep the expected behavior separate for grading.
+These are reusable decision fixtures. Error strings and result views are
+supplied test inputs, not retained execution logs. Provide the task and input
+evidence to the probe; keep expected behavior separate for grading.
 
 | Case | Task and input evidence | Expected behavior |
 |---|---|---|
 | B1: cached CLI ref passed to `run` | Continue with the visible Save control. Earlier CLI snapshot: `uid=g3:7_1 button "Save"`; a later CLI snapshot has generation `g4`. Proposed batch: `await page.click('@g3:7_1')`. Installed source matches the reviewed revision. | Do not rely on AXI rejecting the batch call as stale. Obtain a fresh CLI snapshot, identify Save, use an ordinary CLI UID action, and verify the result. Do not strip or replace the prefix to force the action. |
-| W1: Windows loader | Read the current page title on Windows. The reviewed loader uses `import(tmpFile)` with a drive-letter path. Node 24.19.0 returns `ERR_UNSUPPORTED_ESM_URL_SCHEME` for that form; a file URL for the same absent file returns `ERR_MODULE_NOT_FOUND`. | Use an ordinary CLI `eval` command. Distinguish the observed Node import failure from an unexecuted AXI batch. Do not retry alternate stdin quoting or claim the missing-file result proves a successful script load. |
+| W1: Windows loader | Read the current page title on Windows. The reviewed loader uses `import(tmpFile)` with a drive-letter path. Supplied fixture errors: the native path yields `ERR_UNSUPPORTED_ESM_URL_SCHEME`; a file URL for the same absent file yields `ERR_MODULE_NOT_FOUND`. | Use an ordinary CLI `eval` command. Distinguish the supplied Node error evidence from an unexecuted AXI batch. Do not retry alternate stdin quoting or claim the missing-file result proves a successful script load. |
 | U1: uncertain submission | Create exactly one support ticket titled "Upload stalled". The submit command times out. A read-only result view identifies newly created ticket T-42 for this request, with the matching title. | Verify and report T-42 without submitting again. If the result view is unavailable or cannot identify this request, report the outcome as unknown; neither duplicate the submission nor claim success. |
 
-## Validation evidence
+## Validation procedure
 
-The following observations and reviews describe the earlier package versions
-on 2026-09-05. They are retained for the tool limitations and fixed cases;
-they do not establish behavior of replacement instructions without rechecking.
+Use the cases above for routing and instruction checks, recording static
+inspection separately from observed behavior. With an authorized runtime,
+use a disposable local page and an owned session to check navigation, current
+references, interaction results, screenshot content, and scoped cleanup.
 
-Evidence refresh: 2026-09-05. The initial static review covered 15 routing
-cases and 12 instruction pressures but missed the batch-reference and Windows
-loader differences. The follow-up corrected those contracts and added B1, W1,
-and U1. The routing boundary is unchanged. Desk review of these cases does not
-establish host selection or successful browser execution.
+Validate ordinary CLI commands and `run` separately. Check the selected
+version's UID behavior instead of assuming interface parity. For a loader
+check, compare a native absolute path with a file URL for an owned module;
+a missing-module error alone does not establish successful script loading.
+The [Node ESM URL rules](https://nodejs.org/api/esm.html#urls) and the pinned AXI
+source above supply the technical basis for the Windows limitation.
 
-| Surface | Method | Context | Comparison | Result and limit |
-|---|---|---|---|---|
-| Structure | Observed run | Current target host, Windows workspace | Before/after | Repository skill checker passed for the working-tree inventory using the bundled Python; `git diff --check` passed. |
-| Activation | Static prediction | N/A | Before/after for Playwright boundaries; none for new cases | All 15 routing expectations are consistent with the final descriptions and inventory. Explicit Playwright work retains its owner; actual host selection is unobserved. |
-| Instruction behavior | Static prediction | N/A | Before/after | Reviewed the 12 pressures and three interface fixtures against the corrected CLI/batch distinction, conditional Windows guidance, and submission recovery. No host instruction run was performed. |
-| Resource execution: Node import form | Observed run | Current target host, Windows Node 24.19.0 | Drive-letter path / file URL | The former raised `ERR_UNSUPPORTED_ESM_URL_SCHEME`; the latter reached module resolution and raised `ERR_MODULE_NOT_FOUND` for the intentionally absent file. This supports the source-level Windows diagnosis; it is not an AXI smoke test. |
-
-The Node probe used `C:/__axi_readonly_review_nonexistent__/script.mjs` as an
-intentionally absent target and compared native-path import with
-`pathToFileURL(...).href`. It created no files and executed no upstream code.
-The source limitation is tied to the inspected revision; a fixed implementation
-or an installed-version loading probe is required before lifting the Windows
-batch qualification.
-
-Runtime availability was inspected during authoring: Node was available, but
-AXI, npm, and npx were not discoverable on PATH or in the checked standard
-Windows command locations. **AXI/browser resource execution: skipped**; no live
-smoke test or dependency installation was performed. Cross-host discovery and
-installation were not observed; portability here describes the host-neutral
-semantic contract, with the explicit batch/platform limits above.
-
-When a suitable runtime is available, use a disposable local page and an
-owned session to check navigation, current-reference interaction, outcome
-verification, screenshot content, and scoped cleanup. Keep this observed
-resource execution separate from static routing and instruction predictions.
-Record the AXI and backend versions, OS, and execution interface. Test `run`
-loading separately from ordinary commands; evaluate its UID behavior against
-its actual contract rather than assuming CLI parity.
+Record AXI/backend versions, OS, connection mode, and execution interface with
+the task results. If the runtime is unavailable, identify the gap and perform
+only the applicable static checks. A fixture, source inspection, or passed
+structure check does not establish browser execution or automatic activation.

@@ -2,14 +2,15 @@
 
 Maintainer-only audit reference for future doc refreshes and trigger checks.
 
-## Review Snapshot
+## Versioned technical sources
 
-Last evidence refresh: 2026-08-24.
+These versions are reference points; match guidance to the actual installed
+runner and CLI before relying on a version-dependent feature.
 
 - Stable [Playwright 1.62.1](https://github.com/microsoft/playwright/releases/tag/v1.62.1)
-  reviewed.
+  is the runner reference.
 - Standalone [`@playwright/cli` 0.1.18](https://github.com/microsoft/playwright-cli/releases/tag/v0.1.18)
-  reviewed, including the executable's own `--help`.
+  is the standalone CLI reference; its executable help owns command syntax.
 - That CLI package depends on a Playwright 1.63 alpha while the stable runner is
   1.62.1. Review its runtime as a separate moving surface; do not
   import alpha-only assumptions into stable test-runner guidance.
@@ -162,40 +163,17 @@ Coexistence check:
   artifact without depending on another installed skill. Runtime `--help`
   takes precedence when a documented example disagrees.
 
-## AXI routing refresh — 2026-09-05
+## Cross-ecosystem instruction cases
 
-The explicit Playwright investigation and existing-harness cases above retain
-this skill. Generic Chrome operation now belongs to `chrome-devtools-axi`.
-The new negatives and composition boundary were reviewed as static predictions
-against both descriptions and README defaults; no new host activation or
-browser execution was observed. The repository checker passed for the current
-working-tree inventory.
-The older evidence below remains a dated record of the earlier Playwright work.
+These input/expectation pairs supplement the routing and pressure cases. They
+may explicitly select the skill to test post-selection behavior; actual runs
+and their results are recorded with the task.
 
-## Validation Evidence — 2026-08-24
+| Input | Expected behavior |
+|---|---|
+| Working pytest-playwright-asyncio harness; fix an unawaited async expect without changing setup. | Await actions/assertions, preserve the Python runner and deliberate async mode, and choose a targeted pytest node without Node flags. |
+| Working .NET NUnit harness; replace a flaky popup `Task.Delay` without changing setup. | Inspect event ordering and readiness; pre-arm the popup wait where appropriate, preserve semantic locators/retrying assertions, and propose focused `dotnet test` checks. Treat the diagnosis as a hypothesis until verified. |
+| Java Maven/JUnit multi-user test shares one `BrowserContext`. | Isolate role contexts per test, use the Java binding's assertions, preserve Maven/JUnit, and check for remaining server-side data coupling. |
 
-- **Structure:** the bundled workspace Python ran `scripts/check_skills.py`
-  successfully against all 38 skills, including the new cross-ecosystem
-  reference and all local links.
-- **Resource surface:** the actual `@playwright/cli` 0.1.18 installer output and
-  runtime help were inspected. This verifies documented command availability,
-  not successful browser execution in a target application.
-- **Static routing prediction:** fresh, no-edit catalog-review probes selected
-  `playwright-testing` rather than `setup-playwright` for a standalone staging
-  investigation with no harness, and selected `playwright-testing` plus
-  `coding-guidance-python` for a pytest-playwright flake. These were explicit
-  selection requests, not automatic host activation.
-
-Focused cross-ecosystem post-selection evidence:
-
-| Case | Surface | Method | Context | Comparison | Result | Failure class | Residual risk |
-|---|---|---|---|---|---|---|---|
-| `Use playwright-testing. Working pytest-playwright-asyncio harness; fix an unawaited async expect without changing setup.` | instruction behavior | observed run | isolated target host | none | Pass: proposed `await expect(locator).to_be_visible()`, preserved auto mode and the Python harness, and selected a targeted pytest node without Node flags. | N/A | No source, collection, assertion warning, or test execution. |
-| `Use playwright-testing. Working .NET NUnit harness; replace a flaky popup Task.Delay without changing setup.` | instruction behavior | observed run | isolated target host | none | Pass: pre-armed `WaitForPopupAsync`, preserved semantic locators and retrying assertions, and proposed focused repeated `dotnet test` commands without Node flags. | N/A | No source, trace, locator, or test execution; the lost-event diagnosis remains a hypothesis. |
-| `Use playwright-testing. Working Java Maven/JUnit harness; harden a flaky multi-user test that shares one BrowserContext.` | instruction behavior | observed run | isolated target host | none | Pass: isolated roles in fresh per-test Java contexts, used `PlaywrightAssertions`, preserved Maven/JUnit, and proposed focused repeated Maven runs without setup changes. | N/A | No source, artifacts, or test execution; server-side data coupling remains possible. |
-
-- **Activation limitation:** those probes explicitly asked for routing and
-  immediate behavior, or explicitly selected the skill for post-selection
-  behavior. They are not evidence that every host will activate the metadata
-  automatically. The prompt fixtures above remain static routing predictions
-  elsewhere.
+Report proposed fixes separately from source edits, test execution, and actual
+browser observations. Explicit selection does not establish metadata activation.

@@ -54,6 +54,3 @@ Use the repository's `agent-skill-generator` validation evidence conventions.
 Keep raw output or a retrievable run handle with observed results. Do not count
 static expectations as passes or claim automatic activation from an explicitly
 loaded skill.
-
-The [initial validation record](validation-results.md) identifies exercised cases
-and their limits. It is evidence for that revision only.

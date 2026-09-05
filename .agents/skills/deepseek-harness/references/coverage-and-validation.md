@@ -5,12 +5,11 @@ for the `deepseek-harness` skill. Runtime agents should load the operational or
 extension reference first and use this file only when refreshing or validating
 the skill.
 
-## Reviewed snapshot
+## Reference revision
 
 - Upstream repository: `deepseek-ai/deepseek-harness`
 - Commit: `4e84901e6471b79ec0338099867ebb4606d12bb5`
 - Package version: `0.1.2-alpha.4`
-- Reviewed: 2026-09-01
 - Status: developer preview, pre-first-stable-release behavior, with breaking
   changes and persisted-format rejection explicitly permitted
 
@@ -125,16 +124,11 @@ behavior, not activation.
 | `Use deepseek-harness in this dirty upstream checkout; do not disturb my changes or install dependencies.` | Read status and applicable instructions, preserve the worktree, inspect only, and report checks blocked by missing dependencies. |
 | `Use deepseek-harness; the Profile boots but no model credential is available.` | Report configuration boot separately from a credentialed model turn and do not imply provider execution. |
 
-## Evidence record
+## Validation reporting
 
-Record surface, method, context, and comparison independently:
-
-| Case | Surface | Method | Context | Comparison | Result | Failure class | Residual risk |
-|---|---|---|---|---|---|---|---|
-| Repository structure and links | structure | observed run | local authoring host, 2026-09-04 | repository baseline | Bundled validator passed with 39 skills; frontmatter, README inventory, and every relative reference target resolved. | none | Runtime semantics remain source-derived. |
-| Prompt-routing fixtures above | activation | static prediction | current published skill descriptions | adjacent owners | All 11 prompts matched the intended primary, companion, and exclusion boundaries in manual comparison. | N/A | No unprimed host activation evidence. |
-| Post-selection fixtures above | instruction behavior | observed run | three fresh isolated agents, 2026-09-04; skill explicitly selected | expected behaviors in the table | All five cases preserved the intended no-install, state-isolation, external-Bundle, dirty-checkout, and boot-versus-model boundaries. | none | Responses proposed behavior only; no Harness runtime ran. |
-| DeepSeek Harness commands and applications | resource execution | not run | local authoring host, 2026-09-04 | none | Node `v24.19.0` is available, but `dsh` is unavailable; it was not installed merely for validation. | environment unavailable | No local model, SDK, ACP, Web, Loader, or plugin smoke. |
+Report source inspection, instruction checks, and actual Harness execution
+separately. Name the version and surface exercised, the result, and any missing
+runtime or credentials. Record individual runs with the task.
 
 Do not upgrade static routing inspection to observed activation, treat a config
 dump as a plugin boot, or treat process completion as proof of the agent's work.

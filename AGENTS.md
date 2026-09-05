@@ -57,6 +57,17 @@ routing, and composition examples. Do not duplicate that catalog here.
 
 There is no application build or lint workflow.
 
+Keep reusable validation procedures, fixtures, expected outcomes, and checker
+code in the repository. Never commit individual skill-maintenance run reports,
+transcripts, logs, run-specific output snapshots, per-run hashes, or result tables, including
+under skill `references/` or `assets/` directories.
+
+When retaining run artifacts, use the host's task-artifact storage outside the
+checkout, or an OS temporary directory outside it when no task storage is available.
+Report their location in the task, not in committed files. Retain concise
+source/version facts that support current guidance, and turn useful failures
+into minimal reusable cases instead of shipping their run history.
+
 For changes to skills, supporting files, root documentation, or validation
 behavior, run:
 

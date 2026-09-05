@@ -124,10 +124,10 @@ Three differences at the reviewed AXI 0.1.34 revision affect correctness:
    restore the missing generation check. After a batch, take a CLI snapshot
    before resuming CLI UID actions.
 3. The runner dynamically imports a temporary script by a native absolute path.
-   On Windows, the reviewed import form needs a file URL. The
-   [recorded Node probe](sources-and-validation.md#validation-evidence) observed
-   `ERR_UNSUPPORTED_ESM_URL_SCHEME` for a drive-letter path. Use ordinary CLI
-   commands on that revision; changing shell quoting or using Git Bash with
+   On Windows, the reviewed import form needs a file URL: a drive-letter path
+   is interpreted as an unsupported URL scheme by the default loader. See the
+   [source and loader contract](sources-and-validation.md#technical-evidence).
+   Use ordinary CLI commands on that revision; changing shell quoting or using Git Bash with
    Windows Node does not fix the loader. Require matching source changes or
    a successful installed-version loading probe before enabling Windows batches.
 
