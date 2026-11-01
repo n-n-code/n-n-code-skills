@@ -41,6 +41,11 @@ until they are accepted. The target's parent directory must already exist; an
 individual package or file target may initially be absent. Symlink/junction targets,
 path escapes, overlapping targets, and state inside managed targets are unsupported.
 On Windows, changing or deleting a read-only file, or creating a read-only candidate file, is unsupported; unchanged read-only package members are preserved.
+On POSIX, managed directories must have owner read and execute permissions and
+ordinary permission bits only; directory setuid, setgid, and sticky bits are
+unsupported. Owner write may be absent. Unsupported modes are rejected before
+managed writes. Candidate directory modes define the installed modes, just as
+candidate file modes do; recovery restores the recorded baseline modes.
 
 Pin the reviewed helper's SHA-256 in the policy. A helper or policy change is a
 separate authorized maintenance operation; the candidate being promoted cannot
@@ -74,6 +79,10 @@ For another recorded policy path or hash, `status` returns metadata only and
 flags that full inspection requires the recorded policy. It does not interpret
 those targets under the current allowlist. Unresolved transactions still block
 publication across policies sharing the state directory and lock.
+Legacy journal versions also return metadata only, with
+`inspection_requires_original_helper`. Their recorded policy paths are checked
+lexically without inspecting the old filesystem locations. Malformed JSON values
+return a JSON error on stderr and exit status `2`; unknown fields are rejected.
 
 The request contains:
 
@@ -109,6 +118,9 @@ update one shared file. Unknown fields are errors, not extra authority.
 1. **Prepare:** freeze complete baseline and candidate manifests, including file
    membership, additions, deletions, and absence. Snapshot baseline bytes and the
    evidence decision outside the checkout. Preparation does not edit target files.
+    On POSIX, each transaction directory is created as `0700`, keeping individual
+    file snapshots private even when their original access depended on a parent
+    directory outside the declared target.
 2. **Apply:** acquire the host's nonblocking operating-system lock and hold it for
    the operation. Another writer or unresolved transaction leaves the new candidate
    pending. Recheck policy, helper, protected controls, and every target against the
@@ -120,12 +132,33 @@ update one shared file. Unknown fields are errors, not extra authority.
    DACLs are applied before any private bytes are copied. Replace files individually
    and record progress. Verify complete membership, bytes, modes, and recorded
    Windows access rules before declaring success.
+    On POSIX, journal explicit directory-mode transitions: enter working modes
+    top-down, remove obsolete entries, create new directories as `0700`, publish
+    files, then apply final candidate directory modes bottom-up. Working modes
+    retain only group/other permissions common to baseline and candidate and add
+    owner access for the operation. This tightens access before new private bytes
+    appear and delays broader access until descendants are ready. Frozen snapshots
+    retain exact directory modes; only owned disposable stages gain temporary
+    owner access for publication and cleanup.
 4. **Inspect after interruption:** use `status`, then `recover` when appropriate.
    Recovery reacquires the same lock and examines real files, including a replacement
    completed before its progress record was updated. Restore only unchanged writes
    attributable to this transaction. Preserve content or access rules that match
    neither recorded state and report the unresolved conflict. Clean only the
    transaction's journaled publication temporaries.
+    POSIX recovery reverses those mode transitions, restoring owner access before
+    children and baseline directory modes afterward. Every write checks expected
+    ancestor modes, including unchanged directories and existing ancestors outside
+    the target. These outside paths are read-only guards, not additional targets.
+    An external chmod leaves the affected subtree conflicted instead of restoring
+    private bytes beneath a widened ancestor.
+    Descendant conflicts also prevent ancestor mode restoration. Before restoring
+    broader group/other access, verify the subtree matches its expected restored
+    contents; unexpected files and later edits remain private and conflicted.
+    Resolve those conflicts and retry recovery to finish restoring the modes.
+    POSIX file restoration stages bytes inside a private `0700` temporary
+    directory on the destination volume before replacement and cleans that owned
+    envelope afterward.
 
 Do not remove or replace the lock file, steal a lock based on elapsed time, or
 claim that a partial rollback restored the package. An unresolved transaction
@@ -140,11 +173,13 @@ verification. An already-running chat may still use older instructions.
 Check that the intended host can actually read the installed files; matching
 content hashes alone cannot establish usable permissions or successful loading.
 
-Internal journal version 2 records Windows DACLs and publication temporaries.
-Retain the original trusted helper and policy for a version 1 journal. Those older
-journals did not capture original Windows DACLs, so their snapshots cannot prove
-exact permission restoration. Do not infer an original ACL from a copied snapshot
-or reset existing custom permissions to guessed defaults.
+Internal journal version 3 adds POSIX directory modes, explicit mode operations,
+and ancestor guards. Retain the original trusted helper and policy for version 1
+or 2 journals; the current helper refuses to mutate them. Version 1 did not record
+Windows DACLs, and versions 1 and 2 did not record POSIX directory modes. Do not
+infer missing permissions from copied snapshots or guess replacement defaults.
+POSIX mode checks concern permission bits; ownership, extended ACLs, and arbitrary
+editors racing after a check are outside this helper's permission contract.
 
 ## Validation and limits
 

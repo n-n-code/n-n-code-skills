@@ -256,9 +256,11 @@ class YamlReferenceTests(unittest.TestCase):
 
 
 def load_tests(loader, tests, pattern):
-    """Include the promotion resource's behavioral tests in the resource gate."""
+    """Include promotion and pilot behavioral tests in the resource gate."""
+    import test_pilot_cases
     import test_skill_promotion
 
+    tests.addTests(loader.loadTestsFromModule(test_pilot_cases))
     tests.addTests(loader.loadTestsFromModule(test_skill_promotion))
     return tests
 

@@ -3,8 +3,11 @@
 
 import argparse
 import ast
+from collections.abc import Iterator
 import json
+from os import stat_result
 from pathlib import Path
+import stat
 import subprocess
 import sys
 import tempfile
@@ -292,11 +295,12 @@ def grade_read(worker, run_id, key, expected):
 
 
 TEST_RUNNER = clean('''
-    import io, json, sys, unittest
+    import contextlib, io, json, sys, unittest
     sys.dont_write_bytecode = True
     sys.path.insert(0, sys.argv[1])
-    suite = unittest.defaultTestLoader.discover(sys.argv[1] + "/generated", pattern="test_labels.py")
-    result = unittest.TextTestRunner(stream=io.StringIO()).run(suite)
+    with contextlib.redirect_stdout(sys.stderr):
+        suite = unittest.defaultTestLoader.discover(sys.argv[1] + "/generated", pattern="test_labels.py")
+        result = unittest.TextTestRunner(stream=io.StringIO()).run(suite)
     print(json.dumps({"count": result.testsRun, "failures": len(result.failures),
                       "errors": len(result.errors), "skipped": len(result.skipped),
                       "expected_failures": len(result.expectedFailures),
@@ -305,39 +309,41 @@ TEST_RUNNER = clean('''
 
 
 CONFIG_RUNNER = clean('''
-    import dataclasses, importlib.util, json, sys, typing
+    import contextlib, dataclasses, importlib.util, json, sys, typing
     sys.dont_write_bytecode = True
     spec = importlib.util.spec_from_file_location("mirror_config", sys.argv[1])
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    cls = module.MirrorConfig
-    expected_types = {"mirror_id": str, "endpoint": str, "transport": typing.Literal["http", "https"],
-                      "enabled": bool, "retry_limit": int}
-    assert module.Transport == expected_types["transport"]
-    assert dataclasses.is_dataclass(cls)
-    fields = dataclasses.fields(cls)
-    assert [f.name for f in fields] == list(expected_types)
-    assert typing.get_type_hints(cls) == expected_types
-    assert all(not f.kw_only and f.init and f.repr and f.compare for f in fields)
-    assert all(f.default is dataclasses.MISSING for f in fields[:2])
-    assert all(f.default_factory is dataclasses.MISSING for f in fields)
-    assert [f.default for f in fields[2:]] == ["https", True, 3]
-    assert type(fields[3].default) is bool and type(fields[4].default) is int
-    value = cls("sample", "https://example.test")
-    assert vars(value) == {"mirror_id": "sample", "endpoint": "https://example.test",
-                           "transport": "https", "enabled": True, "retry_limit": 3}
-    assert value == cls("sample", "https://example.test")
-    assert "mirror_id='sample'" in repr(value)
-    try:
-        value.enabled = False
-    except dataclasses.FrozenInstanceError:
-        pass
-    else:
-        raise AssertionError("MirrorConfig is mutable")
-    profiles = json.loads(open(sys.argv[2], encoding="utf-8").read())["profiles"]
-    for profile in profiles:
-        assert dataclasses.asdict(cls(**profile)) == profile
+    with contextlib.redirect_stdout(sys.stderr):
+        spec.loader.exec_module(module)
+        cls = module.MirrorConfig
+        expected_types = {"mirror_id": str, "endpoint": str, "transport": typing.Literal["http", "https"],
+                          "enabled": bool, "retry_limit": int}
+        assert module.Transport == expected_types["transport"]
+        assert dataclasses.is_dataclass(cls)
+        fields = dataclasses.fields(cls)
+        assert [f.name for f in fields] == list(expected_types)
+        assert typing.get_type_hints(cls) == expected_types
+        assert all(not f.kw_only and f.init and f.repr and f.compare for f in fields)
+        assert all(f.default is dataclasses.MISSING for f in fields[:2])
+        assert all(f.default_factory is dataclasses.MISSING for f in fields)
+        assert [f.default for f in fields[2:]] == ["https", True, 3]
+        assert type(fields[3].default) is bool and type(fields[4].default) is int
+        value = cls("sample", "https://example.test")
+        assert vars(value) == {"mirror_id": "sample", "endpoint": "https://example.test",
+                               "transport": "https", "enabled": True, "retry_limit": 3}
+        assert value == cls("sample", "https://example.test")
+        assert "mirror_id='sample'" in repr(value)
+        try:
+            value.enabled = False
+        except dataclasses.FrozenInstanceError:
+            pass
+        else:
+            raise AssertionError("MirrorConfig is mutable")
+        with open(sys.argv[2], encoding="utf-8") as profile_file:
+            profiles = json.load(profile_file)["profiles"]
+        for profile in profiles:
+            assert dataclasses.asdict(cls(**profile)) == profile
     print(json.dumps({"profiles_constructed": len(profiles), "fields_verified": len(fields)}))
 ''')
 
@@ -356,11 +362,21 @@ def run_python(program, *arguments):
 
 def check_python(path, run_id, permitted_imports):
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    tokens = [node.value.value for node in tree.body if isinstance(node, ast.Assign)
-              and any(isinstance(t, ast.Name) and t.id == "FIXTURE_RUN" for t in node.targets)
-              and isinstance(node.value, ast.Constant)]
-    if tokens != [run_id]:
-        raise ValueError("Missing or stale FIXTURE_RUN module constant")
+    declarations = []
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+        elif isinstance(node, (ast.AnnAssign, ast.AugAssign)):
+            targets = [node.target]
+        else:
+            continue
+        for target in targets:
+            for name in ast.walk(target):
+                if isinstance(name, ast.Name) and isinstance(name.ctx, ast.Store) and name.id == "FIXTURE_RUN":
+                    declarations.append(None if isinstance(node, ast.AugAssign) else node.value)
+    if (len(declarations) != 1 or not isinstance(declarations[0], ast.Constant)
+            or declarations[0].value != run_id):
+        raise ValueError("FIXTURE_RUN must be declared exactly once with the current literal run ID")
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             modules = [alias.name for alias in node.names]
@@ -427,7 +443,34 @@ def grade_config(worker, run_id):
         return run_python(CONFIG_RUNNER, scratch / "mirror_config.py", scratch / "profiles.json")
 
 
+def check_plain_path(path: Path) -> stat_result:
+    """Reject links without following them, including Windows directory junctions."""
+    info = path.lstat()
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & reparse_flag:
+        raise ValueError(f"Linked path outside fixture contract: {path}")
+    return info
+
+
+def check_plain_directory(path: Path) -> None:
+    if not stat.S_ISDIR(check_plain_path(path).st_mode):
+        raise ValueError(f"Expected fixture directory: {path}")
+
+
+def fixture_entries(directory: Path) -> Iterator[tuple[Path, stat_result]]:
+    """Check each directory before descending instead of traversing reparse points."""
+    pending = [directory]
+    while pending:
+        for path in pending.pop().iterdir():
+            info = check_plain_path(path)
+            if stat.S_ISDIR(info.st_mode):
+                pending.append(path)
+            yield path, info
+
+
 def grade(root):
+    check_plain_directory(root)
+    check_plain_path(root / "manifest.json")
     manifest = load_json(root / "manifest.json")
     if (not isinstance(manifest, dict) or manifest.get("format") != 1
             or not isinstance(manifest.get("run_id"), str)
@@ -441,12 +484,24 @@ def grade(root):
             worker = root / case / arm
             result = {"case": case, "arm": arm, "passed": False}
             try:
+                check_plain_directory(root / case)
+                check_plain_directory(worker)
+                peer = root / case / next(other for other in ARMS if other != arm)
+                try:
+                    check_plain_directory(peer)
+                except (OSError, ValueError):
+                    pass  # An absent or invalid peer gets its own failed-arm result.
+                else:
+                    if worker.samefile(peer):
+                        raise ValueError("Baseline and candidate must be distinct fixture directories")
                 ignored_bytecode = []
-                for path in worker.rglob("*"):
+                for path, info in fixture_entries(worker):
                     relative = path.relative_to(worker)
-                    if path.is_symlink():
-                        raise ValueError(f"Symlink outside fixture contract: {relative.as_posix()}")
-                    if not path.is_file() or relative.as_posix() in files.keys() | OUTPUTS[case]:
+                    if stat.S_ISDIR(info.st_mode):
+                        continue
+                    if not stat.S_ISREG(info.st_mode):
+                        raise ValueError(f"Non-file path outside fixture contract: {relative.as_posix()}")
+                    if relative.as_posix() in files.keys() | OUTPUTS[case]:
                         continue
                     if "__pycache__" in relative.parts and path.suffix == ".pyc":
                         ignored_bytecode.append(relative.as_posix())
@@ -456,7 +511,8 @@ def grade(root):
                     result["ignored_bytecode_files"] = sorted(ignored_bytecode)
                 for name, original in files.items():
                     path = worker / name
-                    if path.is_symlink() or path.read_bytes() != original.encode("utf-8"):
+                    check_plain_path(path)
+                    if path.read_bytes() != original.encode("utf-8"):
                         raise ValueError(f"Supplied input changed: {name}")
                 if case in ("p1", "p2"):
                     details = grade_read(worker, run_id, "records" if case == "p1" else "calls", oracle)

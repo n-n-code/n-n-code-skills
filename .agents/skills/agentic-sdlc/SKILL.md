@@ -119,8 +119,6 @@ Keep sensitive payloads out of work records.
 
 ## Maintenance references
 
-- [Technical references](references/sources.md): sources for concrete workflow
-  decisions; read when maintaining the workflow, not during every delivery.
 - [Evaluation cases](references/trigger-evals.md): routing and behavior criteria.
 - [Raw behavior fixtures](references/behavior-fixtures.md): isolated decision
   probe inputs; keep grading material out of the probe.

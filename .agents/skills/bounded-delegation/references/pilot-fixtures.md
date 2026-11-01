@@ -38,10 +38,19 @@ boolean limits, both numeric bounds, and value-type validation. They are not
 available in worker inputs. All must be detected; this fixture uses no partial
 credit threshold to turn a weak test suite into a pass.
 
+Python outputs may declare the literal `FIXTURE_RUN` with or without a type
+annotation. Missing, stale, repeated, or dynamically reassigned declarations fail.
+Fixture roots, cases, arms, and their contents must not be symlinks or Windows
+reparse points (including junctions), and paired arms must be distinct directories.
+An absent or invalid arm still receives its own failure result without discarding
+the other arms' results.
+
 Grading emits a single JSON result to stdout. Exit status is 0 when all eight arms
 pass, 1 for a failed arm, and 2 for an invalid invocation state. Inspect per-arm
 results even when the overall result fails because another worker is unfinished.
 Validation subprocess output is captured and never mixed with the JSON report.
+Submission stdout during module loading and tests is redirected to the subprocess's
+stderr, keeping its stdout available for the grader's JSON protocol.
 Only fixed Python invocations are used; no submitted shell commands are executed.
 
 P3 and P4 execute generated Python in fresh interpreter processes with a timeout.

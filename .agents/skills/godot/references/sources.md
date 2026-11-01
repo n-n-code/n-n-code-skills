@@ -24,29 +24,6 @@ versioning with target-API selection, while some Godot tutorials retain the olde
 matching-branch instructions. Neither a moving branch nor a tutorial example is a
 project pin. Check the actual dependency's supported options and required APIs.
 
-## Comparative skill collections
-
-These informed capability selection and evaluation cases, not copied instructions,
-code, or bundled assets. They are secondary references, not API authorities:
-
-- [gamedev-skills Godot collection](https://github.com/gamedev-skills/awesome-gamedev-agent-skills/tree/main/skills/godot):
-  focused capability routing and the distinction between static resource checks
-  and engine validation.
-- [Game-Dev-Agentic-Skills](https://github.com/thedivergentai/Game-Dev-Agentic-Skills/tree/main/skills):
-  broad coverage and candidate testing/visual workflows; verify that proposed
-  runners execute assertions and propagate failures before using them.
-- [cc-godot](https://github.com/Zate/cc-godot/tree/main/plugins/gd/skills):
-  separate debugging, UI, and profiling concerns; discover actual tools rather
-  than assuming a collection's MCP names exist.
-- [jwynia Godot skills](https://github.com/jwynia/agent-skills/tree/main/skills/tech/game-development/godot):
-  selective references and scene/script patterns; verify linked resources,
-  coroutine APIs, and import metadata against the engine.
-
-Author future additions independently. Do not transplant snippets, templates, or
-scripts without checking their licensing and the repository's incorporation rules.
-Avoid generalizing a secondary source's version, performance target, or architecture
-preference into a universal Godot rule.
-
 ## Refresh triggers
 
 Recheck the affected primary sources when an engine/binding version changes, a

@@ -2,11 +2,13 @@
 """Behavioral tests for local publication/recovery, using only isolated files."""
 
 import hashlib
+import copy
 import importlib.util
 import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -339,6 +341,326 @@ class PromotionTests(unittest.TestCase):
         self.policy_data["disable_protections"] = True
         with self.assertRaises(promotion.PromotionError):
             self.save_policy()
+
+    def assert_cli_error(self, result):
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIsInstance(json.loads(result.stderr)["error"], str)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_malformed_request_values_return_json_without_writes(self):
+        valid = json.loads(self.request().read_text())
+        cases = [None, [], False]
+        for field, value in (("version", True), ("eligibility", []), ("targets", {})):
+            cases.append(dict(valid, **{field: value}))
+        for field, value in (("class", []), ("evidence", {})):
+            changed = copy.deepcopy(valid)
+            changed["eligibility"][field] = value
+            cases.append(changed)
+        for field, value in (("kind", []), ("path", []), ("candidate", False),
+                             ("path", str(self.target) + "\0bad"), ("candidate", str(self.candidate) + "\0bad")):
+            changed = copy.deepcopy(valid)
+            changed["targets"][0][field] = value
+            cases.append(changed)
+        cases.append(dict(valid, targets=[None]))
+        before = promotion._manifest(self.target)
+        for value in cases:
+            with self.subTest(value=value):
+                path = self.root / "invalid-request.json"
+                write_json(path, value)
+                self.assert_cli_error(self.cli("prepare", "--request", str(path)))
+                self.assertEqual(promotion._manifest(self.target), before)
+
+    def test_malformed_policy_values_return_json_without_writes(self):
+        before = promotion._manifest(self.target)
+        values = [None, [], dict(self.policy_data, version=True),
+                  dict(self.policy_data, allowed_target_roots={}),
+                  dict(self.policy_data, protected_paths=[False]),
+                  dict(self.policy_data, state_root=[]),
+                  dict(self.policy_data, state_root=str(self.root) + "\0bad")]
+        for value in values:
+            with self.subTest(value=value):
+                write_json(self.policy_path, value)
+                self.assert_cli_error(self.cli("status"))
+                self.assertEqual(promotion._manifest(self.target), before)
+
+    def test_malformed_journal_values_fail_before_apply_and_inspection(self):
+        transaction = self.prepare()
+        original = self.read_record(transaction)
+        cases = [[], dict(original, status=[]), dict(original, policy=str(self.policy_path) + "\0bad")]
+        for field in ("targets", "operations", "staging", "publication_temps", "conflicts"):
+            cases.append(dict(original, **{field: {}}))
+        for field, value in (("baseline", 1), ("candidate", []), ("kind", []),
+                             ("ancestor_modes", []), ("baseline_permissions", [])):
+            changed = copy.deepcopy(original)
+            changed["targets"][0][field] = value
+            cases.append(changed)
+        for field, value in (("kind", []), ("sha256", []), ("mode", True), ("mode", 0o10000)):
+            changed = copy.deepcopy(original)
+            changed["targets"][0]["candidate"]["SKILL.md"][field] = value
+            cases.append(changed)
+        cases.extend([dict(original, staging=[{"target": True, "path": str(self.root)}]),
+                      dict(original, publication_temps=[{"operation": 0, "phase": []}])])
+        before = promotion._manifest(self.target)
+        for value in cases:
+            with self.subTest(value=value):
+                write_json(self.policy.state / transaction / "journal.json", value)
+                for command in ("apply", "recover", "status"):
+                    self.assert_cli_error(self.cli(command, "--transaction", transaction))
+                self.assertEqual(promotion._manifest(self.target), before)
+
+    def test_old_journals_are_metadata_only_and_require_original_helper(self):
+        transaction = self.prepare()
+        original = self.read_record(transaction)
+        before = promotion._manifest(self.target)
+        for version in (1, 2):
+            with self.subTest(version=version):
+                record = dict(original, version=version)
+                record.pop("platform")
+                write_json(self.policy.state / transaction / "journal.json", record)
+                inspected = self.cli("status", "--transaction", transaction)
+                self.assertEqual(inspected.returncode, 0, inspected.stderr)
+                summary = json.loads(inspected.stdout)
+                self.assertTrue(summary["inspection_requires_original_helper"])
+                self.assertNotIn("targets", summary)
+                for command in ("apply", "recover"):
+                    result = self.cli(command, "--transaction", transaction)
+                    self.assert_cli_error(result)
+                    self.assertIn("original trusted helper", result.stderr)
+                self.assertEqual(promotion._manifest(self.target), before)
+
+    def test_posix_plan_orders_modes_and_guards_unchanged_ancestors(self):
+        directory = lambda mode: {"kind": "directory", "mode": mode}
+        old_file = {"kind": "file", "mode": 0o644, "sha256": "0" * 64}
+        new_file = dict(old_file, sha256="1" * 64)
+        target = {"path": str(self.target), "baseline_permissions": {},
+                  "ancestor_modes": {str(parent): 0o755 for parent in self.target.parents}}
+        for before_mode, after_mode in ((0o755, 0o700), (0o700, 0o755), (0o500, 0o500), (0o700, 0o700)):
+            with self.subTest(before=before_mode, after=after_mode):
+                target.update(baseline={"": directory(before_mode), "secret": old_file},
+                              candidate={"": directory(after_mode), "secret": new_file})
+                plan = promotion._plan({"platform": "posix", "targets": [target]})
+                file_index = next(i for i, item in enumerate(plan) if item["path"] == "secret")
+                working = 0o700 | (before_mode & after_mode & 0o077)
+                self.assertEqual(plan[file_index]["ancestor_modes"][str(self.target)], working)
+                state = {"": directory(before_mode), "secret": old_file}
+                for operation in plan:
+                    self.assertEqual(state.get(operation["path"]), operation["before"])
+                    state[operation["path"]] = operation["after"]
+                self.assertEqual(state, target["candidate"])
+                for operation in reversed(plan):
+                    if operation["path"] == "secret":
+                        self.assertEqual(state[""]["mode"], working)
+                    state[operation["path"]] = operation["before"]
+                self.assertEqual(state, target["baseline"])
+
+    def test_recovery_keeps_private_ancestor_after_child_conflict(self):
+        """Exercise recovery's state machine with filesystem boundaries modeled."""
+        directory = lambda mode: {"kind": "directory", "mode": mode}
+        original = {"kind": "file", "mode": 0o644, "sha256": "0" * 64}
+        candidate = dict(original, sha256="1" * 64)
+        external = dict(original, sha256="2" * 64)
+        target = {"path": str(self.target), "baseline_permissions": {},
+                  "ancestor_modes": {str(parent): 0o755 for parent in self.target.parents},
+                  "baseline": {"": directory(0o755), "secret": original},
+                  "candidate": {"": directory(0o700), "secret": candidate}}
+        record = {"id": "a" * 32, "platform": "posix", "status": "applied", "targets": [target],
+                  "staging": [], "publication_temps": [], "conflicts": []}
+        record["operations"] = [dict(item, state="done", after_dacl=None) for item in promotion._plan(record)]
+        entries = {str(parent): directory(0o755) for parent in self.target.parents}
+        entries.update({str(self.target): directory(0o700), str(self.target / "secret"): external})
+
+        def manifest(path):
+            return {("" if Path(name) == path else Path(name).relative_to(path).as_posix()): entry
+                    for name, entry in entries.items() if promotion._within(Path(name), path)}
+
+        def write_entry(path, before, after, source, before_dacl, after_dacl):
+            self.assertEqual(entries[str(path)], before)
+            entries[str(path)] = after
+
+        with mock.patch.object(promotion, "_load", return_value=record), \
+                mock.patch.object(promotion, "_save"), \
+                mock.patch.object(promotion, "_entry", side_effect=lambda path: entries.get(str(path))), \
+                mock.patch.object(promotion, "_dacl", return_value=None), \
+                mock.patch.object(promotion, "_permissions", return_value={}), \
+                mock.patch.object(promotion, "_prepare_publication", return_value=self.root / "mode-publication.tmp"), \
+                mock.patch.object(promotion, "_manifest", side_effect=manifest), \
+                mock.patch.object(promotion, "_write_entry", side_effect=write_entry):
+            result = promotion.recover(self.policy, record["id"])
+            self.assertEqual(result["status"], "conflicted")
+            self.assertEqual(entries[str(self.target)]["mode"], 0o700)
+            self.assertEqual(entries[str(self.target / "secret")], external)
+            entries[str(self.target / "secret")] = original
+            self.assertEqual(promotion.recover(self.policy, record["id"])["status"], "recovered")
+            self.assertEqual(entries[str(self.target)]["mode"], 0o755)
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_removed_private_directory_recovers_exact_mode(self):
+        private = self.target / "private"
+        write(private / "secret", "private by parent directory")
+        private.chmod(0o700)
+        (private / "secret").chmod(0o644)
+        transaction = self.prepare()
+        promotion.apply(self.policy, transaction)
+        self.assertFalse(private.exists())
+        self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+        self.assertEqual(stat.S_IMODE(private.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE((private / "secret").stat().st_mode), 0o644)
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_new_restrictive_directories_and_stages_are_recoverable(self):
+        for name, mode in (("private", 0o700), ("public", 0o755), ("readonly", 0o500)):
+            directory = self.candidate / name
+            write(directory / "child", name)
+            directory.chmod(mode)
+        self.candidate.chmod(0o500)
+        self.addCleanup(self.candidate.chmod, 0o700)
+        destination = self.installed / "new"
+        transaction = self.prepare([{"path": str(destination), "candidate": str(self.candidate)}])
+        self.assertEqual(promotion.apply(self.policy, transaction)["status"], "applied")
+        self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o500)
+        for name, mode in (("private", 0o700), ("public", 0o755), ("readonly", 0o500)):
+            self.assertEqual(stat.S_IMODE((destination / name).stat().st_mode), mode)
+        self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+        self.assertFalse(destination.exists())
+        self.assertEqual(list(self.installed.glob(".skill-promotion-*")), [])
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_tightening_precedes_bytes_and_broadening_follows_them(self):
+        for baseline, candidate in ((0o755, 0o700), (0o700, 0o755)):
+            with self.subTest(baseline=baseline, candidate=candidate):
+                self.target.chmod(baseline)
+                self.candidate.chmod(candidate)
+                transaction = self.prepare()
+                observations = []
+                def observe(event, index, record):
+                    if event in {"before_write", "before_restore"} and record["operations"][index]["path"] == "SKILL.md":
+                        observations.append(stat.S_IMODE(self.target.stat().st_mode))
+                promotion.apply(self.policy, transaction, _fault=observe)
+                self.assertEqual(stat.S_IMODE(self.target.stat().st_mode), candidate)
+                promotion.recover(self.policy, transaction, _fault=observe)
+                self.assertEqual(stat.S_IMODE(self.target.stat().st_mode), baseline)
+                self.assertEqual(observations, [0o700, 0o700])
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_mode_operation_interruptions_restore_baseline(self):
+        self.target.chmod(0o755)
+        self.candidate.chmod(0o500)
+        self.addCleanup(self.candidate.chmod, 0o700)
+        before = promotion._manifest(self.target)
+        first = self.prepare()
+        plan = promotion._plan(self.read_record(first))
+        stops = [i for i, operation in enumerate(plan)
+                 if operation["before"] and operation["after"]
+                 and operation["before"]["kind"] == operation["after"]["kind"] == "directory"]
+        self.assertTrue(stops)
+        for event in ("before_write", "after_write", "before_restore", "after_restore"):
+            for stop in stops:
+                with self.subTest(event=event, operation=stop):
+                    transaction = self.prepare()
+                    def crash(actual_event, index, record):
+                        if (actual_event, index) == (event, stop):
+                            raise SimulatedCrash()
+                    if "restore" in event:
+                        promotion.apply(self.policy, transaction)
+                        with self.assertRaises(SimulatedCrash):
+                            promotion.recover(self.policy, transaction, _fault=crash)
+                    else:
+                        with self.assertRaises(SimulatedCrash):
+                            promotion.apply(self.policy, transaction, _fault=crash)
+                    self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+                    self.assertEqual(promotion._manifest(self.target), before)
+                    self.assertEqual(stat.S_IMODE(self.target.stat().st_mode), 0o755)
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_external_chmod_blocks_private_subtree_restoration(self):
+        self.target.chmod(0o700)
+        self.candidate.chmod(0o700)
+        transaction = self.prepare()
+        self.target.chmod(0o755)
+        with self.assertRaisesRegex(promotion.PromotionError, "Baseline changed"):
+            promotion.apply(self.policy, transaction)
+        self.target.chmod(0o700)
+        promotion.apply(self.policy, transaction)
+        self.target.chmod(0o755)
+        result = promotion.recover(self.policy, transaction)
+        self.assertEqual(result["status"], "conflicted")
+        self.assertEqual((self.target / "SKILL.md").read_text(), "candidate\n")
+        self.assertEqual(stat.S_IMODE(self.target.stat().st_mode), 0o755)
+        self.target.chmod(0o700)
+        self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_child_conflicts_prevent_ancestor_broadening_and_allow_retry(self):
+        self.target.chmod(0o755)
+        self.candidate.chmod(0o700)
+        for relative in ("SKILL.md", "unexpected.txt"):
+            with self.subTest(relative=relative):
+                transaction = self.prepare()
+                promotion.apply(self.policy, transaction)
+                path = self.target / relative
+                write(path, "external private contents")
+                result = promotion.recover(self.policy, transaction)
+                self.assertEqual(result["status"], "conflicted")
+                self.assertEqual(path.read_text(), "external private contents")
+                self.assertEqual(stat.S_IMODE(self.target.stat().st_mode), 0o700)
+                if relative == "SKILL.md":
+                    write(path, "baseline\n")
+                else:
+                    path.unlink()
+                self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+                self.assertEqual(stat.S_IMODE(self.target.stat().st_mode), 0o755)
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_exact_file_snapshot_and_restore_have_private_envelopes(self):
+        self.root.chmod(0o755)  # The same-volume staging parent is deliberately public.
+        self.repository.chmod(0o700)
+        self.metadata.chmod(0o644)
+        self.policy.state.mkdir(mode=0o755)
+        candidate = self.root / "replacement.txt"
+        write(candidate, "replacement")
+        transaction = self.prepare([{"path": str(self.metadata), "candidate": str(candidate), "kind": "file"}])
+        self.assertEqual(stat.S_IMODE((self.policy.state / transaction).stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE((self.policy.state / transaction / "baseline/0").stat().st_mode), 0o644)
+        promotion.apply(self.policy, transaction)
+        observed = []
+        original_write = promotion._write_entry
+        def inspect_staged_restore(path, before, after, source, *permissions):
+            if source is not None:
+                self.assertTrue(source.parent.name.startswith(".skill-restore-"))
+                self.assertEqual(stat.S_IMODE(source.parent.stat().st_mode), 0o700)
+                self.assertEqual(stat.S_IMODE(source.stat().st_mode), 0o644)
+                self.assertEqual(source.read_text(), "existing documentation\n")
+                observed.append(source.parent)
+            return original_write(path, before, after, source, *permissions)
+        with mock.patch.object(promotion, "_write_entry", side_effect=inspect_staged_restore):
+            self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+        self.assertEqual(len(observed), 1)
+        self.assertFalse(observed[0].exists())
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_external_parent_chmod_is_guarded(self):
+        self.allowed.chmod(0o700)
+        transaction = self.prepare()
+        promotion.apply(self.policy, transaction)
+        self.allowed.chmod(0o755)
+        result = promotion.recover(self.policy, transaction)
+        self.assertEqual(result["status"], "conflicted")
+        self.assertEqual((self.target / "SKILL.md").read_text(), "candidate\n")
+        self.allowed.chmod(0o700)
+        self.assertEqual(promotion.recover(self.policy, transaction)["status"], "recovered")
+
+    @unittest.skipIf(os.name == "nt", "Native POSIX directory permissions required")
+    def test_posix_unsupported_directory_modes_fail_before_managed_writes(self):
+        before = promotion._manifest(self.target)
+        for mode in (0o400, 0o100, 0o1700):
+            with self.subTest(mode=oct(mode)):
+                self.candidate.chmod(mode)
+                try:
+                    with self.assertRaises((promotion.PromotionError, PermissionError)):
+                        self.prepare()
+                    self.assertEqual(promotion._manifest(self.target), before)
+                finally:
+                    self.candidate.chmod(0o700)
 
     def test_unsafe_scope_and_overlaps_are_rejected(self):
         cases = [

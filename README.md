@@ -15,10 +15,12 @@ The published repository is intentionally small at the root:
   inventory, links, and stable routing contracts
 - `scripts/check-skills.sh` is the Bash wrapper for the same validator
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
-- `scripts/test_skill_resources.py` tests the release scaffold and optionally
-  checks real CTest behavior and metadata against PyYAML
+- `scripts/test_skill_resources.py` runs release, promotion, and pilot resource
+  tests and optionally checks real CTest behavior and metadata against PyYAML
 - `scripts/test_skill_promotion.py` exercises local skill promotion, contention,
   interrupted writes, and recovery using isolated files
+- `scripts/test_pilot_cases.py` checks pilot grading and fixture isolation using
+  disposable worker outputs
 - `LICENSE` contains the repository's MIT license
 
 ## Repository Layout
@@ -37,6 +39,7 @@ scripts/
   test_check_skills.py  # validator regression tests
   test_skill_resources.py # resource checks and optional independent runtimes
   test_skill_promotion.py # isolated promotion and recovery regression tests
+  test_pilot_cases.py   # pilot grading and fixture isolation regression tests
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
@@ -368,7 +371,6 @@ Defaults:
   serializes participating writers and supports conflict-safe recovery; it does
   not judge improvement quality or enforce a sandbox. These packages do not
   provide a scheduler or agent runtime. See their
-  [technical references](.agents/skills/agentic-sdlc/references/sources.md) and
   [delivery](.agents/skills/agentic-sdlc/references/trigger-evals.md) /
   [improvement](.agents/skills/agentic-sdlc-improvement/references/trigger-evals.md)
   evaluation cases for the detailed boundaries.
@@ -491,6 +493,8 @@ When the metadata parser, executable skill resources, or their tests change, run
 python scripts/test_skill_resources.py
 ```
 
+The resource gate includes the promotion and pilot suites. Platform-specific
+permission and link cases report explicit skips when unavailable.
 The resource tests use disposable fixtures and discover Bash from PATH or a
 standard Git for Windows installation. Set `SKILL_TEST_BASH` for another Bash
 executable; on Windows these tests use Git Bash/Cygwin path conversion, not WSL.

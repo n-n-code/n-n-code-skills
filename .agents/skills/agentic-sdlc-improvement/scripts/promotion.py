@@ -32,6 +32,9 @@ class PromotionError(Exception):
 UNRESOLVED = {"applying", "interrupted", "recovering", "conflicted"}
 CLASSES = {"bootstrap", "maintenance", "behavior", "improver"}
 TRANSACTION_ID = re.compile(r"[0-9a-f]{32}\Z")
+JOURNAL_VERSION = 3
+TERMINAL = {"prepared", "applied", "recovered", "cancelled"}
+OPERATION_STATES = {"pending", "intent", "done", "undo_intent", "undone", "conflicted"}
 
 
 @lru_cache(maxsize=1)
@@ -161,6 +164,39 @@ def _object(value, allowed, required):
     return value
 
 
+def _enum(value, choices, label: str):
+    if not isinstance(value, str) or value not in choices:
+        raise PromotionError(f"Invalid {label}")
+    return value
+
+
+def _mode(value) -> int:
+    if type(value) is not int or not 0 <= value <= 0o7777:
+        raise PromotionError("Invalid permission mode")
+    return value
+
+
+def _mode_guards(value) -> None:
+    if not isinstance(value, dict):
+        raise PromotionError("Invalid ancestor mode guards")
+    for path, mode in value.items():
+        _path(path)
+        _mode(mode)
+
+
+def _journal_header(record, transaction: str) -> None:
+    if not isinstance(record, dict):
+        raise PromotionError("Invalid transaction record")
+    if type(record.get("version")) is not int or record["version"] < 1:
+        raise PromotionError("Invalid journal version")
+    if record.get("id") != transaction:
+        raise PromotionError("Transaction identity differs")
+    _enum(record.get("status"), UNRESOLVED | TERMINAL, "transaction status")
+    _lexical_path(record.get("policy"))
+    if not isinstance(record.get("policy_sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", record["policy_sha256"]):
+        raise PromotionError("Invalid policy fingerprint")
+
+
 def _read_json(path: Path):
     _safe_path(path)
     try:
@@ -180,13 +216,18 @@ def _safe_path(path: Path) -> None:
             raise PromotionError(f"Links or reparse points are not supported: {part}")
 
 
-def _path(value) -> Path:
-    if not isinstance(value, str) or not value:
+def _lexical_path(value) -> Path:
+    if not isinstance(value, str) or not value or "\0" in value:
         raise PromotionError("Paths must be nonempty absolute strings")
     path = Path(value)
     if not path.is_absolute() or ".." in path.parts:
         raise PromotionError(f"Absolute paths without traversal are required: {value}")
     path = Path(os.path.abspath(path))
+    return path
+
+
+def _path(value) -> Path:
+    path = _lexical_path(value)
     _safe_path(path)
     return path
 
@@ -221,7 +262,7 @@ def _entry(path: Path):
     except FileNotFoundError:
         return None
     if stat.S_ISDIR(info.st_mode):
-        return {"kind": "directory"}
+        return {"kind": "directory", **({"mode": stat.S_IMODE(info.st_mode)} if os.name != "nt" else {})}
     if stat.S_ISREG(info.st_mode):
         return {"kind": "file", "sha256": _digest(path), "mode": stat.S_IMODE(info.st_mode)}
     raise PromotionError(f"Only regular files and directories are supported: {path}")
@@ -254,21 +295,34 @@ def _relative(value: str) -> None:
         raise PromotionError(f"Unsafe manifest path: {value!r}")
 
 
-def _validate_manifest(value) -> None:
+def _validate_manifest(value, *, posix: bool | None = None) -> None:
+    posix = os.name != "nt" if posix is None else posix
     if not isinstance(value, dict):
         raise PromotionError("Invalid tree manifest")
     for relative, entry in value.items():
         _relative(relative)
-        if not isinstance(entry, dict) or entry.get("kind") not in {"file", "directory"}:
+        if not isinstance(entry, dict):
             raise PromotionError("Invalid manifest entry")
+        _enum(entry.get("kind"), {"file", "directory"}, "manifest kind")
         if entry["kind"] == "directory":
-            _object(entry, {"kind"}, {"kind"})
+            fields = {"kind", "mode"} if posix else {"kind"}
+            _object(entry, fields, fields)
+            if posix:
+                _mode(entry["mode"])
         else:
             _object(entry, {"kind", "sha256", "mode"}, {"kind", "sha256", "mode"})
-            if not re.fullmatch(r"[0-9a-f]{64}", str(entry["sha256"])) or type(entry["mode"]) is not int:
+            if not isinstance(entry["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", entry["sha256"]):
                 raise PromotionError("Invalid file fingerprint")
+            _mode(entry["mode"])
     if value and "" not in value:
         raise PromotionError("Manifest is missing its root")
+
+
+def _supported_directory_modes(manifest: dict) -> None:
+    if os.name != "nt":
+        for entry in manifest.values():
+            if entry["kind"] == "directory" and (entry["mode"] & ~0o777 or entry["mode"] & 0o500 != 0o500):
+                raise PromotionError("POSIX directories require owner read/execute and no special permission bits")
 
 
 def _atomic_json(path: Path, value) -> None:
@@ -301,10 +355,14 @@ def _copy_snapshot(source: Path, destination: Path, expected: dict) -> None:
     for relative, entry in sorted(expected.items(), key=lambda item: (item[0].count("/"), item[0])):
         target = destination / relative if relative else destination
         if entry["kind"] == "directory":
-            target.mkdir(parents=True, exist_ok=True)
+            target.mkdir(mode=0o700, parents=True, exist_ok=True)
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
             _copy_file(source / relative if relative else source, target)
+    if os.name != "nt":
+        for relative, entry in sorted(expected.items(), key=lambda item: _depth(item[0]), reverse=True):
+            if entry["kind"] == "directory":
+                (destination / relative if relative else destination).chmod(entry["mode"])
     if _manifest(destination) != expected or _manifest(source) != expected:
         raise PromotionError(f"Snapshot verification failed: {source}")
 
@@ -347,7 +405,8 @@ def load_policy(path: str | Path) -> Policy:
 
 def _target_path(policy: Policy, value: str, kind: str) -> Path:
     path = _path(value)
-    if kind not in {"directory", "file"} or any(part.casefold() == ".git" for part in path.parts):
+    _enum(kind, {"directory", "file"}, "target kind")
+    if any(part.casefold() == ".git" for part in path.parts):
         raise PromotionError("Invalid target kind or Git metadata target")
     allowed = any(path != root and _within(path, root) for root in policy.roots)
     allowed = allowed or (kind == "file" and path in policy.files)
@@ -414,8 +473,7 @@ def _check_other_transactions(policy: Policy, transaction: str | None = None) ->
     for path in sorted(policy.state.iterdir()):
         if TRANSACTION_ID.fullmatch(path.name) and (path / "journal.json").exists():
             record = _read_json(path / "journal.json")
-            if not isinstance(record, dict) or record.get("status") not in UNRESOLVED | {"prepared", "applied", "recovered", "cancelled"}:
-                raise PromotionError(f"Unreadable transaction state must be inspected first: {path.name}")
+            _journal_header(record, path.name)
             if record.get("status") in UNRESOLVED and path.name != transaction:
                 raise PromotionError(f"Recover unresolved transaction first: {path.name}")
 
@@ -441,8 +499,7 @@ def prepare(policy: Policy, request_path: str | Path) -> dict:
     if type(request["version"]) is not int or request["version"] != 1:
         raise PromotionError("Unsupported request version")
     eligibility = _object(request["eligibility"], {"class", "evidence"}, {"class", "evidence"})
-    if eligibility["class"] not in CLASSES:
-        raise PromotionError("Unknown eligibility class")
+    _enum(eligibility["class"], CLASSES, "eligibility class")
     evidence = _path(eligibility["evidence"])
     if not evidence.is_file() or _checkout(evidence):
         raise PromotionError("Evidence must be an existing file outside Git checkouts")
@@ -469,17 +526,20 @@ def prepare(policy: Policy, request_path: str | Path) -> dict:
         _check_other_transactions(policy)
         transaction = uuid.uuid4().hex
         folder = policy.state / transaction
-        folder.mkdir()
+        folder.mkdir(mode=0o700 if os.name != "nt" else 0o777)
         protected = _fingerprints(policy)
         evidence_manifest = _manifest(evidence)
         _copy_snapshot(evidence, folder / "evidence", evidence_manifest)
-        record = {"version": 2, "id": transaction, "status": "prepared",
+        record = {"version": JOURNAL_VERSION, "platform": os.name, "id": transaction, "status": "prepared",
                   "policy": str(policy.path), "policy_sha256": policy.fingerprint,
                   "protected": protected, "eligibility": {"class": eligibility["class"],
                   "evidence": str(evidence), "manifest": evidence_manifest},
                   "targets": [], "operations": [], "staging": [], "publication_temps": [], "conflicts": []}
         for index, (target, candidate, kind) in enumerate(targets):
             before, after = _manifest(target), _manifest(candidate) if candidate else {}
+            for manifest in (before, after):
+                _validate_manifest(manifest)
+                _supported_directory_modes(manifest)
             permissions = _permissions(target, before)
             parent_dacl = _dacl(target.parent)
             if before and before[""]["kind"] != kind:
@@ -493,7 +553,8 @@ def prepare(policy: Policy, request_path: str | Path) -> dict:
             if permissions != _permissions(target) or parent_dacl != _dacl(target.parent):
                 raise PromotionError(f"Target permissions changed during preparation: {target}")
             record["targets"].append({"path": str(target), "kind": kind, "baseline": before, "candidate": after,
-                                      "baseline_permissions": permissions, "parent_dacl": parent_dacl})
+                                      "baseline_permissions": permissions, "parent_dacl": parent_dacl,
+                                      "ancestor_modes": _ancestor_modes(target)})
         _validate_operations(_plan(record))
         if protected != _fingerprints(policy) or policy.fingerprint != _digest(policy.path):
             raise PromotionError("Protected policy changed during preparation")
@@ -501,38 +562,53 @@ def prepare(policy: Policy, request_path: str | Path) -> dict:
         return _summary(policy, record)
 
 
-def _load(policy: Policy, transaction: str) -> dict:
+def _load(policy: Policy, transaction: str, *, inspection: bool = False) -> dict:
     record = _read_json(_journal_path(policy, transaction))
-    fields = {"version", "id", "status", "policy", "policy_sha256", "protected", "eligibility", "targets", "operations", "staging", "publication_temps", "conflicts", "error"}
+    _journal_header(record, transaction)
+    if record["version"] != JOURNAL_VERSION:
+        raise PromotionError("Legacy journals require their original trusted helper; directory modes cannot be inferred")
+    fields = {"version", "platform", "id", "status", "policy", "policy_sha256", "protected", "eligibility", "targets", "operations", "staging", "publication_temps", "conflicts", "error"}
     _object(record, fields, fields - {"error"})
-    if type(record["version"]) is not int or record["version"] != 2 or record["id"] != transaction or record["policy"] != str(policy.path):
+    if record["platform"] != os.name or record["policy"] != str(policy.path):
         raise PromotionError("Transaction identity or policy differs")
-    if record["status"] not in UNRESOLVED | {"prepared", "applied", "recovered", "cancelled"}:
-        raise PromotionError("Unknown transaction status")
-    if record["policy_sha256"] != policy.fingerprint or record["protected"] != _fingerprints(policy):
+    for name in ("targets", "operations", "staging", "publication_temps", "conflicts"):
+        if not isinstance(record[name], list):
+            raise PromotionError(f"Invalid transaction {name}")
+    if any(not isinstance(value, str) for value in record["conflicts"]) or ("error" in record and not isinstance(record["error"], str)):
+        raise PromotionError("Invalid transaction diagnostics")
+    if not isinstance(record["protected"], dict):
+        raise PromotionError("Invalid protected fingerprints")
+    if not inspection and (record["policy_sha256"] != policy.fingerprint or record["protected"] != _fingerprints(policy)):
         raise PromotionError("Protected policy/helper/evaluation material changed; no managed writes permitted")
-    if not isinstance(record["targets"], list) or not record["targets"]:
+    if not record["targets"]:
         raise PromotionError("Invalid transaction targets")
     paths = []
     for index, item in enumerate(record["targets"]):
-        target_fields = {"path", "kind", "baseline", "candidate", "baseline_permissions", "parent_dacl"}
+        target_fields = {"path", "kind", "baseline", "candidate", "baseline_permissions", "parent_dacl", "ancestor_modes"}
         _object(item, target_fields, target_fields)
         target = _target_path(policy, item["path"], item["kind"])
         if any(_overlap(target, other) for other in paths):
             raise PromotionError("Transaction targets overlap")
         paths.append(target)
-        if not isinstance(item["baseline_permissions"], dict) or (os.name == "nt" and set(item["baseline_permissions"]) != set(item["baseline"])):
-            raise PromotionError("Invalid baseline permission manifest")
-        if any(not isinstance(value, str) for value in item["baseline_permissions"].values()):
-            raise PromotionError("Invalid recorded DACL")
         for side in ("baseline", "candidate"):
             _validate_manifest(item[side])
+            _supported_directory_modes(item[side])
             if _manifest(_snapshot_path(policy, record, side, index)) != item[side]:
                 raise PromotionError(f"Frozen {side} snapshot changed: {index}")
-        _check_protected_candidates(policy, target, _snapshot_path(policy, record, "candidate", index), item["baseline"], item["candidate"])
+        if not isinstance(item["baseline_permissions"], dict) or (os.name == "nt" and set(item["baseline_permissions"]) != set(item["baseline"])):
+            raise PromotionError("Invalid baseline permission manifest")
+        if any(not isinstance(value, str) for value in item["baseline_permissions"].values()) or (item["parent_dacl"] is not None and not isinstance(item["parent_dacl"], str)):
+            raise PromotionError("Invalid recorded DACL")
+        _mode_guards(item["ancestor_modes"])
+        expected_ancestors = {str(parent) for parent in target.parents} if os.name != "nt" else set()
+        if set(item["ancestor_modes"]) != expected_ancestors:
+            raise PromotionError("Invalid target ancestor guards")
+        if not inspection:
+            _check_protected_candidates(policy, target, _snapshot_path(policy, record, "candidate", index), item["baseline"], item["candidate"])
     eligibility = _object(record["eligibility"], {"class", "evidence", "manifest"}, {"class", "evidence", "manifest"})
-    if eligibility["class"] not in CLASSES:
-        raise PromotionError("Invalid frozen eligibility class")
+    _enum(eligibility["class"], CLASSES, "frozen eligibility class")
+    _path(eligibility["evidence"])
+    _validate_manifest(eligibility["manifest"])
     if _manifest(_journal_path(policy, transaction).parent / "evidence") != eligibility["manifest"]:
         raise PromotionError("Frozen eligibility evidence changed")
     # Plans are derived from frozen snapshots; a journal cannot introduce new writes.
@@ -542,26 +618,104 @@ def _load(policy: Policy, transaction: str) -> dict:
             raise PromotionError("Invalid operation journal")
         for actual, wanted in zip(record["operations"], expected):
             _object(actual, set(wanted) | {"state", "after_dacl"}, set(wanted) | {"state", "after_dacl"})
-            if {key: actual[key] for key in wanted} != wanted or actual["state"] not in {"pending", "intent", "done", "undo_intent", "undone", "conflicted"}:
+            _enum(actual["state"], OPERATION_STATES, "operation state")
+            if type(actual["target"]) is not int or {key: actual[key] for key in wanted} != wanted:
                 raise PromotionError("Journal operation differs from frozen snapshots")
             if actual["after_dacl"] is not None and not isinstance(actual["after_dacl"], str):
                 raise PromotionError("Invalid operation DACL")
+    for item in record["staging"]:
+        _object(item, {"target", "path"}, {"target", "path"})
+        if type(item["target"]) is not int or not 0 <= item["target"] < len(record["targets"]):
+            raise PromotionError("Invalid staging target")
+        path = _path(item["path"])
+        base = _staging_base(Path(record["targets"][item["target"]]["path"]))
+        if path.parent != base or not path.name.startswith(f".skill-promotion-{transaction}-"):
+            raise PromotionError("Staging cleanup escaped its recorded temporary location")
+    for item in record["publication_temps"]:
+        _object(item, {"operation", "phase"}, {"operation", "phase"})
+        if type(item["operation"]) is not int or not 0 <= item["operation"] < len(record["operations"]):
+            raise PromotionError("Invalid publication temporary record")
+        _enum(item["phase"], {"apply", "recover"}, "publication phase")
     return record
+
+
+def _depth(relative: str) -> int:
+    return len(relative.split("/")) if relative else 0
+
+
+def _ancestor_modes(target: Path) -> dict:
+    if os.name == "nt":
+        return {}
+    result = {}
+    for parent in target.parents:
+        entry = _entry(parent)
+        if not entry or entry["kind"] != "directory":
+            raise PromotionError(f"Ancestor is not a directory: {parent}")
+        result[str(parent)] = entry["mode"]
+    return result
+
+
+def _check_mode_guards(guards: dict) -> None:
+    for name, mode in guards.items():
+        entry = _entry(Path(name))
+        if not entry or entry["kind"] != "directory" or entry.get("mode") != mode:
+            raise PromotionError(f"Ancestor mode changed; subtree preserved: {name}")
 
 
 def _plan(record: dict) -> list[dict]:
     operations = []
+    posix = record["platform"] != "nt"
     for index, target in enumerate(record["targets"]):
         before, after = target["baseline"], target["candidate"]
+        current = dict(before)
+        root = Path(target["path"])
+
+        def append(relative, old, new):
+            guards = {}
+            if posix:
+                path = root / relative if relative else root
+                for parent in path.parents:
+                    if _within(parent, root):
+                        key = parent.relative_to(root).as_posix() if parent != root else ""
+                        guards[str(parent)] = current[key]["mode"]
+                    else:
+                        guards[str(parent)] = target["ancestor_modes"][str(parent)]
+            operations.append({"target": index, "path": relative, "before": old, "after": new,
+                               "before_dacl": target["baseline_permissions"].get(relative) if old else None,
+                               "ancestor_modes": guards})
+            if new is None:
+                current.pop(relative, None)
+            else:
+                current[relative] = new
+
+        order = lambda value: (_depth(value), value)
+        if posix:
+            changed = {key for key in before.keys() | after.keys() if before.get(key) != after.get(key)}
+            for key in sorted(before, key=order):
+                entry = before[key]
+                affected = any(key == "" or child == key or child.startswith(key + "/") for child in changed)
+                if entry["kind"] != "directory" or not affected:
+                    continue
+                candidate = after.get(key)
+                mode = (0o700 | (entry["mode"] & candidate["mode"] & 0o077)
+                        if candidate and candidate["kind"] == "directory" else entry["mode"] | 0o700)
+                if mode != entry["mode"]:
+                    append(key, entry, {"kind": "directory", "mode": mode})
+
         removed = [key for key, entry in before.items() if key not in after or entry["kind"] != after[key]["kind"]]
-        for key in sorted(removed, key=lambda value: (value.count("/"), value), reverse=True):
-            operations.append({"target": index, "path": key, "before": before[key], "after": None,
-                               "before_dacl": target["baseline_permissions"].get(key)})
-        for key in sorted(after, key=lambda value: (value.count("/"), value)):
-            old = None if key in removed else before.get(key)
-            if old != after[key]:
-                operations.append({"target": index, "path": key, "before": old, "after": after[key],
-                                   "before_dacl": target["baseline_permissions"].get(key) if old else None})
+        for key in sorted(removed, key=order, reverse=True):
+            append(key, current[key], None)
+        for key in sorted(after, key=order):
+            old, new = current.get(key), after[key]
+            if posix and new["kind"] == "directory":
+                if old is None:
+                    append(key, None, {"kind": "directory", "mode": 0o700})
+            elif old != new:
+                append(key, old, new)
+        if posix:
+            for key in sorted(after, key=order, reverse=True):
+                if after[key]["kind"] == "directory" and current[key] != after[key]:
+                    append(key, current[key], after[key])
     return operations
 
 
@@ -601,6 +755,7 @@ def _clean_staging(policy: Policy, record: dict) -> None:
             raise PromotionError("Staging cleanup escaped its recorded temporary location")
         if path.exists():
             _manifest(path)  # Reject links before recursively removing this owned stage.
+            _writable_stage(path)
             def remove_readonly(function, failed, _error):
                 failed = _path(str(failed))
                 if not _within(failed, path) or not failed.is_file():
@@ -608,6 +763,15 @@ def _clean_staging(policy: Policy, record: dict) -> None:
                 failed.chmod(stat.S_IREAD | stat.S_IWRITE)
                 function(failed)
             shutil.rmtree(path, onerror=remove_readonly)
+
+
+def _writable_stage(path: Path) -> None:
+    """Change only owned disposable directories, never frozen snapshots or targets."""
+    if os.name != "nt":
+        manifest = _manifest(path)
+        for relative in sorted(manifest, key=_depth):
+            if manifest[relative]["kind"] == "directory":
+                (path / relative if relative else path).chmod(0o700)
 
 
 def _publication_path(record: dict, operation_index: int, phase: str) -> Path:
@@ -666,7 +830,9 @@ def _write_entry(path: Path, before, after, source: Path | None,
     if after is None:
         path.rmdir() if before["kind"] == "directory" else path.unlink()
     elif after["kind"] == "directory" and os.name != "nt":
-        path.mkdir()
+        if before is None:
+            path.mkdir(mode=0o700)
+        path.chmod(after["mode"])
     else:
         if source is None or _entry(source) != after:
             raise PromotionError(f"Staged file differs from expected bytes: {path}")
@@ -687,6 +853,7 @@ def apply(policy: Policy, transaction: str, *, _fault: Callable | None = None) -
         _validate_operations(_plan(record))
         for target in record["targets"]:
             path = Path(target["path"])
+            _check_mode_guards(target["ancestor_modes"])
             if (_manifest(path) != target["baseline"] or _permissions(path) != target["baseline_permissions"]
                     or _dacl(path.parent) != target["parent_dacl"]):
                 raise PromotionError(f"Baseline changed: {target['path']}")
@@ -697,11 +864,13 @@ def apply(policy: Policy, transaction: str, *, _fault: Callable | None = None) -
                 record["staging"].append({"target": index, "path": str(stage)})
                 _save(policy, record)
                 _copy_snapshot(_snapshot_path(policy, record, "candidate", index), stage / "candidate", target["candidate"])
+                _writable_stage(stage)
                 stages.append(stage / "candidate")
             # A complete second preflight after staging precedes all managed writes.
             _load(policy, transaction)
             for target in record["targets"]:
                 path = Path(target["path"])
+                _check_mode_guards(target["ancestor_modes"])
                 if (_manifest(path) != target["baseline"] or _permissions(path) != target["baseline_permissions"]
                         or _dacl(path.parent) != target["parent_dacl"]):
                     raise PromotionError(f"Baseline changed during staging: {target['path']}")
@@ -713,6 +882,7 @@ def apply(policy: Policy, transaction: str, *, _fault: Callable | None = None) -
                 _save(policy, record)
                 if _fault:
                     _fault("before_write", index, record)
+                _check_mode_guards(operation["ancestor_modes"])
                 root = Path(record["targets"][operation["target"]]["path"])
                 path = root / operation["path"] if operation["path"] else root
                 source = stages[operation["target"]] / operation["path"] if operation["path"] else stages[operation["target"]]
@@ -764,6 +934,7 @@ def recover(policy: Policy, transaction: str, *, _fault: Callable | None = None)
             return _summary(policy, record)
         record["status"] = "recovering"
         record["conflicts"] = []
+        conflicted_paths = []
         _save(policy, record)
         _clean_publications(record)
         for index in reversed(range(len(record["operations"]))):
@@ -773,15 +944,31 @@ def recover(policy: Policy, transaction: str, *, _fault: Callable | None = None)
             root = Path(record["targets"][operation["target"]]["path"])
             path = root / operation["path"] if operation["path"] else root
             try:
+                _check_mode_guards(operation["ancestor_modes"])
                 current = _entry(path)
                 current_dacl = _dacl(path)
                 if current != operation["before"] or current_dacl != operation["before_dacl"]:
                     if current != operation["after"] or current_dacl != operation["after_dacl"]:
                         raise PromotionError(f"External edits preserved: {path}")
+                    old, new = operation["before"], operation["after"]
+                    if old and new and old["kind"] == new["kind"] == "directory":
+                        if any(_within(failed, path) for failed in conflicted_paths):
+                            raise PromotionError(f"Descendant recovery conflict; directory mode preserved: {path}")
+                        if "mode" in old and old["mode"] & ~new["mode"] & 0o077:
+                            # Do not expose an unexpected file or a later edit to an
+                            # already-restored child when restoring a broader mode.
+                            prefix = operation["path"] + "/" if operation["path"] else ""
+                            baseline = record["targets"][operation["target"]]["baseline"]
+                            expected = {key[len(prefix):]: entry for key, entry in baseline.items()
+                                        if key.startswith(prefix)}
+                            expected[""] = new
+                            if _manifest(path) != expected:
+                                raise PromotionError(f"Changed subtree preserved before directory mode restoration: {path}")
                     operation["state"] = "undo_intent"
                     _save(policy, record)
                     if _fault:
                         _fault("before_restore", index, record)
+                    _check_mode_guards(operation["ancestor_modes"])
                     source = None
                     temporary = None
                     try:
@@ -791,22 +978,22 @@ def recover(policy: Policy, transaction: str, *, _fault: Callable | None = None)
                                                           snapshot / operation["path"] if operation["path"] else snapshot,
                                                           operation["before_dacl"])
                         elif operation["before"] and operation["before"]["kind"] == "file":
-                            descriptor, temporary = tempfile.mkstemp(prefix=f".skill-restore-{transaction}-", dir=_staging_base(root))
-                            os.close(descriptor)
-                            source = Path(temporary)
+                            temporary = tempfile.TemporaryDirectory(prefix=f".skill-restore-{transaction}-", dir=_staging_base(root))
+                            source = Path(temporary.name) / "entry"
                             snapshot = _snapshot_path(policy, record, "baseline", operation["target"])
                             _copy_file(snapshot / operation["path"] if operation["path"] else snapshot, source)
                         _write_entry(path, operation["after"], operation["before"], source,
                                      operation["after_dacl"], operation["before_dacl"])
                     finally:
                         _clean_publications(record)
-                        if temporary and os.path.exists(temporary):
-                            os.unlink(temporary)
+                        if temporary:
+                            temporary.cleanup()
                     if _fault:
                         _fault("after_restore", index, record)
                 operation["state"] = "undone"
             except (PromotionError, OSError) as exc:
                 operation["state"] = "conflicted"
+                conflicted_paths.append(path)
                 record["conflicts"].append(str(exc))
             _save(policy, record)
         for target in record["targets"]:
@@ -831,6 +1018,11 @@ def _summary(policy: Policy, record: dict) -> dict:
 def status(policy: Policy, transaction: str | None = None):
     if transaction:
         record = _read_json(_journal_path(policy, transaction))
+        _journal_header(record, transaction)
+        if record["version"] != JOURNAL_VERSION:
+            return {"transaction": transaction, "status": record["status"],
+                    "journal": str(_journal_path(policy, transaction)), "policy": record["policy"],
+                    "policy_sha256": record["policy_sha256"], "inspection_requires_original_helper": True}
         if record.get("policy") != str(policy.path) or record.get("policy_sha256") != policy.fingerprint:
             # A shared lock/state directory can contain older or separately
             # authorized policies. Listing them grants no access to their targets.
@@ -838,8 +1030,7 @@ def status(policy: Policy, transaction: str | None = None):
                     "journal": str(_journal_path(policy, transaction)),
                     "policy": record.get("policy"), "policy_sha256": record.get("policy_sha256"),
                     "inspection_requires_recorded_policy": True}
-        if record.get("version") != 2:
-            raise PromotionError("Legacy journals require their original trusted helper; they did not record Windows DACLs")
+        record = _load(policy, transaction, inspection=True)
         result = _summary(policy, record)
         result["protected_match"] = record["policy_sha256"] == policy.fingerprint and record["protected"] == _fingerprints(policy)
         result["targets"] = []

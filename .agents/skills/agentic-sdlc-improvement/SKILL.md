@@ -115,10 +115,6 @@ their illustrative data is not validation evidence.
 
 ## Maintenance references
 
-- [Technical references](../agentic-sdlc/references/sources.md): optional
-  sources for workflow decisions; runtime use does not require the delivery package.
-- [Research transfer notes](references/research-notes.md): mechanisms, evidence
-  limits, and versioned sources; consult when maintaining this workflow.
 - [Evaluation cases](references/trigger-evals.md): routing and behavior criteria.
 - [Raw behavior fixtures](references/behavior-fixtures.md): isolated probe inputs;
   keep grading material out of the probe.

@@ -15,9 +15,9 @@ task or turn one incident into a universal instruction.
 
 Use a conversation record or the host's authorized task-artifact storage. Keep
 run logs, transcripts, result tables, and per-run hashes outside the skill source
-repository. Reusable fixtures and research/version facts can live with the skill;
-fixtures remain synthetic until separately executed and graded. Memory has its
-own authority boundary and is not an automatic destination.
+repository. Reusable fixtures and concise technical compatibility facts can live
+with the skill; fixtures remain synthetic until separately executed and graded.
+Memory has its own authority boundary and is not an automatic destination.
 
 Estimate the likely value from consequence and expected reuse. Choose a cheap
 test that could change the decision before launching a larger comparison. Stop
