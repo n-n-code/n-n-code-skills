@@ -15,12 +15,10 @@ The published repository is intentionally small at the root:
   inventory, links, and stable routing contracts
 - `scripts/check-skills.sh` is the Bash wrapper for the same validator
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
-- `scripts/test_skill_resources.py` runs release, promotion, and pilot resource
+- `scripts/test_skill_resources.py` runs release and promotion resource
   tests and optionally checks real CTest behavior and metadata against PyYAML
 - `scripts/test_skill_promotion.py` exercises local skill promotion, contention,
   interrupted writes, and recovery using isolated files
-- `scripts/test_pilot_cases.py` checks pilot grading and fixture isolation using
-  disposable worker outputs
 - `LICENSE` contains the repository's MIT license
 
 ## Repository Layout
@@ -39,7 +37,6 @@ scripts/
   test_check_skills.py  # validator regression tests
   test_skill_resources.py # resource checks and optional independent runtimes
   test_skill_promotion.py # isolated promotion and recovery regression tests
-  test_pilot_cases.py   # pilot grading and fixture isolation regression tests
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
@@ -291,7 +288,7 @@ Defaults:
   development and a local promotion/recovery utility
 - `bounded-delegation` — process overlay for narrow factual reads and
   reference-based generation through available workers, with ownership, limits,
-  acceptance evidence, and an optional local-router design
+  acceptance evidence, architecture examples, and optional router integration
 - `chrome-devtools-axi` — default workflow for ad hoc Chrome investigation and
   browser operation through AXI, including interaction, extraction, DOM/CSS,
   console/network, responsive, performance, accessibility, and memory evidence
@@ -346,8 +343,9 @@ Defaults:
 - Use `bounded-delegation` only when offloading a bounded read or predictable
   generation task adds value over available direct tools. It owns task/result
   contracts; `context-engineering` owns context selection and `agentic-sdlc`
-  owns lifecycle coordination. Its router reference is a design, not an installed
-  service or enforcement layer. Correct results do not by themselves prove savings.
+  owns lifecycle coordination. Its architecture reference provides worked
+  assignments and optional router integration, not an installed service or
+  enforcement layer. Correct results do not by themselves prove savings.
 - Use `agentic-sdlc` when the requested outcome spans delivery stages or requires
   recovery across them. An assessment remains read-only; a single planning,
   coding, test-strategy, or handoff artifact uses its existing owner. Use current
@@ -493,7 +491,7 @@ When the metadata parser, executable skill resources, or their tests change, run
 python scripts/test_skill_resources.py
 ```
 
-The resource gate includes the promotion and pilot suites. Platform-specific
+The resource gate includes the promotion suite. Platform-specific
 permission and link cases report explicit skips when unavailable.
 The resource tests use disposable fixtures and discover Bash from PATH or a
 standard Git for Windows installation. Set `SKILL_TEST_BASH` for another Bash

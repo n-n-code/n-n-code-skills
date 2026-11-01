@@ -1,9 +1,9 @@
 # Selection and evaluation
 
 Use these cases when maintaining the skill. Static expectations, explicitly loaded
-behavior probes, automatic selection, and executed pilots are different evidence.
-Do not claim one proves the others. Keep transcripts, outputs, timings, hashes,
-and result tables outside the checkout.
+behavior probes, automatic selection, and observed task comparisons are different
+evidence. Do not claim one proves the others. Keep transcripts, outputs, timings,
+hashes, and result tables outside the checkout.
 
 ## Selection boundaries
 
@@ -43,12 +43,20 @@ Also inspect a completed assignment for an acceptance owner, output and effort
 bounds, source freshness, available usage versus unknown metrics, and evidence
 of checks actually run. A polished status message cannot substitute for artifacts.
 
-## Paired pilot procedure
+## Paired task comparison
 
-Use [pilot fixtures](pilot-fixtures.md) to prepare four independent tasks. Freeze
-raw inputs and behavioral oracles before running the candidate. Keep expected
-answers and grading implementation out of worker context. Use separate baseline
-and candidate directories with equal starting content.
+Select representative tasks from the intended workload, including its failure
+and protected cases. Define each task's source scope, required output, and
+independent acceptance checks before running either arm. Use existing project
+checks and reviewed expected outcomes; this skill supplies no executable tasks
+or grader. The architecture and worked assignments illustrate the protocol,
+but do not establish executed validation.
+
+Freeze raw inputs and behavioral oracles before running the candidate. Keep
+expected answers and grading implementation out of worker context. Give baseline
+and candidate isolated workspaces or sessions with equal starting inputs,
+requirements, permissions, and available capabilities. Reserve fresh analogous
+cases for checking transfer beyond the cases used to revise the skill.
 
 The baseline is competent direct execution: targeted search, partial reads, and
 available deterministic tools are encouraged. The candidate loads this skill and
@@ -56,6 +64,8 @@ chooses whether delegation is warranted. Record a direct-path choice as such; do
 not manufacture a delegation merely to make the comparison interesting. To test
 the protocol separately, an explicit worker assignment is allowed, but label that
 as a protocol probe rather than evidence that automatic routing chose correctly.
+Evaluate automatic skill selection separately with requests that do not name or
+preselect the skill.
 
 Record model/settings actually exposed, task/skill versions, inputs, tool access,
 start/end times, path choice, checks, failures, retries, and corrective work. Give
@@ -73,8 +83,9 @@ Include every attempt and distinguish infrastructure failures from task failures
 ## Retain, narrow, or investigate
 
 Use `agentic-sdlc-improvement` for the experiment decision. Correctness, scope,
-source verification, and protected behavior come first. Four successful pairs
-establish feasibility on those fixtures, not general workload savings.
+source verification, and protected behavior come first. Successful comparisons
+support conclusions only for the observed task classes and conditions; a small
+case set does not establish general workload savings.
 
 Make two separate conclusions: whether the protocol produced usable results, and
 which measured efficiency dimensions improved against the competent baseline.

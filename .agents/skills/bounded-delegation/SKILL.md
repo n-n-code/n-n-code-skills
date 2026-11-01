@@ -113,12 +113,10 @@ bounce between workers or repeat an operation whose outcome is still unknown.
 
 ## Conditional references
 
-- [Router integration](references/router-integration.md): read when designing a
-  local classifier/worker front door or integrating this protocol with a router.
-  It describes a design, not an installed service.
+- [Architecture and worked assignments](references/router-integration.md): read
+  for an example execution flow, reader/generator assignments, or optional router
+  integration. It describes a design, not an installed service.
 - [Evaluation](references/trigger-evals.md): selection boundaries, protected-case
   grading, and the paired comparison procedure; for maintaining this skill.
 - [Behavior fixtures](references/behavior-fixtures.md): raw decision probes; keep
   grading guidance out of the evaluating agent's input.
-- [Pilot fixtures](references/pilot-fixtures.md): reproducible executable reader
-  and generator tasks with independent grading; for evaluation only.
