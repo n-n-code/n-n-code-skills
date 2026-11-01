@@ -26,6 +26,11 @@ its procedures and uses the host and repository's available execution surface.
 
 ## Evaluation and workflow improvement
 
+For versioned self-improvement studies and their transfer limits, consult the
+improvement package's [research transfer notes](../../agentic-sdlc-improvement/references/research-notes.md).
+They cover selective history, modular edits, validation, model/harness drift,
+and conditional improvement of the improver; they are not runtime prerequisites.
+
 - [Macro evals](https://developers.openai.com/cookbook/examples/partners/macro_evals_for_agentic_systems/macro_evals_for_agentic_systems)
   connects individual traces to patterns across runs. Consult it when deciding
   how to sample evidence or investigate a suspected recurring failure; an

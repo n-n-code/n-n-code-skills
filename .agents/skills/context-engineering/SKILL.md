@@ -258,6 +258,9 @@ Validation:
 
 ## Composition Boundaries
 
+- Use `bounded-delegation` when executing a narrow offloaded read or
+  reference-based generation task. This skill retains context selection,
+  compaction, and handoff ownership; a context packet alone needs no worker.
 - Pair with implementation, review, documentation, security, or testing skills
   when the work needs that domain expertise after the context set is chosen.
 - Pair with `tester-mindset` when the main question is whether the available

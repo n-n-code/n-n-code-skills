@@ -17,6 +17,8 @@ The published repository is intentionally small at the root:
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
 - `scripts/test_skill_resources.py` tests the release scaffold and optionally
   checks real CTest behavior and metadata against PyYAML
+- `scripts/test_skill_promotion.py` exercises local skill promotion, contention,
+  interrupted writes, and recovery using isolated files
 - `LICENSE` contains the repository's MIT license
 
 ## Repository Layout
@@ -34,6 +36,7 @@ scripts/
   check-skills.sh       # Bash wrapper
   test_check_skills.py  # validator regression tests
   test_skill_resources.py # resource checks and optional independent runtimes
+  test_skill_promotion.py # isolated promotion and recovery regression tests
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
@@ -93,6 +96,8 @@ Examples:
   reporting
 - routine Go feature work: `coding-guidance-go`; add `project-core-dev` on the
   same condition
+- Godot scenes, gameplay, debugging, or exports: `godot`; for C++ GDExtension
+  implementation/review, compose with `coding-guidance-cpp`
 - Charmbracelet Go TUI work: `coding-guidance-go-tui`; add
   `project-platform-diagnose` for terminal, shell, or runtime smoke issues
 - routine backend feature: principle skill + `backend-guidance`; add
@@ -126,6 +131,8 @@ Examples:
   add `tester-mindset` when the validation strategy is the main concern
 - agent context setup, long task handoff, compaction, or context-quality
   debugging: `context-engineering`
+- useful offloading of bounded factual reads or reference-based code/test
+  generation: `bounded-delegation` plus the relevant domain owner
 - DeepSeek Harness operation, configuration, SDK/ACP integration, plugin
   extension, or source-checkout maintenance: `deepseek-harness`; add
   `coding-guidance-python` when implementing a Python SDK caller
@@ -235,6 +242,9 @@ Bash routing note:
 
 ### Implementation And Project Overlays
 
+- `godot` — Godot 4 domain overlay for 2D/3D development, explanation, review,
+  debugging, testing, and exports, with deep C++ GDExtension guidance and
+  preservation of existing GDScript/C# workflows
 - `backend-guidance` — thin baseline overlay for backend and server-side networked code such as HTTP handlers, gRPC services, and message consumers
 - `backend-systems-guidance` — canonical strong backend overlay for non-trivial service boundaries, repositories, queues, reliability, trust-boundary hardening, and backend review that needs stronger testing discipline
 - `development-contract-process` — process overlay for repos that require tracked change contracts, verifier evidence, and smallest-proof validation
@@ -250,6 +260,11 @@ Bash routing note:
 Defaults:
 
 - Start with `backend-guidance` for ordinary backend changes that mostly need boundary hygiene and thin handlers.
+- Use `godot` for Godot-specific work; it is independently usable and composes
+  with `coding-guidance-cpp` for native implementation/review. Preserve existing
+  languages and build systems; deeper C++ coverage does not mandate C++. Conceptual
+  questions need no project or runtime. Recognize Godot 3/GDNative separately;
+  full engine-fork development needs a separately scoped workflow.
 - Prefer `backend-systems-guidance` when the task includes multi-layer backend work, repositories or transactions, auth or trust-boundary logic, queue or webhook processing, or backend review that needs explicit testing and reliability checks.
 - Start with `ui-guidance` for ordinary UI changes that mostly need repo-native consistency and basic UI hygiene.
 - Prefer `ui-design-guidance` when the task needs stronger design direction, more frontend polish, or explicit UX review across accessibility, interaction, layout, forms, navigation, or data display.
@@ -269,7 +284,11 @@ Defaults:
   records, and release/maintenance within existing authority
 - `agentic-sdlc-improvement` — independently usable workflow for turning
   development runs, failures, and feedback into bounded experiments and evaluated
-  improvements to how coding agents work
+  improvements to how coding agents work, with conditional learning during active
+  development and a local promotion/recovery utility
+- `bounded-delegation` — process overlay for narrow factual reads and
+  reference-based generation through available workers, with ownership, limits,
+  acceptance evidence, and an optional local-router design
 - `chrome-devtools-axi` — default workflow for ad hoc Chrome investigation and
   browser operation through AXI, including interaction, extraction, DOM/CSS,
   console/network, responsive, performance, accessibility, and memory evidence
@@ -321,6 +340,11 @@ and specialist engineering guidance still apply.
 
 Defaults:
 
+- Use `bounded-delegation` only when offloading a bounded read or predictable
+  generation task adds value over available direct tools. It owns task/result
+  contracts; `context-engineering` owns context selection and `agentic-sdlc`
+  owns lifecycle coordination. Its router reference is a design, not an installed
+  service or enforcement layer. Correct results do not by themselves prove savings.
 - Use `agentic-sdlc` when the requested outcome spans delivery stages or requires
   recovery across them. An assessment remains read-only; a single planning,
   coding, test-strategy, or handoff artifact uses its existing owner. Use current
@@ -330,11 +354,20 @@ Defaults:
   prompt-only rewrite, context-only repair, skill audit, or general agent-product
   evaluation retains its own primary workflow. Missing infrastructure does not
   mandate installing an evaluation platform.
+- A host may route consequential findings from ordinary development into the
+  improvement workflow and grant scoped automatic promotion. The portable skills
+  consume that authority; installing them does not grant it. Routine work needs
+  no experiment or learning report. Maintenance uses direct correctness checks;
+  behavioral changes need relevant comparisons. Changes to the improver require
+  evidence of its own weakness and downstream evaluation from matched starting
+  conditions. Keep bootstrap operation separate from unmeasured productivity gains.
 - Both SDLC skills use optional specialists and available host capabilities,
   with explicit gaps when required evidence is unavailable. Prefer existing
   authoritative artifacts, compact authorized work records, and one agent unless
-  useful delegation is available and authorized. The packages provide procedures,
-  not a scheduler, runtime, or enforcement service. See their
+  useful delegation is available and authorized. The local promotion helper
+  serializes participating writers and supports conflict-safe recovery; it does
+  not judge improvement quality or enforce a sandbox. These packages do not
+  provide a scheduler or agent runtime. See their
   [technical references](.agents/skills/agentic-sdlc/references/sources.md) and
   [delivery](.agents/skills/agentic-sdlc/references/trigger-evals.md) /
   [improvement](.agents/skills/agentic-sdlc-improvement/references/trigger-evals.md)

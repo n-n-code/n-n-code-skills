@@ -255,5 +255,13 @@ class YamlReferenceTests(unittest.TestCase):
                 self.assertTrue(errors)
 
 
+def load_tests(loader, tests, pattern):
+    """Include the promotion resource's behavioral tests in the resource gate."""
+    import test_skill_promotion
+
+    tests.addTests(loader.loadTestsFromModule(test_skill_promotion))
+    return tests
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
