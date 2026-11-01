@@ -11,6 +11,9 @@ ownership of the affected artifacts. Use this workflow independently with existi
 transcripts, diffs, reviews, or eval records; no particular SDK or tracing service
 is required.
 
+Use available host or project capabilities. This workflow adds no required
+programming-language runtime, installer, or background service.
+
 ## Activity and authority
 
 Assessment and experiment planning return findings or proposals without editing
@@ -27,8 +30,8 @@ Consume the host's existing improvement and promotion authority; this skill
 does not create it. Use [active learning and promotion](references/active-session-learning.md)
 when delivery surfaces a reusable finding, installation differs from source,
 automatic promotion is authorized, or the improvement procedure itself is the
-candidate. Keep authorization, acceptance gates, graders, and promotion helpers
-outside the candidate's editable surface.
+candidate. Keep authorization, acceptance gates, graders, and host promotion
+controls outside the candidate's editable surface.
 
 ## Improve the workflow
 

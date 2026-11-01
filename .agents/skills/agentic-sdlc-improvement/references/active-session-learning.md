@@ -55,7 +55,7 @@ do not ask again for covered actions. If authority covers proposals only, finish
 the reviewable candidate and evidence without installing it.
 
 Keep acceptance thresholds, protected graders/cases, permission policy, budget
-accounting, and promotion/rollback helpers outside the candidate's writable
+accounting, and host promotion/recovery controls outside the candidate's writable
 surface. A candidate may propose a separately reviewed correction to a defective
 oracle; apply an independently justified correction to both comparison arms.
 It may not change these controls to pass its own evaluation. A Markdown rule is
@@ -70,10 +70,11 @@ keep a recoverable predecessor. Do not edit provider-managed skill caches or
 silently replace a different version. Report source-only, tested, and installed
 states separately.
 
-When the host uses the bundled local utility, follow
-[local promotion and recovery](promotion.md) for its policy, request interface,
-serialized writes, and interrupted-operation recovery. The utility does not grade
-the evidence or establish an agent runtime.
+Use [promotion and recovery](promotion.md) to prepare, apply, and verify an
+accepted change through an existing authorized host or project mechanism.
+This skill supplies guidance without requiring an installer or runtime. If the
+available capabilities cannot support the requested change, retain the candidate
+and report the gap rather than introducing a new dependency implicitly.
 
 Keep an index of useful accepted, rejected, and inconclusive interventions with
 their conditions and evidence handles. Preserve failed attempts within their
@@ -97,7 +98,7 @@ A prettier experiment report is not a better improver. Do not let the second arm
 inherit the first arm's answers, improved skill, or consumed holdouts.
 
 The candidate improver cannot change its own permission policy, graders,
-promotion gates, or helper implementation. Changes to those controls are a
-separate authorized maintenance task with independent validation. If matched
-evaluation is unavailable, retain a proposal and its uncertainty rather than
-claiming a recursive improvement.
+promotion gates, or host tooling. Changes to those controls are a separate
+authorized maintenance task with independent validation. If matched evaluation
+is unavailable, retain a proposal and its uncertainty rather than claiming a
+recursive improvement.

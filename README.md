@@ -15,10 +15,8 @@ The published repository is intentionally small at the root:
   inventory, links, and stable routing contracts
 - `scripts/check-skills.sh` is the Bash wrapper for the same validator
 - `scripts/test_check_skills.py` contains focused standard-library regression tests for the validator
-- `scripts/test_skill_resources.py` runs release and promotion resource
-  tests and optionally checks real CTest behavior and metadata against PyYAML
-- `scripts/test_skill_promotion.py` exercises local skill promotion, contention,
-  interrupted writes, and recovery using isolated files
+- `scripts/test_skill_resources.py` tests the release scaffold and optionally
+  checks real CTest behavior and metadata against PyYAML
 - `LICENSE` contains the repository's MIT license
 
 ## Repository Layout
@@ -36,7 +34,6 @@ scripts/
   check-skills.sh       # Bash wrapper
   test_check_skills.py  # validator regression tests
   test_skill_resources.py # resource checks and optional independent runtimes
-  test_skill_promotion.py # isolated promotion and recovery regression tests
 ```
 
 `SKILL.md` is the required file for each skill. A skill folder may also include supporting files such as `references/`, `scripts/`, or `assets/` when the skill needs them.
@@ -285,7 +282,7 @@ Defaults:
 - `agentic-sdlc-improvement` — independently usable workflow for turning
   development runs, failures, and feedback into bounded experiments and evaluated
   improvements to how coding agents work, with conditional learning during active
-  development and a local promotion/recovery utility
+  development and tool-neutral promotion through existing host capabilities
 - `bounded-delegation` — process overlay for narrow factual reads and
   reference-based generation through available workers, with ownership, limits,
   acceptance evidence, architecture examples, and optional router integration
@@ -365,10 +362,11 @@ Defaults:
 - Both SDLC skills use optional specialists and available host capabilities,
   with explicit gaps when required evidence is unavailable. Prefer existing
   authoritative artifacts, compact authorized work records, and one agent unless
-  useful delegation is available and authorized. The local promotion helper
-  serializes participating writers and supports conflict-safe recovery; it does
-  not judge improvement quality or enforce a sandbox. These packages do not
-  provide a scheduler or agent runtime. See their
+  useful delegation is available and authorized. These workflow skills introduce
+  no required programming-language runtime or installer. Promotion and recovery
+  use existing authorized host or project mechanisms; the guidance does not
+  implement concurrency controls, a sandbox, a scheduler, or an agent runtime.
+  See their
   [delivery](.agents/skills/agentic-sdlc/references/trigger-evals.md) /
   [improvement](.agents/skills/agentic-sdlc-improvement/references/trigger-evals.md)
   evaluation cases for the detailed boundaries.
@@ -491,8 +489,8 @@ When the metadata parser, executable skill resources, or their tests change, run
 python scripts/test_skill_resources.py
 ```
 
-The resource gate includes the promotion suite. Platform-specific
-permission and link cases report explicit skips when unavailable.
+These validation commands are repository-maintenance tools, not runtime
+requirements for using the generic workflow skills.
 The resource tests use disposable fixtures and discover Bash from PATH or a
 standard Git for Windows installation. Set `SKILL_TEST_BASH` for another Bash
 executable; on Windows these tests use Git Bash/Cygwin path conversion, not WSL.
