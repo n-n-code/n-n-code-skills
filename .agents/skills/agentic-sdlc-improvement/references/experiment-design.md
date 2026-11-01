@@ -18,6 +18,7 @@ authorized record; it is not a mandatory project schema:
 Question and failure evidence:
 Hypothesis and contrary evidence:
 Baseline and candidate versions:
+Source and active installation identities:
 Intervention and owning artifact:
 Target behavior and unacceptable regressions:
 Cases, protected regressions, and holdouts:
@@ -27,6 +28,13 @@ Observed results and excluded/inconclusive attempts:
 Decision, limitations, recovery, and next action:
 ```
 
+Classify the change before selecting evidence. Behavioral changes need observable
+efficacy comparisons. Invariant-restoring maintenance needs checks of the broken
+contract and affected behavior; it does not require inventing a performance
+claim. New capability bootstrap needs capability/integrity validation and an
+explicitly unmeasured efficacy status until compared. Do not relabel behavioral
+changes as maintenance merely to bypass comparison.
+
 ## Choose cases and observations
 
 Preserve realistic inputs, relevant raw artifacts, and expected behavior before
@@ -34,6 +42,13 @@ editing the candidate. Include legitimate behavior that must continue, the
 observed failure, and nearby cases that could expose an overcorrection. An agent
 that avoids all external actions by refusing the whole task has not improved
 if the task included authorized actions.
+
+Pair the baseline and candidate on the same tasks under matched conditions.
+Include fresh analogous tasks that test the underlying mechanism without copying
+the original answer. A regression reproducer alone supports a narrow repair
+claim, not transfer to unrelated development. Case count and repetition depend on
+decision uncertainty, consequence, expected reuse, and the cheapest observation
+that could resolve it; there is no fixed campaign size.
 
 Reserve holdouts from examples used to author the change. Once a holdout informs
 the design, treat it as a regression case and replace it before making further
@@ -61,6 +76,12 @@ Record the code and task revision, model/provider and available settings,
 skill/prompt/tool versions, retrieval inputs, host, environment, relevant resource
 allocation, time limits, and retry policy. Use comparable starting artifacts;
 candidate runs must not inherit the baseline's completed work or prior answers.
+
+Record both the maintained source and the active installed skill. If they differ,
+establish which version each run loaded. A model or interface upgrade changes the
+tested pairing; do not transfer prior effectiveness claims from a model name or
+assume the latest skill is the best starting point. Compare relevant historical
+versions when evidence identifies a useful predecessor.
 
 Distinguish available observations, eligible cases, completed executions, and
 graded results. State denominators for rates. Report infrastructure failures and
@@ -92,6 +113,13 @@ Retain a candidate only when the target behavior improves and protected behavior
 remains acceptable under the declared criteria. Preserve mixed results and their
 consequences. Without a usable comparison, return a hypothesis or an inconclusive
 decision, not a measured improvement claim.
+
+For noisy results, declare the minimum useful improvement and unacceptable
+regressions before looking at the candidate scores. Use repeatability or an
+uncertainty estimate appropriate to the evidence; avoid significance claims from
+a handful of selected tasks. Report measurements separately from explanatory
+hypotheses. More agents, tool calls, iterations, or confident conclusions are not
+evidence that the improvement method itself improved.
 
 Correct a defective oracle only with independent justification; document the
 correction and grade baseline and candidate on that same corrected basis.

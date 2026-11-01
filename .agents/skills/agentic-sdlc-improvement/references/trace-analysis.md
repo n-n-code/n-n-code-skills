@@ -34,6 +34,14 @@ or partial records, and known omissions. Group by comparable conditions before
 combining results. Include successful runs and counterexamples that test the
 candidate explanation, not only dramatic failures.
 
+Where possible, compare success and failure on the same task or closely matched
+conditions. Inspect the first differing consequential action rather than merely
+contrasting final scores. Keep persistent failures, consistent successes, mixed
+outcomes, and infrastructure failures distinguishable: each supports a different
+hypothesis. A timeout before task behavior begins is not evidence for a skill
+rewrite; success may reveal a useful practice or show that a proposed rule is
+unnecessary.
+
 Use manual inspection for a small collection. Add clustering or aggregation
 only when volume makes it useful and tools already exist or their use is
 authorized. A cluster label is a discovery aid; inspect representative raw runs
@@ -42,6 +50,12 @@ traces can make many apparent observations depend on the same event.
 
 Report prevalence only against a defined denominator. Sparse or selected traces
 may justify a targeted experiment without supporting a general failure rate.
+
+Retain unsuccessful and inconclusive interventions when they constrain future
+choices, with the conditions under which they failed. Use a compact index and
+retrieve raw evidence on demand; do not make every run's full history permanent
+context. Source revisions, installed skill versions, and model/tool changes are
+retrieval keys, not proof that evidence transfers across those conditions.
 
 ## Find the first actionable divergence
 
